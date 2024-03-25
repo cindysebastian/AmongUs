@@ -1,3 +1,11 @@
+import Map from "./components/Map"
+
 export default function App() {
-  return <p>React is up and running!</p>;
+  return (
+    <div>
+      <div>
+        <Map />
+      </div>
+    </div>
+  );
 }
