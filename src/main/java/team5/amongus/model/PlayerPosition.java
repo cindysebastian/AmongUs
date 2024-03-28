@@ -4,5 +4,5 @@ public class PlayerPosition {
     private int x;
     private int y;
 
-    // getters and setters
+    // Getters and setters
 }
