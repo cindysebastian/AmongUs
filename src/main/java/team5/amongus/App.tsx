@@ -30,7 +30,15 @@ const App = () => {
         const newPosition = JSON.parse(message.body);
         setPosition(newPosition);
       });
+
+      stompClient.subscribe('topic/players', (message) => {
+        var players = JSON.parse(message.body);
+        Object.values(players).forEach(player => {
+          spawnPlayer(player);
+        });
+      });
     }
+    sendPlayer();
   }, [stompClient]);
 
   const handleKeyDown = (e) => {
@@ -57,6 +65,30 @@ const App = () => {
     // Send updated position to server
     stompClient.send('/app/move', {}, JSON.stringify(newPosition));
   };
+
+  const sendPlayer = () => {
+    var player = {
+      name: "player",
+      position: { x: (1600 / 2) - 25, y: (700 / 2) - 25 }
+    }
+    stompClient.send("/app/setPlayer", {}, JSON.stringify(player));
+  }
+
+  const spawnPlayer = (player) => {
+    var existingPlayerElement = document.getElementById(`${player.name}`);
+    if(existingPlayerElement){
+      existingPlayerElement.style.left = `${player.position.x}px`;
+      existingPlayerElement.style.top = `${player.position.y}px`;
+    } else {
+      var playerElement = document.createElement('div');
+      playerElement.id = `${player.name}`;
+      playerElement.style.position = 'absolute';
+      playerElement.style.left = `${player.position.x}px`;
+      playerElement.style.top = `${player.position.y}px`;
+
+      document.body.appendChild(playerElement);
+    }
+  }
 
   useEffect(() => {
     // Add event listener for keydown
