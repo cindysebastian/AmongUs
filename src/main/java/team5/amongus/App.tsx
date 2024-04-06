@@ -3,122 +3,114 @@ import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 
 const App = () => {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [stompClient, setStompClient] = useState(null);
+  const [playerName, setPlayerName] = useState('');
+  const [players, setPlayers] = useState({});
 
   useEffect(() => {
-    // Connect to WebSocket endpoint
     const socket = new SockJS('http://localhost:8080/ws');
     const stomp = Stomp.over(socket);
+
     stomp.connect({}, () => {
       console.log('Connected to WebSocket');
       setStompClient(stomp);
     });
 
-    // Cleanup function
     return () => {
       if (stompClient) {
         stompClient.disconnect();
+        console.log('Disconnected from WebSocket');
       }
     };
   }, []);
 
-  useEffect(() => {
-    // Subscribe to WebSocket topic to receive player position updates
-    if (stompClient) {
-      stompClient.subscribe('/topic/player-position', (message) => {
-        const newPosition = JSON.parse(message.body);
-        setPosition(newPosition);
-      });
+  const handleSpawnPlayer = () => {
+    if (!stompClient || !playerName.trim()) return;
 
-      stompClient.subscribe('topic/players', (message) => {
-        var players = JSON.parse(message.body);
-        Object.values(players).forEach(player => {
-          spawnPlayer(player);
-        });
-      });
-    }
-    sendPlayer();
-  }, [stompClient]);
+    const initialPlayer = {
+      name: playerName.trim(),
+      position: { x: 200, y: 200 }, // Initial spawn position
+    };
+
+    stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
+  };
 
   const handleKeyDown = (e) => {
-    if (!stompClient) return;
+    if (!stompClient || !players[playerName]) return;
 
-    const newPosition = { ...position };
+    const newPosition = { ...players[playerName].position };
+    const movementAmount = 10;
+
     switch (e.key) {
       case 'w':
-        newPosition.y -= 10;
+        newPosition.y -= movementAmount;
         break;
       case 'a':
-        newPosition.x -= 10;
+        newPosition.x -= movementAmount;
         break;
       case 's':
-        newPosition.y += 10;
+        newPosition.y += movementAmount;
         break;
       case 'd':
-        newPosition.x += 10;
+        newPosition.x += movementAmount;
         break;
       default:
         return;
     }
 
-    // Send updated position to server
-    stompClient.send('/app/move', {}, JSON.stringify(newPosition));
+    const updatedPlayer = {
+      name: playerName,
+      position: newPosition,
+    };
+
+    stompClient.send('/app/move', {}, JSON.stringify(updatedPlayer));
   };
 
-  const sendPlayer = () => {
-    var player = {
-      name: "player",
-      position: { x: (1600 / 2) - 25, y: (700 / 2) - 25 }
-    }
-    stompClient.send("/app/setPlayer", {}, JSON.stringify(player));
-  }
-
-  const spawnPlayer = (player) => {
-    var existingPlayerElement = document.getElementById(`${player.name}`);
-    if(existingPlayerElement){
-      existingPlayerElement.style.left = `${player.position.x}px`;
-      existingPlayerElement.style.top = `${player.position.y}px`;
-    } else {
-      var playerElement = document.createElement('div');
-      playerElement.id = `${player.name}`;
-      playerElement.style.position = 'absolute';
-      playerElement.style.left = `${player.position.x}px`;
-      playerElement.style.top = `${player.position.y}px`;
-
-      document.body.appendChild(playerElement);
-    }
-  }
-
   useEffect(() => {
-    // Add event listener for keydown
     window.addEventListener('keydown', handleKeyDown);
 
-    // Cleanup function
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleKeyDown]);
+  }, [stompClient, players, playerName]);
+
+  useEffect(() => {
+    if (!stompClient) return;
+
+    stompClient.subscribe('/topic/players', (message) => {
+      const updatedPlayers = JSON.parse(message.body);
+      setPlayers(updatedPlayers);
+    });
+  }, [stompClient]);
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        width: '500px',
-        height: '500px',
-        border: '1px solid black',
-      }}
-    >
-      <div
-        style={{
-          width: '50px',
-          height: '50px',
-          backgroundColor: 'blue',
-          position: 'absolute',
-          top: `${position.y}px`,
-          left: `${position.x}px`,
-        }}
-      ></div>
+    <div style={{ padding: '20px' }}>
+      <div>
+        <input
+          type="text"
+          value={playerName}
+          onChange={(e) => setPlayerName(e.target.value)}
+          placeholder="Enter your name"
+        />
+        <button onClick={handleSpawnPlayer}>Spawn Player</button>
+      </div>
+      <div style={{ position: 'relative', width: '100%', height: '80vh', backgroundColor: '#f0f0f0' }}>
+        {Object.keys(players).map((name) => (
+          <div
+            key={name}
+            style={{
+              width: '50px',
+              height: '50px',
+              backgroundColor: name === playerName ? 'blue' : 'red',
+              position: 'absolute',
+              top: `${players[name].position.y}px`,
+              left: `${players[name].position.x}px`,
+            }}
+          >
+            {name}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
