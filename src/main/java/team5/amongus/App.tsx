@@ -138,7 +138,7 @@ const App = () => {
             {name}
           </div>
         ))}
-      </div> TEST
+      </div>
       {/* ChatRoom component */}
       <div style={{ position: 'absolute', bottom: '20px', left: '20px', maxWidth: '300px' }}>
       {/* MessageInput component */}
