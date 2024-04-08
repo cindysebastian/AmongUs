@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import Map from './components/Map'; 
-const App = () => {
+import GamePage from './components/GamePage'; 
+
+const App = ({ history }) => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
   const [players, setPlayers] = useState({});
+  const [playerSpawned, setPlayerSpawned] = useState(false); // New state to track player spawning
+
 
   useEffect(() => {
     const socket = new SockJS('http://localhost:8080/ws');
@@ -33,6 +37,10 @@ const App = () => {
     };
 
     stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
+    setPlayerSpawned(true);
+
+    // Redirect to the game page after spawning player
+    history.push('/game');
   };
 
   const handleKeyDown = (e) => {
@@ -85,36 +93,28 @@ const App = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <div style= {{display: 'flex', justifyContent:'center', marginTop: '40%'}}>
-        <input
-          type="text"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
-          placeholder="Enter your name"
-          style={{ padding: '10px', margin:'2px'}}
-        />
-        <button onClick={handleSpawnPlayer}>Spawn Player</button>
-      </div>
-      <Map />
-      
-        {Object.keys(players).map((name) => (
-          <div
-            key={name}
-            style={{
-              width: '50px',
-              height: '50px',
-              backgroundColor: name === playerName ? 'blue' : 'red',
-              position: 'absolute',
-              top: `${players[name].position.y}px`,
-              left: `${players[name].position.x}px`,
-            }}
-          >
-            {name}
-          </div>
-        ))}
+    
+      {/* Conditionally render input and button based on playerSpawned state */}
+      {!playerSpawned && (
         
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40%' }}>
+          <Map />
+          <input
+            type="text"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            placeholder="Enter your name"
+            style={{ padding: '10px', margin: '2px' }}
+          />
+          <button onClick={handleSpawnPlayer}>Spawn Player</button>
+        </div>
+      )}
+      
+      {/* Render the GamePage component and pass players as a prop */}
+      <GamePage players={players} handleKeyDown={handleKeyDown} />
     </div>
   );
 };
+
 
 export default App;

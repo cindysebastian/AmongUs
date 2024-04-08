@@ -13,7 +13,8 @@ const Map = () => {
         height: '100%',
         backgroundImage: `url(${bgImage})`,
         backgroundSize: 'cover',
-        zIndex: -1, // Set a negative z-index to keep it behind other elements
+        zIndex: -1,
+        backgroundPosition: 'center',
       }}
     ></div>
   );
