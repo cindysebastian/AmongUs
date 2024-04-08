@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
-import Map from './components/Map'; 
-import GamePage from './components/GamePage'; 
+import Lobby from './components/Lobby'; 
 
 const App = ({ history }) => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
   const [players, setPlayers] = useState({});
-  const [playerSpawned, setPlayerSpawned] = useState(false); // New state to track player spawning
-
+  const [playerSpawned, setPlayerSpawned] = useState(false); 
 
   useEffect(() => {
     const socket = new SockJS('http://localhost:8080/ws');
@@ -43,36 +41,43 @@ const App = ({ history }) => {
     history.push('/game');
   };
 
-  const handleKeyDown = (e) => {
-    if (!stompClient || !players[playerName]) return;
+  const sendTestMoveRequest = () => {
+    // Simulate a test move request with a predefined playerName and direction
+    const testPlayerName = 'TestPlayer';
+    const testDirection = 'UP';
 
-    const newPosition = { ...players[playerName].position };
-    const movementAmount = 10;
+    stompClient.send('/app/move', {}, JSON.stringify({ playerName: testPlayerName, direction: testDirection }));
+    console.log("Sending test move request...");
+  };
 
-    switch (e.key) {
-      case 'w':
-        newPosition.y -= movementAmount;
-        break;
-      case 'a':
-        newPosition.x -= movementAmount;
-        break;
-      case 's':
-        newPosition.y += movementAmount;
-        break;
-      case 'd':
-        newPosition.x += movementAmount;
-        break;
-      default:
-        return;
+  useEffect(() => {
+    if (stompClient && playerSpawned) {
+      sendTestMoveRequest(); // Send test move request after player is spawned
     }
+  }, [stompClient, playerSpawned]);
 
-    const updatedPlayer = {
-      name: playerName,
-      position: newPosition,
+  const handleKeyDown = useCallback((e) => {
+    if (!stompClient || !players[playerName]) return;
+    console.log("Player name:", playerName); // Add this line to check playerName
+
+
+    const directionMap = {
+        'w': 'UP',
+        'a': 'LEFT',
+        's': 'DOWN',
+        'd': 'RIGHT'
     };
 
-    stompClient.send('/app/move', {}, JSON.stringify(updatedPlayer));
-  };
+    const direction = directionMap[e.key];
+    if (direction) {
+        const movementRequest = {
+            direction: direction
+        };
+
+        stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, direction: direction }));
+        console.log("Sending Data to backend");
+    }
+  }, [stompClient, players, playerName]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -80,13 +85,15 @@ const App = ({ history }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [stompClient, players, playerName]);
+  }, [handleKeyDown]);
 
   useEffect(() => {
     if (!stompClient) return;
 
     stompClient.subscribe('/topic/players', (message) => {
       const updatedPlayers = JSON.parse(message.body);
+      console.log("Updated players:", updatedPlayers); // Add this line to check updatedPlayers
+    
       setPlayers(updatedPlayers);
     });
   }, [stompClient]);
@@ -94,11 +101,9 @@ const App = ({ history }) => {
   return (
     <div style={{ padding: '20px' }}>
     
-      {/* Conditionally render input and button based on playerSpawned state */}
       {!playerSpawned && (
         
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40%' }}>
-          <Map />
           <input
             type="text"
             value={playerName}
@@ -110,11 +115,9 @@ const App = ({ history }) => {
         </div>
       )}
       
-      {/* Render the GamePage component and pass players as a prop */}
-      <GamePage players={players} handleKeyDown={handleKeyDown} />
+      <Lobby players={players}/>
     </div>
   );
 };
-
 
 export default App;
