@@ -108,10 +108,9 @@ const App = () => {
       sender: playerName,
       content: messageContent,
     };
-    stompClient.send('/app/sendMessage', {}, JSON.stringify(newMessage));
+    stompClient.send('/topic/messages', {}, JSON.stringify(newMessage));
   };
   
-
   return (
     <div style={{ padding: '20px' }}>
       <div>
@@ -141,12 +140,13 @@ const App = () => {
         ))}
       </div> TEST
       {/* ChatRoom component */}
-      <div style={{ position: 'absolute', bottom: 0, right: 0, marginBottom: '20px', marginRight: '20px' }}>
-        <ChatRoom messages={messages} />
-      </div>
+      <div style={{ position: 'absolute', bottom: '20px', left: '20px', maxWidth: '300px' }}>
       {/* MessageInput component */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, marginBottom: '20px', marginLeft: '20px' }}>
-        <MessageInput sendMessage={sendMessage} />
+      <MessageInput sendMessage={sendMessage} />
+    </div>
+    <div style={{ position: 'absolute', bottom: '20px', left: '340px', maxWidth: '300px' }}>
+      {/* ChatRoom component */}
+      <ChatRoom messages={messages} />
       </div>
     </div>
   );
