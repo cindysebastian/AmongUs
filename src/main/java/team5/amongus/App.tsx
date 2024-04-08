@@ -85,12 +85,13 @@ const App = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <div>
+      <div style= {{display: 'flex', justifyContent:'center', marginTop: '40%'}}>
         <input
           type="text"
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
           placeholder="Enter your name"
+          style={{ padding: '10px', margin:'2px'}}
         />
         <button onClick={handleSpawnPlayer}>Spawn Player</button>
       </div>
