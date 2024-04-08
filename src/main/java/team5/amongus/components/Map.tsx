@@ -1,23 +1,19 @@
-import React from "react";
-import Canvas from "./Canvas";
+import React from 'react';
+import bgImage from '../../../../resources/LoginBG.png'
 
-export default function Map () {
-    return <div>
-        <Canvas />
-    </div>;  
-}
+const Map = () => {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#f0f0f0',
+        backgroundImage: bgImage,
+        
+      }}
+    ></div>
+  );
+};
 
-/*
-<p>. 　　　。　　　　•　 　ﾟ　　。 　　. <br/><br/>
-
-    　　　.　　　 　　.　　　　　。　　 。　. 　 <br/><br/>
-    
-    .　　 。　　　　　 ඞ 。 . 　　 • 　　　　• <br/><br/>
-    
-    　　ﾟ　　 Blue was not An Impostor.　 。　. <br/><br/>
-    
-    　　'　　　     2 Impostors remain 　 　　。<br/><br/>
-    
-    　　ﾟ　　　.　　　. ,　　　　.　 .<br/><br/></p>
-    */
-     
+export default Map;

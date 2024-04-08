@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
-
+import Map from './components/Map'; 
 const App = () => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
@@ -94,7 +94,8 @@ const App = () => {
         />
         <button onClick={handleSpawnPlayer}>Spawn Player</button>
       </div>
-      <div style={{ position: 'relative', width: '100%', height: '80vh', backgroundColor: '#f0f0f0' }}>
+      <Map />
+      
         {Object.keys(players).map((name) => (
           <div
             key={name}
@@ -110,7 +111,7 @@ const App = () => {
             {name}
           </div>
         ))}
-      </div>
+        
     </div>
   );
 };
