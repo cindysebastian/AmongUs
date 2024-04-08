@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import Lobby from './components/Lobby'; 
+import Map from './components/Map';
 
 const App = ({ history }) => {
   const [stompClient, setStompClient] = useState(null);
@@ -100,10 +101,13 @@ const App = ({ history }) => {
 
   return (
     <div style={{ padding: '20px' }}>
-    
+       
       {!playerSpawned && (
         
+        
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40%' }}>
+          <Map />
+    
           <input
             type="text"
             value={playerName}
