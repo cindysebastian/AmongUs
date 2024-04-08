@@ -4,9 +4,13 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
+
+import team5.amongus.model.Message;
 import team5.amongus.model.Player;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -42,4 +46,23 @@ public class WebSocketController {
         playersMap.put(playerName, player);
         return playersMap;
     }
+
+    private final List<Message> chatMessages = new ArrayList<>(); // Define chatMessages list
+
+    @MessageMapping("/sendMessage")
+    @SendTo("/topic/messages")
+    public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor) {
+        Player sender = message.getSender();
+        String content = message.getContent().trim();
+
+        // Check if sender name is not empty and not "player", and content is not empty
+        if (sender == null || content.isEmpty() || sender.getName().isEmpty() || sender.getName().equalsIgnoreCase("player")) {
+            return new ArrayList<>(); // Return empty list if message is invalid
+        }
+        
+        chatMessages.add(message);
+        
+        return chatMessages; // Return list of chatMessages
+    }
+
 }

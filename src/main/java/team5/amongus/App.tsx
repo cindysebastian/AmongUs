@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
+import ChatRoom from './components/ChatRoom';
+import MessageInput from './components/MessageInput';
 
 const App = () => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
   const [players, setPlayers] = useState({});
+  const[messages, setMessages] = useState([]);
 
   useEffect(() => {
     const socket = new SockJS('http://localhost:8080/ws');
@@ -36,7 +39,9 @@ const App = () => {
   };
 
   const handleKeyDown = (e) => {
-    if (!stompClient || !players[playerName]) return;
+    const isInputFocused = document.activeElement.tagName.toLowerCase() === 'input';
+    if (isInputFocused) return;
+    if (isInputFocused || !stompClient || !players[playerName]) return;
 
     const newPosition = { ...players[playerName].position };
     const movementAmount = 10;
@@ -83,6 +88,30 @@ const App = () => {
     });
   }, [stompClient]);
 
+  useEffect(() => {
+    if (!stompClient) return;
+  
+    const subscription = stompClient.subscribe('/topic/messages', (message) => {
+      console.log('Received message from server', message);
+      const newMessage = JSON.parse(message.body);
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
+  
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [stompClient]);
+  
+  const sendMessage = (messageContent) => {
+    if (!stompClient) return;
+    const newMessage = {
+      sender: playerName,
+      content: messageContent,
+    };
+    stompClient.send('/app/sendMessage', {}, JSON.stringify(newMessage));
+  };
+  
+
   return (
     <div style={{ padding: '20px' }}>
       <div>
@@ -110,6 +139,14 @@ const App = () => {
             {name}
           </div>
         ))}
+      </div> TEST
+      {/* ChatRoom component */}
+      <div style={{ position: 'absolute', bottom: 0, right: 0, marginBottom: '20px', marginRight: '20px' }}>
+        <ChatRoom messages={messages} />
+      </div>
+      {/* MessageInput component */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, marginBottom: '20px', marginLeft: '20px' }}>
+        <MessageInput sendMessage={sendMessage} />
       </div>
     </div>
   );
