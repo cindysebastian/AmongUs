@@ -7,7 +7,7 @@ public class Player implements Serializable {
     private String colour;
     private Integer step = 30;
     private Boolean ismoving = false ; 
-    private String facing;
+    private String facing = "RIGHT";
 
     public Player (String name, Position position) {
         this.name = name;

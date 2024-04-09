@@ -8,18 +8,6 @@ const mainAnimation = keyframes`
   100% { background-position: 2075px 0; }
 `;
 
-const getAnimation = (isMoving) => {
-  if (isMoving) {
-    return css`
-      ${mainAnimation} 0.8s steps(8) infinite;
-    `;
-  } else {
-    return css`
-      ${mainAnimation} 0.8s steps(8) infinite paused;
-    `;
-  }
-};
-
 type PlayerProps = {
   ismoving: boolean;
   facing: 'LEFT' | 'RIGHT';
@@ -32,15 +20,11 @@ const StyledPlayer = styled.div<PlayerProps>`
   top: 50%;
   left: 50%;
   background: url(${SpritePage}) left top;
-  ${({ ismoving, facing }) => css`
-    ${getAnimation(ismoving)}
-    transform: scaleX(${facing === 'LEFT' ? -1 : 1});
-  `}
+  transform: ${({ facing }) => facing === 'LEFT' ? 'scaleX(-1)' : 'scaleX(1)'};
 `;
 
 const PlayerSprite: React.FC<PlayerProps> = ({ ismoving, facing }) => {
   return <StyledPlayer ismoving={ismoving} facing={facing} />;
 };
-
 
 export default PlayerSprite;

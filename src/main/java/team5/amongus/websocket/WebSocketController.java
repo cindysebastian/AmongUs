@@ -69,11 +69,16 @@ public class WebSocketController {
             // Update the player's position for each direction
             for (String direction : directions) {
                 existingPlayer.handleMovementRequest(direction);
-                existingPlayer.setIsMoving(true);
             }
     
-            playersMap.put(playerName, existingPlayer);
+            // Check if player is moving
+            boolean isMoving = !directions.isEmpty(); // Player is considered moving if there are directions
     
+            // Update ismoving property
+            existingPlayer.setIsMoving(isMoving);
+            System.out.println("Someones moving: "+ isMoving);
+    
+            playersMap.put(playerName, existingPlayer);
     
             // Broadcast updated player positions to all clients
             broadcastPlayerUpdate();

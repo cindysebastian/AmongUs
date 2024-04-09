@@ -40,7 +40,7 @@ const Lobby: React.FC<Props> = ({ players }) => {
           <PlayerSprite
             key={player.name}
             facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-            ismoving={player.ismoving}
+            ismoving={player.ismoving !== undefined ? player.ismoving : false}
           />
         </div>
       ))}
