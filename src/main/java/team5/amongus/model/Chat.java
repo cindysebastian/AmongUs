@@ -11,7 +11,7 @@ public class Chat {
    }
 
    public void addMessages(Message message) {
-        chatRoom.add(message);
+        chatRoom.add(0, message);
    }
 
    public List<Message> getMessages() {

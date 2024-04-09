@@ -9,6 +9,7 @@ const App = () => {
   const [playerName, setPlayerName] = useState('');
   const [players, setPlayers] = useState({});
   const[messages, setMessages] = useState([]);
+  const[chatVisible, setChatVisible] = useState(false);
 
   useEffect(() => {
     const socket = new SockJS('http://localhost:8080/ws');
@@ -139,15 +140,30 @@ const App = () => {
           </div>
         ))}
       </div>
+      {/* Chat toggle button */}
+      <button onClick={() => setChatVisible(!chatVisible)}>Chat</button>
       {/* ChatRoom component */}
-      <div style={{ position: 'absolute', bottom: '20px', left: '20px', maxWidth: '300px' }}>
-      {/* MessageInput component */}
-      <MessageInput sendMessage={sendMessage} />
-    </div>
-    <div style={{ position: 'absolute', bottom: '20px', left: '340px', maxWidth: '300px' }}>
-      {/* ChatRoom component */}
-      <ChatRoom messages={messages} />
-      </div>
+      {chatVisible && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          padding: '20px',
+          borderRadius: '10px',
+          width: '500px',
+          maxWidth: '300px',
+          height: '600px',
+          maxHeight: '400px', // Example fixed height
+          overflowY: 'auto', // Add vertical scrollbar if content overflows
+        }}>
+          <button style={{ position: 'absolute', top: '10px', right: '10px' }} onClick={() => setChatVisible(false)}>Exit</button>
+          {/* MessageInput component */}
+          <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
+          <ChatRoom messages={messages} />
+        </div>
+      )}
     </div>
   );
 };

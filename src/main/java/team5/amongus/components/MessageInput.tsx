@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const MessageInput = ({ sendMessage }) => {
+const MessageInput = ({ sendMessage, chatVisible }) => {
   const [inputValue, setInputValue] = useState('');
 
   const handleSubmit = (e) => {
@@ -17,13 +17,17 @@ const MessageInput = ({ sendMessage }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        value={inputValue}
-        onChange={handleChange}
-        placeholder="Type your message"
-      />
-      <button type="submit">Send</button>
+      {chatVisible && ( // Render input field only if chatVisible is true
+        <>
+          <input
+            type="text"
+            value={inputValue}
+            onChange={handleChange}
+            placeholder="Type your message"
+          />
+          <button type="submit">Send</button>
+        </>
+      )}
     </form>
   );
 };
