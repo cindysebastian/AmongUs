@@ -69,13 +69,11 @@ public class WebSocketController {
             // Update the player's position for each direction
             for (String direction : directions) {
                 existingPlayer.handleMovementRequest(direction);
+                existingPlayer.setIsMoving(true);
             }
     
             playersMap.put(playerName, existingPlayer);
     
-            // Log the updated position for debugging
-            System.out.println("Updated position for player " + playerName + ": (" + existingPlayer.getPosition().getX()
-                    + ", " + existingPlayer.getPosition().getY() + ")");
     
             // Broadcast updated player positions to all clients
             broadcastPlayerUpdate();

@@ -5,14 +5,18 @@ import Lobby from './components/Lobby';
 import Map from './components/Space';
 import bgImage from '../../../resources/LoginBG.png';
 
+const directionMap = {
+  'w': 'UP',
+  'a': 'LEFT',
+  's': 'DOWN',
+  'd': 'RIGHT'
+};
+
 const App = ({ history }) => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
   const [players, setPlayers] = useState({});
   const [playerSpawned, setPlayerSpawned] = useState(false);
-  const [prevPlayerPositions, setPrevPlayerPositions] = useState({});
-  const [isMoving, setIsMoving] = useState(false);
-
   const keysPressed = useRef({
     w: false,
     a: false,
@@ -38,28 +42,6 @@ const App = ({ history }) => {
   }, []);
 
   useEffect(() => {
-    if (!stompClient) return;
-
-    stompClient.subscribe('/topic/players', (message) => {
-      const updatedPlayers = JSON.parse(message.body);
-      console.log("Updated players:", updatedPlayers);
-      // Check for movement and update player positions
-      const updatedPositions = {};
-      Object.keys(updatedPlayers).forEach(playerName => {
-        if (prevPlayerPositions[playerName].x === updatedPlayers[playerName].position.x &&
-            prevPlayerPositions[playerName].y === updatedPlayers[playerName].position.y) {
-          updatedPlayers[playerName].isMoving = false;
-        } else {
-          updatedPlayers[playerName].isMoving = true;
-        }
-        updatedPositions[playerName] = updatedPlayers[playerName].position;
-      });
-      setPlayers(updatedPlayers);
-      setPrevPlayerPositions(updatedPositions);
-    });
-  }, [stompClient, prevPlayerPositions]);
-
-  useEffect(() => {
     const handleKeyPress = (e) => {
       keysPressed.current[e.key] = true;
     };
@@ -78,12 +60,7 @@ const App = ({ history }) => {
   }, []);
 
   
-  const directionMap = {
-    'w': 'UP',
-    'a': 'LEFT',
-    's': 'DOWN',
-    'd': 'RIGHT'
-  };
+  
 
   useEffect(() => {
     if (!stompClient || !playerSpawned) return;
@@ -91,11 +68,7 @@ const App = ({ history }) => {
     const handleMovement = () => {
       const directions = ['w', 'a', 's', 'd'];
       const pressedKeys = directions.filter(direction => keysPressed.current[direction]);
-      const isMovingNow = pressedKeys.length > 0;
-      if (isMovingNow !== isMoving) {
-        setIsMoving(isMovingNow);
-      }
-      if (isMovingNow) {
+      if (pressedKeys.length > 0) {
         const directionsToSend = pressedKeys.map(key => directionMap[key]);
         stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: directionsToSend }));
         console.log("Sending move request:", directionsToSend);
@@ -111,9 +84,7 @@ const App = ({ history }) => {
     return () => {
       clearInterval(movementInterval); // Cleanup
     };
-  }, [playerName, playerSpawned, stompClient, isMoving]);
-  
-  
+  }, [playerName, playerSpawned, stompClient]);
   
 
   const sendMoveRequest = (key) => { // Removed TypeScript syntax
@@ -140,7 +111,6 @@ const App = ({ history }) => {
 
     stompClient.subscribe('/topic/players', (message) => {
       const updatedPlayers = JSON.parse(message.body);
-      console.log("Updated players:", updatedPlayers);
       setPlayers(updatedPlayers);
     });
   }, [stompClient]);
@@ -173,7 +143,7 @@ const App = ({ history }) => {
             height: '100%',
             backgroundImage: `url(${bgImage})`,
             backgroundSize: 'cover',
-            zIndex: -1,
+            zIndex: 0,
             backgroundPosition: 'center',
           }}
         >

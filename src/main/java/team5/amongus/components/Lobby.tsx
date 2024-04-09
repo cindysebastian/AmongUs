@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import bgImage from '../../../../resources/LobbyBG.png';
@@ -7,6 +7,12 @@ import Space from './Space';
 interface Props {
   players: Record<string, Player>;
 }
+
+
+interface PlayerComponentProps {
+  player: Player;
+}
+
 
 const Lobby: React.FC<Props> = ({ players }) => {
   return (
@@ -33,15 +39,15 @@ const Lobby: React.FC<Props> = ({ players }) => {
         <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
           <PlayerSprite
             key={player.name}
-            isMoving={player.isMoving !== undefined ? player.isMoving : false} // Set default value if undefined
-            direction={player.direction !== undefined ? player.direction : 'right'} // Set default value if undefined
+            facing={player.facing !== undefined ? player.facing : 'RIGHT'}
+            ismoving={player.ismoving}
           />
         </div>
       ))}
 
-
-    </div >
+    </div>
   );
 };
+
 
 export default Lobby;

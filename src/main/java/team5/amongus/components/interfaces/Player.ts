@@ -4,8 +4,7 @@ interface Player {
     x: number;
     y: number;
   };
-  isMoving: boolean;
-  direction: 'left' | 'right'; // Up and down are irrelevant for animation; This property is ONLY for animation purposes
+  facing?: 'LEFT' | 'RIGHT'; // Optional facing property
+  ismoving?: boolean; // Optional ismoving property
 }
-
-export default Player;
+export default Player

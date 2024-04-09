@@ -5,7 +5,9 @@ public class Player implements Serializable {
     private String name;
     private Position position;
     private String colour;
-    private Integer step = 15;
+    private Integer step = 30;
+    private Boolean ismoving = false ; 
+    private String facing;
 
     public Player (String name, Position position) {
         this.name = name;
@@ -35,6 +37,18 @@ public class Player implements Serializable {
     public void setColour(String colour) {
         this.colour = colour;
     }
+    public String getFacing() {
+        return facing;
+    }
+    public Boolean getIsMoving() {
+        return ismoving;
+    }
+    public void setFacing(String direction) {
+        this.facing = direction;
+    }
+    public void setIsMoving(Boolean isMoving) {
+        this.ismoving = isMoving;
+    }
 
     public void handleMovementRequest(String direction) {
         switch (direction) {
@@ -48,15 +62,16 @@ public class Player implements Serializable {
                 break;
             case "LEFT":
                 position.setX(position.getX() - step);
+                setFacing("LEFT");
                 break;
             case "RIGHT":
                 position.setX(position.getX() + step);
+                setFacing("RIGHT");
                 break;
             default:
                 break;
         }
-        System.out.println("Success!");
-        System.out.println("Direction: " + direction);
+        
     }
 
 }
