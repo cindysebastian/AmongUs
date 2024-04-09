@@ -15,6 +15,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-p5": "^1.4.1",
+    "react-parallax": "^3.5.1",
     "react-router-dom": "^6.22.3",
     "sockjs": "^0.3.24",
     "sockjs-client": "^1.6.1",

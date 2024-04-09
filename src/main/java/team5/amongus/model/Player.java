@@ -56,6 +56,7 @@ public class Player implements Serializable {
                 break;
         }
         System.out.println("Success!");
+        System.out.println("Direction: " + direction);
     }
 
 }

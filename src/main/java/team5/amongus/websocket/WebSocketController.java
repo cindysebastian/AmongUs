@@ -1,15 +1,17 @@
 package team5.amongus.websocket;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import team5.amongus.model.Player;
+import team5.amongus.model.PlayerMoveRequest;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -40,25 +42,23 @@ public class WebSocketController {
         return playersMap;
     }
 
+
+
     @MessageMapping("/move")
     @SendTo("/topic/players")
     public Map<String, Player> move(String payload) {
-        System.out.println("Request Received!");
-    
         try {
             final ObjectMapper objectMapper = new ObjectMapper();
+            
+            // Parse the JSON payload into a PlayerMoveRequest object
+            PlayerMoveRequest moveRequest = objectMapper.readValue(payload, PlayerMoveRequest.class);
     
-            // Parse the JSON payload into a Map<String, Object>
-            Map<String, Object> requestData = objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {
-            });
-    
-            // Extract player name and direction from the parsed data
-            String playerName = (String) requestData.get("playerName");
-            String direction = (String) requestData.get("direction");
-    
+            String playerName = moveRequest.getPlayerName();
+            List<String> directions = moveRequest.getDirections(); // Change to get directions array
+            
             // Rest of your existing logic...
-            if (playerName == null || playerName.isEmpty()) {
-                return playersMap; // Ignore move requests without player name
+            if (playerName == null || playerName.isEmpty() || directions == null || directions.isEmpty()) {
+                return playersMap; // Ignore move requests without player name or directions
             }
     
             Player existingPlayer = playersMap.get(playerName);
@@ -66,8 +66,11 @@ public class WebSocketController {
                 return playersMap; // Player not found
             }
     
-            // Update the player's position
-            existingPlayer.handleMovementRequest(direction);
+            // Update the player's position for each direction
+            for (String direction : directions) {
+                existingPlayer.handleMovementRequest(direction);
+            }
+    
             playersMap.put(playerName, existingPlayer);
     
             // Log the updated position for debugging
@@ -83,7 +86,7 @@ public class WebSocketController {
             return playersMap; // Return the current player map if an error occurs
         }
     }
-    
+
     // Method to broadcast updated player list to all clients
     private void broadcastPlayerUpdate() {
         messagingTemplate.convertAndSend("/topic/players", playersMap);

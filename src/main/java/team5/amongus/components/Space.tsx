@@ -1,5 +1,5 @@
 import React from 'react';
-import bgImage from '../../../../resources/LoginBG.png';
+import bgImage from '../../../../resources/spaceBG.jpg';
 
 const Map = () => {
   return (
@@ -13,7 +13,7 @@ const Map = () => {
         height: '100%',
         backgroundImage: `url(${bgImage})`,
         backgroundSize: 'cover',
-        zIndex: -1,
+        zIndex: -4,
         backgroundPosition: 'center',
       }}
     ></div>
