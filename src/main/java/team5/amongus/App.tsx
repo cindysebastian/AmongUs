@@ -46,14 +46,48 @@ const App = ({ history }) => {
   }, []);
 
   useEffect(() => {
-    const handleKeyPress = (e) => {
-      const isInputFocused = document.activeElement.tagName.toLowerCase() === 'input';
-      if (isInputFocused) return;
-      if (isInputFocused || !stompClient || !players[playerName]) return;
-      keysPressed.current[e.key] = true;
-    };
+    if (!stompClient) return;
 
-    const handleKeyUp = (e) => {
+    stompClient.subscribe('/topic/players', (message) => {
+      const updatedPlayers = JSON.parse(message.body);
+      setPlayers(updatedPlayers);
+    });
+  }, [stompClient]);
+
+  useEffect(() => {
+    if (!stompClient) return;
+  
+    const subscription = stompClient.subscribe('/topic/messages', (message) => {
+      console.log('Received message from server', message);
+      const newMessage = JSON.parse(message.body);
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
+  
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [stompClient]);
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      const inputElements = ['input', 'textarea', 'select'];
+  
+      // Check if the event target is an input element
+      const isInputElement = inputElements.includes((e.target as HTMLElement).tagName.toLowerCase());
+  
+      // If the event target is an input element, return early without reacting
+      if (isInputElement) {
+          return;
+      }
+      keysPressed.current[e.key] = true;
+  
+      // Otherwise, proceed with your key press handling logic
+      // For example:
+      console.log('Key pressed:', e.key);
+      // Add your key press handling logic here
+  }
+
+    const handleKeyUp = (e: KeyboardEvent) => {
       keysPressed.current[e.key] = false;
     };
 
@@ -64,10 +98,7 @@ const App = ({ history }) => {
       window.removeEventListener('keydown', handleKeyPress);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
-
-  
-  
+  }, []);  
 
   useEffect(() => {
     if (!stompClient || !playerSpawned) return;
@@ -91,8 +122,7 @@ const App = ({ history }) => {
     return () => {
       clearInterval(movementInterval); // Cleanup
     };
-  }, [playerName, playerSpawned, stompClient]);
-  
+  }, [playerName, playerSpawned, stompClient]);  
 
   const sendMoveRequest = (key) => { // Removed TypeScript syntax
     if (!stompClient || !playerName) {
@@ -112,29 +142,7 @@ const App = ({ history }) => {
     console.log("Sending move request...");
   };
 
-
-  useEffect(() => {
-    if (!stompClient) return;
-
-    stompClient.subscribe('/topic/players', (message) => {
-      const updatedPlayers = JSON.parse(message.body);
-      setPlayers(updatedPlayers);
-    });
-  }, [stompClient]);
-
-  useEffect(() => {
-    if (!stompClient) return;
   
-    const subscription = stompClient.subscribe('/topic/messages', (message) => {
-      console.log('Received message from server', message);
-      const newMessage = JSON.parse(message.body);
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-    });
-  
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [stompClient]);
   
   const sendMessage = (messageContent) => {
     if (!stompClient) return;
@@ -217,11 +225,8 @@ const App = ({ history }) => {
           <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
           <ChatRoom messages={messages} />
         </div>
-      )}
-        
-      </div>
-        
-      
+      )}        
+      </div>     
   );
 };
 
