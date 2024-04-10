@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
+import ChatRoom from './components/ChatRoom';
+import MessageInput from './components/MessageInput';
 import Lobby from './components/Lobby';
 import Map from './components/Space';
 import bgImage from '../../../resources/LoginBG.png';
@@ -16,6 +18,8 @@ const App = ({ history }) => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
   const [players, setPlayers] = useState({});
+  const[messages, setMessages] = useState([]);
+  const[chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
   const keysPressed = useRef({
     w: false,
@@ -24,6 +28,7 @@ const App = ({ history }) => {
     d: false
   });
 
+  //#region websocket subscribes
   useEffect(() => {
     const socket = new SockJS('http://localhost:8080/ws');
     const stomp = Stomp.over(socket);
@@ -42,11 +47,52 @@ const App = ({ history }) => {
   }, []);
 
   useEffect(() => {
-    const handleKeyPress = (e) => {
-      keysPressed.current[e.key] = true;
-    };
+    if (!stompClient) return;
 
-    const handleKeyUp = (e) => {
+    stompClient.subscribe('/topic/players', (message) => {
+      const updatedPlayers = JSON.parse(message.body);
+      setPlayers(updatedPlayers);
+    });
+  }, [stompClient]);
+
+  useEffect(() => {
+    if (!stompClient) return;
+  
+    const subscription = stompClient.subscribe('/topic/messages', (message) => {
+      console.log('Received message from server', message);
+      const newMessage = JSON.parse(message.body);
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
+  
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [stompClient]);
+
+  //#endregion
+
+  //#region movement
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      const inputElements = ['input', 'textarea', 'select'];
+  
+      // Check if the event target is an input element
+      const isInputElement = inputElements.includes((e.target as HTMLElement).tagName.toLowerCase());
+  
+      // If the event target is an input element, return early without reacting
+      if (isInputElement) {
+          return;
+      }
+      keysPressed.current[e.key] = true;
+  
+      // Otherwise, proceed with your key press handling logic
+      // For example:
+      console.log('Key pressed:', e.key);
+      // Add your key press handling logic here
+  }
+
+    const handleKeyUp = (e: KeyboardEvent) => {
       keysPressed.current[e.key] = false;
     };
 
@@ -57,10 +103,7 @@ const App = ({ history }) => {
       window.removeEventListener('keydown', handleKeyPress);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
-
-  
-  
+  }, []);  
 
   useEffect(() => {
     if (!stompClient || !playerSpawned) return;
@@ -84,37 +127,19 @@ const App = ({ history }) => {
     return () => {
       clearInterval(movementInterval); // Cleanup
     };
-  }, [playerName, playerSpawned, stompClient]);
-  
+  }, [playerName, playerSpawned, stompClient]);  
 
-  const sendMoveRequest = (key) => { // Removed TypeScript syntax
-    if (!stompClient || !playerName) {
-      console.log("Stomp client or playerName not available.");
-      return;
-    }
+//#endregion
 
-    const direction = directionMap[key];
-    console.log("Direction:", direction);
-
-    if (!direction) {
-      console.log("Direction not found in the direction map.");
-      return; // Ignore keys not in the direction map
-    }
-
-    stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, direction: direction }));
-    console.log("Sending move request...");
-  };
-
-
-  useEffect(() => {
+  const sendMessage = (messageContent) => {
     if (!stompClient) return;
-
-    stompClient.subscribe('/topic/players', (message) => {
-      const updatedPlayers = JSON.parse(message.body);
-      setPlayers(updatedPlayers);
-    });
-  }, [stompClient]);
-
+    const newMessage = {
+      sender: playerName,
+      content: messageContent,
+    };
+    stompClient.send('/topic/messages', {}, JSON.stringify(newMessage));
+  };
+  
   const handleSpawnPlayer = () => {
     if (!stompClient || !playerName.trim()) return;
 
@@ -148,7 +173,6 @@ const App = ({ history }) => {
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40%' }}>
-            <Map />
             <input
               type="text"
               value={playerName}
@@ -158,13 +182,44 @@ const App = ({ history }) => {
             />
             <button onClick={handleSpawnPlayer}>Spawn Player</button>
           </div>
+          
         </div>
       )}
       {playerSpawned && (
+        <div>
         <Lobby players={players} />
+
+        <button onClick={() => setChatVisible(!chatVisible)} style={{ marginTop: '20px', padding: '8px 16px', fontSize: '16px', backgroundColor: '#008CBA', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Chat</button>
+        {chatVisible && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          padding: '20px',
+          borderRadius: '10px',
+          maxWidth: '5000px',
+          width: '1000px',
+          height: '600px',
+          maxHeight: '400px', // Example fixed height
+          overflowY: 'auto', // Add vertical scrollbar if content overflows
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+            <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
+          </div>
+          <button style={{ position: 'absolute', top: '10px', right: '10px',marginRight:'10px', padding: '8px 20px', fontSize: '16px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onClick={() => setChatVisible(false)}>Exit</button>
+          <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
+          <ChatRoom messages={messages} />
+        </div>
+        
       )}
-    </div>
+      </div>   
+      )}           
+      </div>     
   );
 };
 
 export default App;
+
+
