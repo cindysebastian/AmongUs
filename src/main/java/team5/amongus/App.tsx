@@ -1,11 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
+import Lobby from './components/Lobby';
+import Map from './components/Space';
+import bgImage from '../../../resources/LoginBG.png';
 
-const App = () => {
+const directionMap = {
+  'w': 'UP',
+  'a': 'LEFT',
+  's': 'DOWN',
+  'd': 'RIGHT'
+};
+
+const App = ({ history }) => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
   const [players, setPlayers] = useState({});
+  const [playerSpawned, setPlayerSpawned] = useState(false);
+  const keysPressed = useRef({
+    w: false,
+    a: false,
+    s: false,
+    d: false
+  });
 
   useEffect(() => {
     const socket = new SockJS('http://localhost:8080/ws');
@@ -24,55 +41,70 @@ const App = () => {
     };
   }, []);
 
-  const handleSpawnPlayer = () => {
-    if (!stompClient || !playerName.trim()) return;
-
-    const initialPlayer = {
-      name: playerName.trim(),
-      position: { x: 200, y: 200 }, // Initial spawn position
-    };
-
-    stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
-  };
-
-  const handleKeyDown = (e) => {
-    if (!stompClient || !players[playerName]) return;
-
-    const newPosition = { ...players[playerName].position };
-    const movementAmount = 10;
-
-    switch (e.key) {
-      case 'w':
-        newPosition.y -= movementAmount;
-        break;
-      case 'a':
-        newPosition.x -= movementAmount;
-        break;
-      case 's':
-        newPosition.y += movementAmount;
-        break;
-      case 'd':
-        newPosition.x += movementAmount;
-        break;
-      default:
-        return;
-    }
-
-    const updatedPlayer = {
-      name: playerName,
-      position: newPosition,
-    };
-
-    stompClient.send('/app/move', {}, JSON.stringify(updatedPlayer));
-  };
-
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
+    const handleKeyPress = (e) => {
+      keysPressed.current[e.key] = true;
+    };
+
+    const handleKeyUp = (e) => {
+      keysPressed.current[e.key] = false;
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    window.addEventListener('keyup', handleKeyUp);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyPress);
+      window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [stompClient, players, playerName]);
+  }, []);
+
+  
+  
+
+  useEffect(() => {
+    if (!stompClient || !playerSpawned) return;
+  
+    const handleMovement = () => {
+      const directions = ['w', 'a', 's', 'd'];
+      const pressedKeys = directions.filter(direction => keysPressed.current[direction]);
+      if (pressedKeys.length > 0) {
+        const directionsToSend = pressedKeys.map(key => directionMap[key]);
+        stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: directionsToSend }));
+        console.log("Sending move request:", directionsToSend);
+      }
+    };
+  
+    handleMovement(); // Check initially
+  
+    const movementInterval = setInterval(() => {
+      handleMovement(); // Check periodically
+    }, 100);
+  
+    return () => {
+      clearInterval(movementInterval); // Cleanup
+    };
+  }, [playerName, playerSpawned, stompClient]);
+  
+
+  const sendMoveRequest = (key) => { // Removed TypeScript syntax
+    if (!stompClient || !playerName) {
+      console.log("Stomp client or playerName not available.");
+      return;
+    }
+
+    const direction = directionMap[key];
+    console.log("Direction:", direction);
+
+    if (!direction) {
+      console.log("Direction not found in the direction map.");
+      return; // Ignore keys not in the direction map
+    }
+
+    stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, direction: direction }));
+    console.log("Sending move request...");
+  };
+
 
   useEffect(() => {
     if (!stompClient) return;
@@ -83,34 +115,54 @@ const App = () => {
     });
   }, [stompClient]);
 
+  const handleSpawnPlayer = () => {
+    if (!stompClient || !playerName.trim()) return;
+
+    const initialPlayer = {
+      name: playerName.trim(),
+      position: { x: 200, y: 200 }, // Initial spawn position
+    };
+
+    stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
+    setPlayerSpawned(true);
+
+    // Redirect to the game page after spawning player
+    history.push('/game');
+  };
+
   return (
     <div style={{ padding: '20px' }}>
-      <div>
-        <input
-          type="text"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
-          placeholder="Enter your name"
-        />
-        <button onClick={handleSpawnPlayer}>Spawn Player</button>
-      </div>
-      <div style={{ position: 'relative', width: '100%', height: '80vh', backgroundColor: '#f0f0f0' }}>
-        {Object.keys(players).map((name) => (
-          <div
-            key={name}
-            style={{
-              width: '50px',
-              height: '50px',
-              backgroundColor: name === playerName ? 'blue' : 'red',
-              position: 'absolute',
-              top: `${players[name].position.y}px`,
-              left: `${players[name].position.x}px`,
-            }}
-          >
-            {name}
+      {!playerSpawned && (
+        <div
+          className="map-background"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundImage: `url(${bgImage})`,
+            backgroundSize: 'cover',
+            zIndex: 0,
+            backgroundPosition: 'center',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40%' }}>
+            <Map />
+            <input
+              type="text"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="Enter your name"
+              style={{ padding: '10px', margin: '2px' }}
+            />
+            <button onClick={handleSpawnPlayer}>Spawn Player</button>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
+      {playerSpawned && (
+        <Lobby players={players} />
+      )}
     </div>
   );
 };
