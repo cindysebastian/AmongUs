@@ -28,6 +28,7 @@ const App = ({ history }) => {
     d: false
   });
 
+  //#region websocket subscribes
   useEffect(() => {
     const socket = new SockJS('http://localhost:8080/ws');
     const stomp = Stomp.over(socket);
@@ -67,6 +68,10 @@ const App = ({ history }) => {
       subscription.unsubscribe();
     };
   }, [stompClient]);
+
+  //#endregion
+
+  //#region movement
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -124,26 +129,8 @@ const App = ({ history }) => {
     };
   }, [playerName, playerSpawned, stompClient]);  
 
-  const sendMoveRequest = (key) => { // Removed TypeScript syntax
-    if (!stompClient || !playerName) {
-      console.log("Stomp client or playerName not available.");
-      return;
-    }
+//#endregion
 
-    const direction = directionMap[key];
-    console.log("Direction:", direction);
-
-    if (!direction) {
-      console.log("Direction not found in the direction map.");
-      return; // Ignore keys not in the direction map
-    }
-
-    stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, direction: direction }));
-    console.log("Sending move request...");
-  };
-
-  
-  
   const sendMessage = (messageContent) => {
     if (!stompClient) return;
     const newMessage = {
@@ -186,7 +173,6 @@ const App = ({ history }) => {
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40%' }}>
-            <Map />
             <input
               type="text"
               value={playerName}
@@ -200,10 +186,11 @@ const App = ({ history }) => {
         </div>
       )}
       {playerSpawned && (
+        <div>
         <Lobby players={players} />
-      )}
-      <button onClick={() => setChatVisible(!chatVisible)} style={{ marginTop: '20px', padding: '8px 16px', fontSize: '16px', backgroundColor: '#008CBA', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Chat</button>
-      {chatVisible && (
+
+        <button onClick={() => setChatVisible(!chatVisible)} style={{ marginTop: '20px', padding: '8px 16px', fontSize: '16px', backgroundColor: '#008CBA', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Chat</button>
+        {chatVisible && (
         <div style={{
           position: 'fixed',
           top: '50%',
@@ -225,7 +212,10 @@ const App = ({ history }) => {
           <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
           <ChatRoom messages={messages} />
         </div>
-      )}        
+        
+      )}
+      </div>   
+      )}           
       </div>     
   );
 };
