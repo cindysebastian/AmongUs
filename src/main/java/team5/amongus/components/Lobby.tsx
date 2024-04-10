@@ -3,6 +3,7 @@ import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import bgImage from '../../../../resources/LobbyBG.png';
 import Space from './Space';
+import styles from '../../amongus/lobby.module.css'
 
 interface Props {
   players: Record<string, Player>;
@@ -18,19 +19,7 @@ const Lobby: React.FC<Props> = ({ players }) => {
   return (
     <div style={{ position: 'relative' }}>
       {/* Render Background */}
-      <div
-        className="map-background"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundImage: `url(${bgImage})`,
-          backgroundSize: 'cover',
-          zIndex: -1,
-          backgroundPosition: 'center',
-        }}
+      <div className={styles.lobbyBackground}
       ></div>
       <Space />
 

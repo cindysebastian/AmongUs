@@ -6,6 +6,7 @@ import MessageInput from './components/MessageInput';
 import Lobby from './components/Lobby';
 import Map from './components/Space';
 import bgImage from '../../../resources/LoginBG.png';
+import styles from './index.module.css'
 
 const directionMap = {
   'w': 'UP',
@@ -158,20 +159,7 @@ const App = ({ history }) => {
   return (
     <div style={{ padding: '20px' }}>
       {!playerSpawned && (
-        <div
-          className="map-background"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundImage: `url(${bgImage})`,
-            backgroundSize: 'cover',
-            zIndex: 0,
-            backgroundPosition: 'center',
-          }}
-        >
+        <div className={styles.loginbackground}>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40%' }}>
             <input
               type="text"
@@ -189,26 +177,13 @@ const App = ({ history }) => {
         <div>
         <Lobby players={players} />
 
-        <button onClick={() => setChatVisible(!chatVisible)} style={{ marginTop: '20px', padding: '8px 16px', fontSize: '16px', backgroundColor: '#008CBA', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Chat</button>
+        <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
         {chatVisible && (
-        <div style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          padding: '20px',
-          borderRadius: '10px',
-          maxWidth: '5000px',
-          width: '1000px',
-          height: '600px',
-          maxHeight: '400px', // Example fixed height
-          overflowY: 'auto', // Add vertical scrollbar if content overflows
-        }}>
+        <div className={styles.chatBox}>
           <div style={{ textAlign: 'center', marginBottom: '10px' }}>
             <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
           </div>
-          <button style={{ position: 'absolute', top: '10px', right: '10px',marginRight:'10px', padding: '8px 20px', fontSize: '16px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onClick={() => setChatVisible(false)}>Exit</button>
+          <button className={styles.button} onClick={() => setChatVisible(false)}>Exit</button>
           <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
           <ChatRoom messages={messages} />
         </div>
