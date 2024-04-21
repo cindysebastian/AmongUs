@@ -116,6 +116,10 @@ const App = ({ history }) => {
         const directionsToSend = pressedKeys.map(key => directionMap[key]);
         stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: directionsToSend }));
         console.log("Sending move request:", directionsToSend);
+      } else {
+        // If no keys are pressed, send an empty directions array to indicate no movement
+        stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: [] }));
+        console.log("Sending move request: No movement");
       }
     };
   
@@ -128,7 +132,8 @@ const App = ({ history }) => {
     return () => {
       clearInterval(movementInterval); // Cleanup
     };
-  }, [playerName, playerSpawned, stompClient]);  
+  }, [playerName, playerSpawned, stompClient]);
+  
 
 //#endregion
 
