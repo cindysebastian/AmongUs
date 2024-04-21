@@ -40,6 +40,7 @@ const NameTagWrapper = styled.div`
   top: -20px; /* Adjust the top position as needed */
   left: 50%;
   transform: translateX(-50%);
+  
 `;
 
 const NameTag = styled.div`
@@ -48,14 +49,15 @@ const NameTag = styled.div`
   font-size: 20px;
   text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000, 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
   white-space: nowrap; /* Prevent name from breaking into new lines */
+  fontFamily: 'Lucida Console'
 `;
 
 const FlippedNameTag = styled(NameTag)`
   transform: scaleX(-1); /* Flips only the text */
+  fontFamily: 'Lucida Console'
 `;
 
 const PlayerSprite: React.FC<PlayerProps> = ({ player, facing, isMoving }) => {
-  console.log("ismoving in Sprite:", isMoving); // Log the value of ismoving
   return (
     <StyledPlayer facing={facing} isMoving={isMoving}>
       <NameTagWrapper>
