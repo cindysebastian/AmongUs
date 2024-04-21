@@ -21,10 +21,10 @@ const MessageInput = ({ sendMessage, chatVisible }) => {
         type="text"
         value={inputValue}
         onChange={handleChange}
-        placeholder="Type your message"
-        style={{ marginRight: '10px', padding: '8px 16px', fontSize: '16px', borderRadius: '4px', border: '1px solid #ccc', flex: '1' }}
+        placeholder="Type your message..."
+        style={{ marginRight: '10px', padding: '8px 16px', fontSize: '16px', borderRadius: '4px', border: '1px solid #ccc', flex: '1', fontFamily: 'Lucida Console'}}
       />
-      <button type="submit" style={{ padding: '8px 16px',  marginLeft:'15px', fontSize: '16px', backgroundColor: '#008CBA', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Send</button>
+      <button type="submit" style={{ padding: '8px 16px',  marginLeft:'15px', fontSize: '16px', backgroundColor: '#008CBA', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontFamily: 'Lucida Console'}}>Send</button>
     </form>
   );
 };

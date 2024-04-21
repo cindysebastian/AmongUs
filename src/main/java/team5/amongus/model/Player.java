@@ -6,7 +6,7 @@ public class Player implements Serializable {
     private Position position;
     private String colour;
     private Integer step = 30;
-    private Boolean ismoving = false ; 
+    private Boolean isMoving = false ; 
     private String facing = "RIGHT";
 
     public Player (String name, Position position) {
@@ -41,13 +41,13 @@ public class Player implements Serializable {
         return facing;
     }
     public Boolean getIsMoving() {
-        return ismoving;
+        return isMoving;
     }
     public void setFacing(String direction) {
         this.facing = direction;
     }
     public void setIsMoving(Boolean isMoving) {
-        this.ismoving = isMoving;
+        this.isMoving = isMoving;
     }
 
     public void handleMovementRequest(String direction) {

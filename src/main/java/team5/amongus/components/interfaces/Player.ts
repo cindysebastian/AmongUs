@@ -5,6 +5,6 @@ interface Player {
     y: number;
   };
   facing?: 'LEFT' | 'RIGHT'; // Optional facing property
-  ismoving?: boolean; // Optional ismoving property
+  isMoving?: boolean; // Optional ismoving property
 }
 export default Player

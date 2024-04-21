@@ -19,8 +19,8 @@ const App = ({ history }) => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
   const [players, setPlayers] = useState({});
-  const[messages, setMessages] = useState([]);
-  const[chatVisible, setChatVisible] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
   const keysPressed = useRef({
     w: false,
@@ -58,13 +58,13 @@ const App = ({ history }) => {
 
   useEffect(() => {
     if (!stompClient) return;
-  
+
     const subscription = stompClient.subscribe('/topic/messages', (message) => {
       console.log('Received message from server', message);
       const newMessage = JSON.parse(message.body);
       setMessages((prevMessages) => [...prevMessages, newMessage]);
     });
-  
+
     return () => {
       subscription.unsubscribe();
     };
@@ -77,21 +77,21 @@ const App = ({ history }) => {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       const inputElements = ['input', 'textarea', 'select'];
-  
+
       // Check if the event target is an input element
       const isInputElement = inputElements.includes((e.target as HTMLElement).tagName.toLowerCase());
-  
+
       // If the event target is an input element, return early without reacting
       if (isInputElement) {
-          return;
+        return;
       }
       keysPressed.current[e.key] = true;
-  
+
       // Otherwise, proceed with your key press handling logic
       // For example:
-      console.log('Key pressed:', e.key);
+
       // Add your key press handling logic here
-  }
+    }
 
     const handleKeyUp = (e: KeyboardEvent) => {
       keysPressed.current[e.key] = false;
@@ -104,33 +104,38 @@ const App = ({ history }) => {
       window.removeEventListener('keydown', handleKeyPress);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);  
+  }, []);
 
   useEffect(() => {
     if (!stompClient || !playerSpawned) return;
-  
+
     const handleMovement = () => {
       const directions = ['w', 'a', 's', 'd'];
       const pressedKeys = directions.filter(direction => keysPressed.current[direction]);
       if (pressedKeys.length > 0) {
         const directionsToSend = pressedKeys.map(key => directionMap[key]);
         stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: directionsToSend }));
-        console.log("Sending move request:", directionsToSend);
+
+      } else {
+        // If no keys are pressed, send an empty directions array to indicate no movement
+        stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: [] }));
+
       }
     };
-  
+
     handleMovement(); // Check initially
-  
+
     const movementInterval = setInterval(() => {
       handleMovement(); // Check periodically
     }, 100);
-  
+
     return () => {
       clearInterval(movementInterval); // Cleanup
     };
-  }, [playerName, playerSpawned, stompClient]);  
+  }, [playerName, playerSpawned, stompClient]);
 
-//#endregion
+
+  //#endregion
 
   const sendMessage = (messageContent) => {
     if (!stompClient) return;
@@ -140,7 +145,7 @@ const App = ({ history }) => {
     };
     stompClient.send('/topic/messages', {}, JSON.stringify(newMessage));
   };
-  
+
   const handleSpawnPlayer = () => {
     if (!stompClient || !playerName.trim()) return;
 
@@ -159,40 +164,43 @@ const App = ({ history }) => {
   return (
     <div style={{ padding: '20px' }}>
       {!playerSpawned && (
+        <div className={styles.gifBackground}></div>
+      )}
+      {!playerSpawned && (
         <div className={styles.loginbackground}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40%' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
             <input
               type="text"
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
               placeholder="Enter your name"
-              style={{ padding: '10px', margin: '2px' }}
+              className={styles.input}
             />
-            <button onClick={handleSpawnPlayer}>Spawn Player</button>
+            <button onClick={handleSpawnPlayer} className={styles.button}>Spawn Player</button>
           </div>
-          
         </div>
       )}
       {playerSpawned && (
         <div>
-        <Lobby players={players} />
+          <Lobby players={players} />
 
-        <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
-        {chatVisible && (
-        <div className={styles.chatBox}>
-          <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-            <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
-          </div>
-          <button className={styles.button} onClick={() => setChatVisible(false)}>Exit</button>
-          <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
-          <ChatRoom messages={messages} />
+          <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
+          {chatVisible && (
+            <div className={styles.chatBox}>
+              <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
+              </div>
+              <button className={styles.button} onClick={() => setChatVisible(false)}>Exit</button>
+              <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
+              <ChatRoom messages={messages} />
+            </div>
+
+          )}
         </div>
-        
       )}
-      </div>   
-      )}           
-      </div>     
+    </div>
   );
+
 };
 
 export default App;

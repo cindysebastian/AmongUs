@@ -6,14 +6,15 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
 import team5.amongus.model.Message;
 import team5.amongus.model.Player;
 import team5.amongus.model.PlayerMoveRequest;
 
-import java.util.ArrayList;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,33 @@ public class WebSocketController {
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
+    }
+
+    private final Map<String, Long> lastHeartbeatTimestamps = new HashMap<>();
+
+    @MessageMapping("/heartbeat")
+    public void heartbeat(String playerName) {
+        // Update last heartbeat timestamp for the player
+        lastHeartbeatTimestamps.put(playerName, System.currentTimeMillis());
+    }
+
+    // Method to check and set isMoving to false for inactive players
+    @Scheduled(fixedDelay = 10) // Check every 10 seconds
+    public void checkPlayerActivity() {
+        long currentTime = System.currentTimeMillis();
+        for (Map.Entry<String, Long> entry : lastHeartbeatTimestamps.entrySet()) {
+            String playerName = entry.getKey();
+            long lastHeartbeatTime = entry.getValue();
+            if (currentTime - lastHeartbeatTime > 10000) { // If more than 10 seconds have passed since last heartbeat
+                Player player = playersMap.get(playerName);
+                if (player != null && player.getIsMoving()) {
+                    player.setIsMoving(false);
+                    System.out.println("isMoving in Websocket " + false);
+                    playersMap.put(playerName, player);
+                    broadcastPlayerUpdate();
+                }
+            }
+        }
     }
 
     @MessageMapping("/setPlayer")
@@ -56,10 +84,10 @@ public class WebSocketController {
             PlayerMoveRequest moveRequest = objectMapper.readValue(payload, PlayerMoveRequest.class);
 
             String playerName = moveRequest.getPlayerName();
-            List<String> directions = moveRequest.getDirections(); // Change to get directions array
+            List<String> directions = moveRequest.getDirections();
 
             // Rest of your existing logic...
-            if (playerName == null || playerName.isEmpty() || directions == null || directions.isEmpty()) {
+            if (playerName == null || playerName.isEmpty() || directions == null) {
                 return playersMap; // Ignore move requests without player name or directions
             }
 
@@ -69,16 +97,17 @@ public class WebSocketController {
             }
 
             // Update the player's position for each direction
-            for (String direction : directions) {
-                existingPlayer.handleMovementRequest(direction);
+            if (directions.isEmpty()) {
+                // If there are no directions, set isMoving to false
+                existingPlayer.setIsMoving(false);
+            } else {
+                // If there are directions, handle the movement
+                for (String direction : directions) {
+                    existingPlayer.handleMovementRequest(direction);
+                }
+                // Set isMoving to true
+                existingPlayer.setIsMoving(true);
             }
-
-            // Check if player is moving
-            boolean isMoving = !directions.isEmpty(); // Player is considered moving if there are directions
-
-            // Update ismoving property
-            existingPlayer.setIsMoving(isMoving);
-            System.out.println("Someones moving: " + isMoving);
 
             playersMap.put(playerName, existingPlayer);
 

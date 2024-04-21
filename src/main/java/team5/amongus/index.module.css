@@ -1,6 +1,7 @@
 body {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Lucida Console';
 }
+
 
 .loginbackground {
   position: fixed;
@@ -9,11 +10,38 @@ body {
   width: 100%;
   height: 100%;
   background-image: url("../../../resources/LoginBG.png");
-  background-size: cover;
-  z-index: -1;
+  background-size: contain;
+ 
+  z-index: 2; /* Increase the z-index to ensure it's on top */
   background-position: center;
+  background-repeat: no-repeat;
 }
 
+.gifBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("../../../resources/space.gif");
+  background-size: cover;
+  background-color: black; /* Set the background color */
+  z-index: 1; /* Set a higher z-index to ensure it's behind the login background */
+}
+
+/* Other styles remain unchanged */
+
+
+.input{
+  margin-right: 10px; 
+  padding: 8px 20px;
+  font-size: 20px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  height: 30px;
+  font-family: 'Lucida Console';
+  bottom: 0px;
+}
 
 .chatBox {
   position: fixed;
@@ -31,9 +59,9 @@ body {
 }
 
 .button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  position: relative;
+
+  right: 0px;
   margin-right: 10px;
   padding: 8px 20px;
   font-size: 16px;
@@ -42,7 +70,8 @@ body {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-
+  font-family: 'Lucida Console';
+  
 }
 
 .cursor {
@@ -54,5 +83,6 @@ body {
   border: none;
   border-radius: 4px;
   cursor: pointer; 
+  font-family: 'Lucida Console';
 
 }
