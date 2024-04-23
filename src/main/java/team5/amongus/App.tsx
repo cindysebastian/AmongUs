@@ -4,7 +4,7 @@ import Stomp from 'stompjs';
 import ChatRoom from './components/ChatRoom';
 import MessageInput from './components/MessageInput';
 import Lobby from './components/Lobby';
-import Map from './components/Space';
+import SpaceShip from './components/SpaceShip';
 import bgImage from '../../../resources/LoginBG.png';
 import styles from './index.module.css'
 
@@ -18,6 +18,7 @@ const directionMap = {
 const App = ({ history }) => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
+  const [firstPlayerName, setFirstPlayerName] = useState('');
   const [players, setPlayers] = useState({});
   const [messages, setMessages] = useState([]);
   const [chatVisible, setChatVisible] = useState(false);
@@ -28,6 +29,8 @@ const App = ({ history }) => {
     s: false,
     d: false
   });
+  const [isStartButtonClicked, setIsStartButtonClicked] = useState(false); // Add state for tracking start button click
+  const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); // Add state to control redirection to SpaceShip
 
   //#region websocket subscribes
   useEffect(() => {
@@ -157,8 +160,18 @@ const App = ({ history }) => {
     stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
     setPlayerSpawned(true);
 
-    // Redirect to the game page after spawning player
+    // Set the first player's name when the player spawns
+    if (!firstPlayerName) {
+      setFirstPlayerName(playerName.trim());
+    }
+
     history.push('/game');
+  };
+
+  const handleStartButtonClick = () => {
+    setIsStartButtonClicked(true);
+    // Redirect to SpaceShip component when the start button is clicked
+    setRedirectToSpaceShip(true);
   };
 
   return (
@@ -180,9 +193,10 @@ const App = ({ history }) => {
           </div>
         </div>
       )}
-      {playerSpawned && (
+      {playerSpawned && !redirectToSpaceShip && (
         <div>
-          <Lobby players={players} />
+          {/* Pass firstPlayerName as a prop to the Lobby component */}
+          <Lobby players={players} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} /> 
 
           <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
           {chatVisible && (
@@ -198,11 +212,11 @@ const App = ({ history }) => {
           )}
         </div>
       )}
+      {redirectToSpaceShip && (
+        <SpaceShip players={players} /> // Render the SpaceShip component and pass players data
+      )}
     </div>
   );
-
 };
 
 export default App;
-
-

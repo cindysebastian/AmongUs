@@ -9,11 +9,30 @@
     z-index: -1;
     background-position: center;
 }
+  
+.startButtonIcon {
+    position: absolute;
+    top: 50%;
+    bottom: 30px;
+    right: calc(50% + 50px); /* Adjust the right offset to create space for the player count icon */
+    transform: translateY(-50%);
+    width: 100px;
+    height: auto;
+    cursor: pointer;
+    border-width: 23px 0 23px 100px;
+    border-color: transparent transparent transparent transparent;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.startButtonIcon.clicked {
+    opacity: 0.8 !important;
+}
 
 .playerCountContainer {
     position: fixed;
-    bottom: 0;
-    left: 50%;
+    bottom: 20px;
+    left: calc(50% + 50px);
     transform: translateX(-50%);
     display: flex;
     align-items: center;
@@ -31,18 +50,4 @@
     font-size: 16px;
     padding: 8px 12px;
     border-radius: 4px;
-}
-
-.startButton {
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 8px;
 }
