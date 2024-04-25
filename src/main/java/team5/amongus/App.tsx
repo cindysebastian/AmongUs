@@ -22,6 +22,7 @@ const App = ({ history }) => {
   const [messages, setMessages] = useState([]);
   const [chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
+  const [tasksList, setTasksList] = useState([]);
   const keysPressed = useRef({
     w: false,
     a: false,
@@ -51,16 +52,22 @@ const App = ({ history }) => {
     if (!stompClient) return;
 
     stompClient.subscribe('/topic/players', (message) => {
-      const updatedPlayers = JSON.parse(message.body);
-      setPlayers(updatedPlayers);
+        const updatedPlayers = JSON.parse(message.body);
+        // Update state with the received player information
+        setPlayers(updatedPlayers);
+
+        // Update canKill and canInteract for the current player
+        const currentPlayer = updatedPlayers[playerName];
+        
     });
-  }, [stompClient]);
+}, [stompClient, playerName]);
+
 
   useEffect(() => {
     if (!stompClient) return;
 
     const subscription = stompClient.subscribe('/topic/messages', (message) => {
-      console.log('Received message from server', message);
+      
       const newMessage = JSON.parse(message.body);
       setMessages((prevMessages) => [...prevMessages, newMessage]);
     });
@@ -136,6 +143,7 @@ const App = ({ history }) => {
 
 
   //#endregion
+  
 
   const sendMessage = (messageContent) => {
     if (!stompClient) return;

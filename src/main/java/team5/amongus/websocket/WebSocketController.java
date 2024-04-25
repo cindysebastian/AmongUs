@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import team5.amongus.model.Message;
 import team5.amongus.model.Player;
 import team5.amongus.model.PlayerMoveRequest;
+import team5.amongus.model.Task;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +49,6 @@ public class WebSocketController {
                 Player player = playersMap.get(playerName);
                 if (player != null && player.getIsMoving()) {
                     player.setIsMoving(false);
-                    System.out.println("isMoving in Websocket " + false);
                     playersMap.put(playerName, player);
                     broadcastPlayerUpdate();
                 }
@@ -105,11 +105,43 @@ public class WebSocketController {
                 for (String direction : directions) {
                     existingPlayer.handleMovementRequest(direction);
                 }
-                // Set isMoving to true
                 existingPlayer.setIsMoving(true);
             }
-
             playersMap.put(playerName, existingPlayer);
+
+            // Calculate canKill and canInteract for each player
+            for (Player player : playersMap.values()) {
+                
+                boolean canInteract = false;
+                
+
+                // Check collision with other players
+                for (Player otherPlayer : playersMap.values()) {
+                    if (!player.getName().equals(otherPlayer.getName())) {
+                        if (player.collidesWith(otherPlayer)) {
+                            player.setCanKill(true);
+                            break;
+                        }else{
+                            player.setCanKill(false);
+                            break;
+                        }
+                        
+                    }
+                }
+                System.out.println(player.getCanKill());
+                /*
+                 * // Check collision with tasks
+                 * for (Task task : tasksList) {
+                 * if (player.collidesWith(task)) {
+                 * canInteract = true;
+                 * break;
+                 * }
+                 * }
+                 */
+
+               
+                player.setCanInteract(canInteract);
+            }
 
             // Broadcast updated player positions to all clients
             broadcastPlayerUpdate();
