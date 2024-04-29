@@ -137,6 +137,19 @@ const App = ({ history }) => {
     };
   }, [playerName, playerSpawned, stompClient]);
 
+  useEffect(() => {
+    if (!stompClient) return;
+  
+    const subscription = stompClient.subscribe('/topic/gameStart', () => {
+      // When the game starts, redirect all players to the spaceship
+      setRedirectToSpaceShip(true);
+    });
+  
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [stompClient]);
+
 
   //#endregion
 
@@ -170,8 +183,9 @@ const App = ({ history }) => {
 
   const handleStartButtonClick = () => {
     setIsStartButtonClicked(true);
-    // Redirect to SpaceShip component when the start button is clicked
-    setRedirectToSpaceShip(true);
+    if (stompClient) {
+      stompClient.send('/app/startGame');
+    }
   };
 
   return (
