@@ -100,9 +100,9 @@ public class Player implements Serializable {
         return this.getBounds().intersects(otherPlayer.getBounds());
     }
     
-    // Method to check collision with a button
-    public boolean collidesWith(Task task) {
-        return this.getBounds().intersects(task.getBounds());
+    // Method to check collision with an Interactable thing
+    public boolean collidesWith(Interactible thing) {
+        return this.getBounds().intersects(thing.getBounds());
     }
     
     // Method to get bounding box of the player

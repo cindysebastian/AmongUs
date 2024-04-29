@@ -12,7 +12,7 @@ const directionMap = {
   'w': 'UP',
   'a': 'LEFT',
   's': 'DOWN',
-  'd': 'RIGHT'
+  'd': 'RIGHT',
 };
 
 const App = ({ history }) => {
@@ -27,7 +27,7 @@ const App = ({ history }) => {
     w: false,
     a: false,
     s: false,
-    d: false
+    d: false,
   });
 
   //#region websocket subscribes
@@ -85,19 +85,19 @@ const App = ({ history }) => {
     const handleKeyPress = (e: KeyboardEvent) => {
       const inputElements = ['input', 'textarea', 'select'];
 
-      // Check if the event target is an input element
       const isInputElement = inputElements.includes((e.target as HTMLElement).tagName.toLowerCase());
 
       // If the event target is an input element, return early without reacting
       if (isInputElement) {
         return;
       }
+     
+
+      if (e.key === 'e' && playerSpawned && stompClient) {
+        stompClient.send('/app/interaction', {}, JSON.stringify({ playerName: playerName }));
+      }
       keysPressed.current[e.key] = true;
-
-      // Otherwise, proceed with your key press handling logic
-      // For example:
-
-      // Add your key press handling logic here
+      
     }
 
     const handleKeyUp = (e: KeyboardEvent) => {
