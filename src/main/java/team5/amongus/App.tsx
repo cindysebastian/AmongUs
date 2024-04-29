@@ -148,18 +148,25 @@ const App = ({ history }) => {
 
   const handleSpawnPlayer = () => {
     if (!stompClient || !playerName.trim()) return;
-
+  
+    // Check if the player name is already in the game
+    if (Object.values(players).some(player => player.name === playerName.trim())) {
+      alert('Player name already exists in the game. Please choose a different name.');
+      return;
+    }
+  
     const initialPlayer = {
       name: playerName.trim(),
       position: { x: 200, y: 200 }, // Initial spawn position
     };
-
+  
     stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
     setPlayerSpawned(true);
-
+  
     // Redirect to the game page after spawning player
     history.push('/game');
   };
+  
 
   return (
     <div style={{ padding: '20px' }}>
