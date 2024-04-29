@@ -5,8 +5,11 @@ import styles from '../../amongus/spaceship.module.css';
 
 const SpaceShip = ({ players }) => {
   return (
-    <div className={styles.spaceShipBackground}>
-      {/* Your spaceship content goes here */}
+    <div>
+      <div className={styles.gifBackground}></div> {/* GIF background */}
+      <div className={styles.spaceShipBackground}>
+        {/* Your spaceship content goes here */}
+      </div>
     </div>
   );
 };
