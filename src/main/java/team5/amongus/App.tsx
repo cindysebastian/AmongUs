@@ -150,10 +150,11 @@ const App = ({ history }) => {
     if (!stompClient || !playerName.trim()) return;
   
     // Check if the player name is already in the game
-    if (Object.values(players).some(player => player.name === playerName.trim())) {
+    if (Object.values(players as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
       alert('Player name already exists in the game. Please choose a different name.');
       return;
     }
+    
   
     const initialPlayer = {
       name: playerName.trim(),
