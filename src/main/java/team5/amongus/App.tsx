@@ -11,6 +11,7 @@ import bgImage from '../../../resources/LoginBG.png';
 import styles from './index.module.css';
 import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer } from './service (Frontend)/WebsocketService';
 import { movePlayer } from '././service (Frontend)/PlayerMovementService';
+import {startGame} from '././service (Frontend)/GameStartingService'
 
 const directionMap = {
   'w': 'UP',
@@ -66,6 +67,8 @@ const App = ({ history }) => {
   };
 
   const handleSpawnPlayer = () => {
+    if (!firstPlayerName) {
+      setFirstPlayerName(playerName.trim());}
     if (stompClient && playerName.trim()) {
       setPlayer(stompClient, playerName);
       setPlayerSpawned(true);
@@ -79,6 +82,10 @@ const App = ({ history }) => {
       stompClient.send('/app/startGame');
     }
   };
+
+  useEffect(() => {
+    startGame(stompClient, setRedirectToSpaceShip)
+  }, [stompClient]);
 
   return (
     <div style={{ padding: '20px' }}>
