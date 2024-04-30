@@ -1,12 +1,14 @@
+// App.tsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import ChatRoom from './components/ChatRoom';
 import MessageInput from './components/MessageInput';
 import Lobby from './components/Lobby';
-import Map from './components/Space';
-import bgImage from '../../../resources/LoginBG.png';
-import styles from './index.module.css'
+import styles from './index.module.css';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer } from './service (Frontend)/WebsocketService';
+import { movePlayer } from '././service (Frontend)/PlayerMovementService';
 
 const directionMap = {
   'w': 'UP',
@@ -22,7 +24,6 @@ const App = ({ history }) => {
   const [messages, setMessages] = useState([]);
   const [chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
-  const [tasksList, setTasksList] = useState([]);
   const keysPressed = useRef({
     w: false,
     a: false,
@@ -30,143 +31,41 @@ const App = ({ history }) => {
     d: false,
   });
 
-  //#region websocket subscribes
   useEffect(() => {
-    const socket = new SockJS('http://localhost:8080/ws');
-    const stomp = Stomp.over(socket);
-
-    stomp.connect({}, () => {
-      console.log('Connected to WebSocket');
-      setStompClient(stomp);
-    });
-
-    return () => {
-      if (stompClient) {
-        stompClient.disconnect();
-        console.log('Disconnected from WebSocket');
-      }
-    };
+    const unsubscribeWebSocket = connectWebSocket(setStompClient);
+    return () => unsubscribeWebSocket();
   }, []);
 
   useEffect(() => {
-    if (!stompClient) return;
-
-    stompClient.subscribe('/topic/players', (message) => {
-        const updatedPlayers = JSON.parse(message.body);
-        // Update state with the received player information
-        setPlayers(updatedPlayers);
-
-        // Update canKill and canInteract for the current player
-        const currentPlayer = updatedPlayers[playerName];
-        
-    });
-}, [stompClient, playerName]);
-
+    if (stompClient && playerName) {
+      return subscribeToPlayers(stompClient, playerName, setPlayers);
+    }
+  }, [stompClient, playerName]);
 
   useEffect(() => {
-    if (!stompClient) return;
-
-    const subscription = stompClient.subscribe('/topic/messages', (message) => {
-      
-      const newMessage = JSON.parse(message.body);
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    if (stompClient) {
+      return subscribeToMessages(stompClient, setMessages);
+    }
   }, [stompClient]);
 
-  //#endregion
-
-  //#region movement
-
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      const inputElements = ['input', 'textarea', 'select'];
-
-      const isInputElement = inputElements.includes((e.target as HTMLElement).tagName.toLowerCase());
-
-      // If the event target is an input element, return early without reacting
-      if (isInputElement) {
-        return;
-      }
-     
-
-      if (e.key === 'e' && playerSpawned && stompClient) {
-        stompClient.send('/app/interaction', {}, JSON.stringify({ playerName: playerName }));
-      }
-      keysPressed.current[e.key] = true;
-      
+    if (stompClient && playerSpawned) {
+      return movePlayer(stompClient, playerName, keysPressed);
     }
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      keysPressed.current[e.key] = false;
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    window.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!stompClient || !playerSpawned) return;
-
-    const handleMovement = () => {
-      const directions = ['w', 'a', 's', 'd'];
-      const pressedKeys = directions.filter(direction => keysPressed.current[direction]);
-      if (pressedKeys.length > 0) {
-        const directionsToSend = pressedKeys.map(key => directionMap[key]);
-        stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: directionsToSend }));
-
-      } else {
-        // If no keys are pressed, send an empty directions array to indicate no movement
-        stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: [] }));
-
-      }
-    };
-
-    handleMovement(); // Check initially
-
-    const movementInterval = setInterval(() => {
-      handleMovement(); // Check periodically
-    }, 100);
-
-    return () => {
-      clearInterval(movementInterval); // Cleanup
-    };
-  }, [playerName, playerSpawned, stompClient]);
-
-
-  //#endregion
-  
+  }, [stompClient, playerName, playerSpawned]);
 
   const sendMessage = (messageContent) => {
-    if (!stompClient) return;
-    const newMessage = {
-      sender: playerName,
-      content: messageContent,
-    };
-    stompClient.send('/topic/messages', {}, JSON.stringify(newMessage));
+    if (stompClient) {
+      sendChatMessage(stompClient, playerName, messageContent);
+    }
   };
 
   const handleSpawnPlayer = () => {
-    if (!stompClient || !playerName.trim()) return;
-
-    const initialPlayer = {
-      name: playerName.trim(),
-      position: { x: 200, y: 200 }, // Initial spawn position
-    };
-
-    stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
-    setPlayerSpawned(true);
-
-    // Redirect to the game page after spawning player
-    history.push('/game');
+    if (stompClient && playerName.trim()) {
+      setPlayer(stompClient, playerName);
+      setPlayerSpawned(true);
+      history.push('/game');
+    }
   };
 
   return (
@@ -191,7 +90,6 @@ const App = ({ history }) => {
       {playerSpawned && (
         <div>
           <Lobby players={players} />
-
           <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
           {chatVisible && (
             <div className={styles.chatBox}>
@@ -202,15 +100,11 @@ const App = ({ history }) => {
               <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
               <ChatRoom messages={messages} />
             </div>
-
           )}
         </div>
       )}
     </div>
   );
-
 };
 
 export default App;
-
-
