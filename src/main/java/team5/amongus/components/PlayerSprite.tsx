@@ -15,25 +15,29 @@ type StyledPlayerProps = {
 };
 
 const mainAnimation = keyframes`
-  0% { background-position: 1040px 0; } 
-  100% { background-position: 2075px 0; }
+  0% { background-position: calc(1040px - 15px) 0; } 
+  100% { background-position: calc(2075px - 15px) 0; }
 `;
+
 
 const StyledPlayer = styled.div<StyledPlayerProps>`
   height: 130px;
   width: 130px;
   position: relative; /* Ensure position is set */
   background: url(${SpritePage}) left top;
-  transform: ${({ facing }) => facing === 'LEFT'? 'scaleX(-1) translateX(1px)' : 'none'};
+ 
+  box-sizing: border-box; /* Ensure border is included in the total width and height */
+  transform: ${({ facing }) => facing === 'LEFT'? 'scaleX(-1)' : 'none'};
   ${({ isMoving, facing }) =>
     isMoving &&
     css`
       animation: ${mainAnimation} 0.6s steps(8) infinite;
       animation-timing-function: steps(8);
-      margin-left: ${facing === 'LEFT'? '-20px' : '0'};
-      transform: ${facing === 'LEFT'? 'scaleX(-1) translateX(-74px)' : 'scaleX(1) translateX(-74px)'};
+      
+      
     `}
 `;
+
 
 const NameTagWrapper = styled.div`
   position: absolute;
