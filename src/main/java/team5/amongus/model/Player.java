@@ -12,6 +12,8 @@ public class Player implements Serializable {
     private int height = 150;
     private boolean canInteract = false;
     private boolean canKill = false;
+    private boolean isAlive = true;
+    private boolean isImposter = false;
    
 
     public Player (String name, Position position) {
@@ -69,6 +71,20 @@ public class Player implements Serializable {
 
     public void setCanKill(boolean canKill){
         this.canKill = canKill;
+    }
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    public void setAlive(boolean isAlive) {
+        this.isAlive = isAlive;
+    }
+
+    public boolean isImposter() {
+        return isImposter;
+    }
+    public void setImposter(boolean imposter) {
+        this.isImposter = imposter;
     }
 
     public void handleMovementRequest(String direction) {

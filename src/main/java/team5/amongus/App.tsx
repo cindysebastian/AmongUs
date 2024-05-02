@@ -79,7 +79,7 @@ const App = ({ history }) => {
   const handleStartButtonClick = () => {
     setIsStartButtonClicked(true);
     if (stompClient) {
-      stompClient.send('/app/startGame');
+      stompClient.send('/app/startGame', {}, JSON.stringify(Object.values(players)));
     }
   };
 

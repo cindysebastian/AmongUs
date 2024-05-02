@@ -7,12 +7,13 @@ import styles from '../../amongus/lobby.module.css';
 interface Props {
   players: Record<string, Player>;
   firstPlayerName: string;
-  onStartButtonClick: () => void;
+  onStartButtonClick: (playersData: Record<string, Player>) => void;
 }
 
 const Lobby: React.FC<Props> = ({ players, firstPlayerName, onStartButtonClick}) => {
   const [playerCount, setPlayerCount] = useState(Object.keys(players).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
+  const [impostersChosen, setImpostersChosen] = useState(false);
 
   useEffect(() => {
     setPlayerCount(Object.keys(players).length);
@@ -20,6 +21,15 @@ const Lobby: React.FC<Props> = ({ players, firstPlayerName, onStartButtonClick})
 
   // Check if the current player is the first one
   const isFirstPlayer = firstPlayerName === Object.keys(players)[0];
+
+  const handleStartButtonClick = () => {
+    if (!impostersChosen) {
+      setIsStartButtonClicked(true);
+      setImpostersChosen(true);
+      onStartButtonClick(players); // Pass players' data to the onStartButtonClick function
+    }
+  };
+
 
   return (
     <div style={{ position: 'relative' }}>
@@ -32,7 +42,7 @@ const Lobby: React.FC<Props> = ({ players, firstPlayerName, onStartButtonClick})
         <div className={styles.playerCount}>{playerCount}</div>
         {/* Render the start button only for the first player */}
         {isFirstPlayer && (
-          <div className={styles.startButtonContainer} onClick={onStartButtonClick}> {/* Call onStartButtonClick on click */}
+          <div className={styles.startButtonContainer} onClick={handleStartButtonClick}>
             <img src="src\main\resources\startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
           />
           </div>
