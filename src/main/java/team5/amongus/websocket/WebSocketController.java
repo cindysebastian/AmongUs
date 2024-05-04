@@ -1,17 +1,16 @@
 package team5.amongus.websocket;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
 import team5.amongus.model.Message;
 import team5.amongus.model.Player;
-import team5.amongus.model.PlayerMoveRequest;
+import team5.amongus.service.IChatService;
+import team5.amongus.service.IPlayerService;
+import team5.amongus.service.ITaskService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,36 +23,16 @@ public class WebSocketController {
 
     private final Map<String, Player> playersMap = new HashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
+    private final IChatService chatService;
+    private final List<Message> chatMessages = new ArrayList<>();
+    private final IPlayerService playerService;
+    private final ITaskService taskService;
 
-    public WebSocketController(SimpMessagingTemplate messagingTemplate) {
+    public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService, ITaskService taskService, IChatService chatService) {
+        this.playerService = playerService;
+        this.taskService = taskService;
         this.messagingTemplate = messagingTemplate;
-    }
-
-    private final Map<String, Long> lastHeartbeatTimestamps = new HashMap<>();
-
-    @MessageMapping("/heartbeat")
-    public void heartbeat(String playerName) {
-        // Update last heartbeat timestamp for the player
-        lastHeartbeatTimestamps.put(playerName, System.currentTimeMillis());
-    }
-
-    // Method to check and set isMoving to false for inactive players
-    @Scheduled(fixedDelay = 10) // Check every 10 seconds
-    public void checkPlayerActivity() {
-        long currentTime = System.currentTimeMillis();
-        for (Map.Entry<String, Long> entry : lastHeartbeatTimestamps.entrySet()) {
-            String playerName = entry.getKey();
-            long lastHeartbeatTime = entry.getValue();
-            if (currentTime - lastHeartbeatTime > 10000) { // If more than 10 seconds have passed since last heartbeat
-                Player player = playersMap.get(playerName);
-                if (player != null && player.getIsMoving()) {
-                    player.setIsMoving(false);
-                    System.out.println("isMoving in Websocket " + false);
-                    playersMap.put(playerName, player);
-                    broadcastPlayerUpdate();
-                }
-            }
-        }
+        this.chatService = chatService;
     }
 
     @MessageMapping("/setPlayer")
@@ -74,74 +53,31 @@ public class WebSocketController {
         return playersMap;
     }
 
+    @MessageMapping("/interact")
+    @SendTo("/topic/game")
+    public void handleInteract() throws IOException {
+
+    }
+
+
     @MessageMapping("/move")
     @SendTo("/topic/players")
     public Map<String, Player> move(String payload) {
-        try {
-            final ObjectMapper objectMapper = new ObjectMapper();
-
-            // Parse the JSON payload into a PlayerMoveRequest object
-            PlayerMoveRequest moveRequest = objectMapper.readValue(payload, PlayerMoveRequest.class);
-
-            String playerName = moveRequest.getPlayerName();
-            List<String> directions = moveRequest.getDirections();
-
-            // Rest of your existing logic...
-            if (playerName == null || playerName.isEmpty() || directions == null) {
-                return playersMap; // Ignore move requests without player name or directions
-            }
-
-            Player existingPlayer = playersMap.get(playerName);
-            if (existingPlayer == null) {
-                return playersMap; // Player not found
-            }
-
-            // Update the player's position for each direction
-            if (directions.isEmpty()) {
-                // If there are no directions, set isMoving to false
-                existingPlayer.setIsMoving(false);
-            } else {
-                // If there are directions, handle the movement
-                for (String direction : directions) {
-                    existingPlayer.handleMovementRequest(direction);
-                }
-                // Set isMoving to true
-                existingPlayer.setIsMoving(true);
-            }
-
-            playersMap.put(playerName, existingPlayer);
-
-            // Broadcast updated player positions to all clients
-            broadcastPlayerUpdate();
-
-            return playersMap;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return playersMap; // Return the current player map if an error occurs
-        }
+        Map<String, Player> updatedPlayersMap = playerService.movePlayer(playersMap, payload);
+        taskService.updateTaskInteractions(updatedPlayersMap);
+        broadcastPlayerUpdate();
+        return updatedPlayersMap;
     }
 
-    private final List<Message> chatMessages = new ArrayList<>(); // Define chatMessages list
+    private void broadcastPlayerUpdate() {
+        messagingTemplate.convertAndSend("/topic/players", playersMap);
+    }
 
+    
     @MessageMapping("/sendMessage")
     @SendTo("/topic/messages")
     public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor) {
-        Player sender = message.getSender();
-        String content = message.getContent().trim();
-
-        // Check if sender name is not empty and not "player", and content is not empty
-        if (sender == null || content.isEmpty() || sender.getName().isEmpty()
-                || sender.getName().equalsIgnoreCase("player")) {
-            return new ArrayList<>(); // Return empty list if message is invalid
-        }
-
-        chatMessages.add(message);
-
-        return chatMessages; // Return list of chatMessages
-    }
-
-    // Method to broadcast updated player list to all clients
-    private void broadcastPlayerUpdate() {
-        messagingTemplate.convertAndSend("/topic/players", playersMap);
+        List<Message> updatedChatMessages = chatService.processMessage(chatMessages, message);
+        return updatedChatMessages;
     }
 }

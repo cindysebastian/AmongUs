@@ -8,6 +8,11 @@ public class Player implements Serializable {
     private Integer step = 30;
     private Boolean isMoving = false ; 
     private String facing = "RIGHT";
+    private int width = 100;
+    private int height = 150;
+    private boolean canInteract = false;
+    private boolean canKill = false;
+   
 
     public Player (String name, Position position) {
         this.name = name;
@@ -50,6 +55,22 @@ public class Player implements Serializable {
         this.isMoving = isMoving;
     }
 
+    public boolean getCanInteract(){
+        return canInteract;
+    }
+
+    public void setCanInteract(boolean canInteract){
+        this.canInteract = canInteract;
+    }
+
+    public boolean getCanKill(){
+        return canKill;
+    }
+
+    public void setCanKill(boolean canKill){
+        this.canKill = canKill;
+    }
+
     public void handleMovementRequest(String direction) {
         switch (direction) {
             case "UP":
@@ -72,6 +93,21 @@ public class Player implements Serializable {
                 break;
         }
         
+    }
+
+
+    public boolean collidesWith(Player otherPlayer) {
+        return this.getBounds().intersects(otherPlayer.getBounds());
+    }
+    
+    // Method to check collision with an Interactable thing
+    public boolean collidesWith(Interactible thing) {
+        return this.getBounds().intersects(thing.getBounds());
+    }
+    
+    // Method to get bounding box of the player
+    public CollisionBox getBounds() {
+        return new CollisionBox(position.getX(), position.getY(), width, height);
     }
 
 }
