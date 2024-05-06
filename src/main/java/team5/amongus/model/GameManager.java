@@ -7,14 +7,23 @@ import java.util.Map;
 import java.util.Random;
 
 import org.springframework.stereotype.Component;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @Component
 public class GameManager {
     private final List<Player> playersMap = new ArrayList<>();
     private final List<Imposter> imposters = new ArrayList<>();
+    private SimpMessagingTemplate messagingTemplate = null;
+
+    public GameManager(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
 
     public List<Imposter> getImposters() {
         return imposters;
+    }
+    public List<Player> getPlayers() {
+        return playersMap;
     }
 
     public void addPlayer(Player player) {
@@ -28,23 +37,29 @@ public class GameManager {
             return imposters;
         }
         Random random = new Random();
-        
+    
         // Get a random index within the size of the players list
         int randomIndex = random.nextInt(playersMap.size());
-        
+    
         // Retrieve the player object at the random index
         Player player = playersMap.get(randomIndex);
-        
+    
         if (player != null) {
             Imposter imposter = new Imposter(player.getName(), player.getPosition());
             imposters.add(imposter);
             player.setImposter(true);
             System.out.println("Imposter: " + imposter.getName());
+            System.out.println(player.isImposter());
+    
+            // Send the entire Imposter object to the frontend
+            messagingTemplate.convertAndSend("/topic/players", playersMap);
+            System.out.println(messagingTemplate);
         } else {
             System.out.println("No players available to become the imposter.");
         }
-        
+    
         return getImposters();
     }
+
 
 }

@@ -27,6 +27,7 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers) => {
     const updatedPlayers = JSON.parse(message.body);
     setPlayers(updatedPlayers);
     const currentPlayer = updatedPlayers[playerName];
+
     // Your logic related to player updates can go here
   });
 };
@@ -70,4 +71,14 @@ export const setPlayer = (stompClient, playerName) => {
   };
 
   stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
+};
+
+export const subscribeToImposter = (stompClient, setImposter) => {
+  if (!stompClient) return;
+
+  stompClient.subscribe('/topic/imposter', (message) => {
+    const player = JSON.parse(message.body);
+    const imposterStatus = player.setImposter(true);
+    setImposter(imposterStatus);
+  });
 };

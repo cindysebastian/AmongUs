@@ -12,6 +12,7 @@ import styles from './index.module.css';
 import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer } from './service (Frontend)/WebsocketService';
 import { movePlayer } from '././service (Frontend)/PlayerMovementService';
 import {startGame} from '././service (Frontend)/GameStartingService'
+import KillButton from './components/KillButton';
 
 const directionMap = {
   'w': 'UP',
@@ -28,6 +29,7 @@ const App = ({ history }) => {
   const [messages, setMessages] = useState([]);
   const [chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
+  const [selectedVictim, setSelectedVictim] = useState('');
   const keysPressed = useRef({
     w: false,
     a: false,
@@ -87,8 +89,37 @@ const App = ({ history }) => {
     startGame(stompClient, setRedirectToSpaceShip)
   }, [stompClient]);
 
+  const handleKill = () => {
+    if (stompClient && playerName && players) {
+      // Find the closest player to the current player
+      let closestPlayer = null;
+      let minDistance = Infinity;
+      for (const [name, player] of Object.entries(players)) {
+        if (name !== playerName) { // Exclude the current player
+          // Calculate distance between current player and other players
+          const distance = calculateDistance(player, players[playerName]);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestPlayer = name;
+          }
+        }
+      }
+      if (closestPlayer) {
+        // Send a message to the backend indicating the victim's name
+        stompClient.send('/kill', {}, closestPlayer);
+      }
+    }
+  };
+  
+  // Function to calculate distance between two players
+  function calculateDistance(player1, player2) {
+    const dx = player1.x - player2.x;
+    const dy = player1.y - player2.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ position: 'relative', padding: '20px' }}>
       {!playerSpawned && (
         <div className={styles.gifBackground}></div>
       )}
@@ -107,8 +138,7 @@ const App = ({ history }) => {
         </div>
       )}
       {playerSpawned && !redirectToSpaceShip && (
-        <div>
-          {/* Pass firstPlayerName as a prop to the Lobby component */}
+        <div style={{ position: 'relative' }}>
           <Lobby players={players} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} /> 
 
           <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
@@ -125,8 +155,13 @@ const App = ({ history }) => {
         </div>
       )}
       {redirectToSpaceShip && (
-        <SpaceShip players={players} /> // Render the SpaceShip component and pass players data
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }}>
+          <SpaceShip players={players} />
+        </div>
       )}
+      <div>
+        <KillButton onKill={handleKill} />
+      </div>
     </div>
   );
 };

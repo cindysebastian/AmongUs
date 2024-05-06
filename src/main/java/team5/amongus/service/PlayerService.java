@@ -2,8 +2,11 @@
 package team5.amongus.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import team5.amongus.model.Imposter;
 import team5.amongus.model.Player;
 import team5.amongus.model.PlayerMoveRequest;
+import team5.amongus.model.GameManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -13,6 +16,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PlayerService implements IPlayerService {
+
+    private final GameManager gameManager;
+
+    public PlayerService(GameManager gameManager) {
+        this.gameManager = gameManager;
+    }
 
     @Override
     public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload) {
@@ -80,4 +89,24 @@ public class PlayerService implements IPlayerService {
             return playersMap; // Return the current player map if an error occurs
         }
     }
+    // Method to handle killing a player
+    public void handleKill(String victimName) {
+        Imposter imposter = gameManager.getImposters().get(0); // Assuming only one imposter for simplicity
+
+        // Get the victim from the players map
+        Player victim = gameManager.getPlayers().stream()
+            .filter(player -> player.getName().equals(victimName))
+            .findFirst()
+            .orElse(null);
+
+        if (imposter != null && victim != null && imposter.isImposter() && victim.isAlive()) {
+            // If the imposter exists and is indeed an imposter,
+            // the victim exists, and the victim is not already dead
+
+            // Initiate the kill
+            imposter.kill(victim);
+            // You might want to update other game state here, like removing tasks, etc.
+        }
+    }
+
 }

@@ -6,6 +6,7 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import team5.amongus.model.Imposter;
 import team5.amongus.model.Message;
 import team5.amongus.model.Player;
 import team5.amongus.service.IChatService;
@@ -80,4 +81,11 @@ public class WebSocketController {
         List<Message> updatedChatMessages = chatService.processMessage(chatMessages, message);
         return updatedChatMessages;
     }
+
+    @MessageMapping("/kill")
+    public void handleKill(String victimName) {
+    playerService.handleKill(victimName);
+    broadcastPlayerUpdate(); // Broadcast the updated player state to clients
+    }
 }
+

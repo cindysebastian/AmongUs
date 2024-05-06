@@ -22,6 +22,7 @@ const SpaceShip: React.FC<Props> = ({ players }) => {
               isMoving={player.isMoving !== undefined ? player.isMoving : false}
             />
           </div>
+          
         ))}
       </div>
     </div>
