@@ -1,5 +1,3 @@
-// App.tsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
@@ -11,7 +9,7 @@ import bgImage from '../../../resources/LoginBG.png';
 import styles from './index.module.css';
 import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer } from './service (Frontend)/WebsocketService';
 import { movePlayer } from '././service (Frontend)/PlayerMovementService';
-import {startGame} from '././service (Frontend)/GameStartingService'
+import { startGame } from '././service (Frontend)/GameStartingService';
 
 const directionMap = {
   'w': 'UP',
@@ -34,8 +32,9 @@ const App = ({ history }) => {
     s: false,
     d: false,
   });
-  const [isStartButtonClicked, setIsStartButtonClicked] = useState(false); // Add state for tracking start button click
-  const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); // Add state to control redirection to SpaceShip
+  const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
+  const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false);
+  const [collisionMask, setCollisionMask] = useState(null); // Add state for collision mask
 
   useEffect(() => {
     const unsubscribeWebSocket = connectWebSocket(setStompClient);
@@ -56,9 +55,13 @@ const App = ({ history }) => {
 
   useEffect(() => {
     if (stompClient && playerSpawned) {
-      return movePlayer(stompClient, playerName, keysPressed);
+      return movePlayer(stompClient, playerName, keysPressed); // Pass collisionMask and players to movePlayer
     }
-  }, [stompClient, playerName, playerSpawned]);
+  }, [stompClient, playerName, playerSpawned, collisionMask, players]);
+
+  useEffect(() => {
+    startGame(stompClient, setRedirectToSpaceShip); // Pass setCollisionMask to startGame
+  }, [stompClient]);
 
   const sendMessage = (messageContent) => {
     if (stompClient) {
@@ -68,7 +71,8 @@ const App = ({ history }) => {
 
   const handleSpawnPlayer = () => {
     if (!firstPlayerName) {
-      setFirstPlayerName(playerName.trim());}
+      setFirstPlayerName(playerName.trim());
+    }
     if (stompClient && playerName.trim()) {
       setPlayer(stompClient, playerName);
       setPlayerSpawned(true);
@@ -82,10 +86,6 @@ const App = ({ history }) => {
       stompClient.send('/app/startGame');
     }
   };
-
-  useEffect(() => {
-    startGame(stompClient, setRedirectToSpaceShip)
-  }, [stompClient]);
 
   return (
     <div style={{ padding: '20px' }}>
@@ -108,9 +108,7 @@ const App = ({ history }) => {
       )}
       {playerSpawned && !redirectToSpaceShip && (
         <div>
-          {/* Pass firstPlayerName as a prop to the Lobby component */}
-          <Lobby players={players} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} /> 
-
+          <Lobby players={players} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} />
           <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
           {chatVisible && (
             <div className={styles.chatBox}>
@@ -125,7 +123,7 @@ const App = ({ history }) => {
         </div>
       )}
       {redirectToSpaceShip && (
-        <SpaceShip players={players} /> // Render the SpaceShip component and pass players data
+        <SpaceShip players={players} />
       )}
     </div>
   );
