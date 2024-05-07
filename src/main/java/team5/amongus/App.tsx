@@ -1,3 +1,5 @@
+// App.tsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
@@ -7,7 +9,7 @@ import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
 import bgImage from '../../../resources/LoginBG.png';
 import styles from './index.module.css';
-import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer } from './service (Frontend)/WebsocketService';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, fetchCollisionMask } from './service (Frontend)/WebsocketService'; // Import fetchCollisionMask
 import { movePlayer } from '././service (Frontend)/PlayerMovementService';
 import { startGame } from '././service (Frontend)/GameStartingService';
 
@@ -34,7 +36,7 @@ const App = ({ history }) => {
   });
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
   const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false);
-  const [collisionMask, setCollisionMask] = useState(null); // Add state for collision mask
+  const [collisionMask, setCollisionMask] = useState(null);
 
   useEffect(() => {
     const unsubscribeWebSocket = connectWebSocket(setStompClient);
@@ -55,13 +57,23 @@ const App = ({ history }) => {
 
   useEffect(() => {
     if (stompClient && playerSpawned) {
-      return movePlayer(stompClient, playerName, keysPressed); // Pass collisionMask and players to movePlayer
+      return movePlayer(stompClient, playerName, keysPressed);
     }
-  }, [stompClient, playerName, playerSpawned, collisionMask, players]);
+  }, [stompClient, playerName, playerSpawned, collisionMask, keysPressed]);
+  
 
   useEffect(() => {
-    startGame(stompClient, setRedirectToSpaceShip); // Pass setCollisionMask to startGame
+    startGame(stompClient, setRedirectToSpaceShip);
   }, [stompClient]);
+
+  useEffect(() => {
+    const fetchMask = async () => {
+      const maskData = await fetchCollisionMask();
+      setCollisionMask(maskData);
+    };
+
+    fetchMask();
+  }, []);
 
   const sendMessage = (messageContent) => {
     if (stompClient) {

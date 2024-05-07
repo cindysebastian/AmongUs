@@ -1,15 +1,14 @@
-// PlayerServiceImpl.java
 package team5.amongus.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import team5.amongus.model.Player;
 import team5.amongus.model.PlayerMoveRequest;
+import team5.amongus.model.Position;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
-
 
 @Service
 public class PlayerService implements IPlayerService {
@@ -42,7 +41,11 @@ public class PlayerService implements IPlayerService {
             } else {
                 // If there are directions, handle the movement
                 for (String direction : directions) {
-                    existingPlayer.handleMovementRequest(direction);
+                    // Check if the next position will collide with the collision mask
+                    //TODO: what the fuck do i put here
+                    if (!collidesWithMask(existingPlayer, direction, collisionMask)) {
+                        existingPlayer.handleMovementRequest(direction);
+                    }
                 }
                 existingPlayer.setIsMoving(true);
             }
@@ -63,7 +66,6 @@ public class PlayerService implements IPlayerService {
                             player.setCanKill(false);
                             break;
                         }
-
                     }
                 }
 
@@ -79,5 +81,35 @@ public class PlayerService implements IPlayerService {
             e.printStackTrace();
             return playersMap; // Return the current player map if an error occurs
         }
+    }
+
+    // Method to check if the player collides with the collision mask based on direction
+    private boolean collidesWithMask(Player player, String direction, int[][] collisionMask) {
+        // Get the current position of the player
+        Position pos = player.getPosition();
+
+        int x = pos.getX();
+        int y = pos.getY();
+
+        // Calculate the next position based on direction
+        switch (direction) {
+            case "UP":
+                y--;
+                break;
+            case "DOWN":
+                y++;
+                break;
+            case "LEFT":
+                x--;
+                break;
+            case "RIGHT":
+                x++;
+                break;
+            default:
+                return false; // Invalid direction
+        }
+
+        // Check if the next position is within the collision mask boundaries and if it's a solid (non-zero) value
+        return x >= 0 && x < collisionMask.length && y >= 0 && y < collisionMask[0].length && collisionMask[x][y] == 1;
     }
 }

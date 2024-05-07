@@ -77,7 +77,7 @@ const Lobby: React.FC<Props> = ({ players, firstPlayerName, onStartButtonClick }
       </div>
 
       {/* Render CollisionMask */}
-      {collisionMask && <CollisionMask imageUrl={LobbyBG_withTransparentGround} />}
+      {collisionMask && <CollisionMask maskData={collisionMask} />}
 
       {/* Render players */}
       {Object.values(players).map(player => {

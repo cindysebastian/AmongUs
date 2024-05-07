@@ -6,6 +6,7 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import team5.amongus.model.CollisionMask;
 import team5.amongus.model.Message;
 import team5.amongus.model.Player;
 import team5.amongus.service.IChatService;

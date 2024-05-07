@@ -66,8 +66,23 @@ export const setPlayer = (stompClient, playerName) => {
 
   const initialPlayer = {
     name: playerName.trim(),
-    position: { x: 200, y: 200 }, // Initial spawn position
+    position: { x: 400, y: 400 }, // Initial spawn position
   };
 
   stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
+};
+
+export const fetchCollisionMask = async () => {
+  try {
+    const response = await fetch('/app/collisionmask'); // Adjust the endpoint as per your backend
+    if (response.ok) {
+      const maskData = await response.json();
+      return maskData;
+    } else {
+      throw new Error('Failed to fetch collision mask');
+    }
+  } catch (error) {
+    console.error('Error fetching collision mask:', error);
+    return null;
+  }
 };
