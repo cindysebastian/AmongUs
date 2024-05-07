@@ -78,7 +78,7 @@ export const subscribeToImposter = (stompClient, setImposter) => {
 
   stompClient.subscribe('/topic/imposter', (message) => {
     const player = JSON.parse(message.body);
-    const imposterStatus = player.setImposter(true);
+    const imposterStatus = player.isImposter;
     setImposter(imposterStatus);
   });
 };
