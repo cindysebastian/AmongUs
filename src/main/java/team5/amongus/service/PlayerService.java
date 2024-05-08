@@ -9,10 +9,10 @@ import team5.amongus.model.PlayerMoveRequest;
 import team5.amongus.model.GameManager;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
-
 
 @Service
 public class PlayerService implements IPlayerService {
@@ -66,13 +66,11 @@ public class PlayerService implements IPlayerService {
                 for (Player otherPlayer : playersMap.values()) {
                     if (!player.getName().equals(otherPlayer.getName())) {
                         if (player.collidesWith(otherPlayer)) {
-                            player.setCanKill(true);
-                            break;
-                        } else {
-                            player.setCanKill(false);
+                            if (player instanceof Imposter) {
+                                // TODO: make kill button visible
+                            }
                             break;
                         }
-
                     }
                 }
 
@@ -89,24 +87,54 @@ public class PlayerService implements IPlayerService {
             return playersMap; // Return the current player map if an error occurs
         }
     }
-    // Method to handle killing a player
-    public void handleKill(String victimName) {
-        Imposter imposter = gameManager.getImposters().get(0); // Assuming only one imposter for simplicity
 
-        // Get the victim from the players map
-        Player victim = gameManager.getPlayers().stream()
-            .filter(player -> player.getName().equals(victimName))
-            .findFirst()
-            .orElse(null);
+    public Map<String, Player> handleKill(String playerName, Map<String, Player> playersMap) {
+        System.out.println("Trying to kill...");
+        if (playerName != null && !playerName.isEmpty() && playersMap != null) {
+            // Find the closest player to the player initiating the kill
+            Player currentPlayer = playersMap.get(playerName);
+            if (currentPlayer != null && currentPlayer instanceof Imposter) {
+                Imposter currentImposter = (Imposter) currentPlayer; // Cast currentPlayer to Imposter
+                // If the player initiating the kill is an imposter, find the closest
+                // non-imposter player
+                Player closestPlayer = null;
+                double minDistance = Double.POSITIVE_INFINITY; // Initialize minDistance with a large value
 
-        if (imposter != null && victim != null && imposter.isImposter() && victim.isAlive()) {
-            // If the imposter exists and is indeed an imposter,
-            // the victim exists, and the victim is not already dead
+                // Iterate through other players to find the closest one
+                for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+                    String name = entry.getKey();
+                    Player player = entry.getValue();
+                    if (!name.equals(playerName) && !(player instanceof Imposter)) { // Exclude the player initiating
+                                                                                     // the kill and other imposters
+                        // Calculate distance between current player and other players
+                        double distance = calculateDistance(player, currentImposter);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestPlayer = player;
+                        }
+                    }
+                }
 
-            // Initiate the kill
-            imposter.kill(victim);
-            // You might want to update other game state here, like removing tasks, etc.
+                if (closestPlayer != null) {
+                    currentImposter.kill(closestPlayer);
+                } else {
+                    System.out.println("No non-imposter player found.");
+                    // Handle situation when no non-imposter player is found
+                }
+            } else {
+                // If the player initiating the kill is not an imposter, they cannot initiate
+                // the kill
+                System.out.println("Only imposters can initiate a kill or player not found.");
+                // You can optionally log a message or handle this situation accordingly
+            }
         }
+        return playersMap; // Return the updated players map
+    }
+
+    private double calculateDistance(Player player1, Player player2) {
+        double dx = player1.getPosition().getX() - player2.getPosition().getX();
+        double dy = player1.getPosition().getY() - player2.getPosition().getY();
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
 }

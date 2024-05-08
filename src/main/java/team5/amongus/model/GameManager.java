@@ -22,6 +22,7 @@ public class GameManager {
     public List<Imposter> getImposters() {
         return imposters;
     }
+
     public List<Player> getPlayers() {
         return playersMap;
     }
@@ -37,29 +38,27 @@ public class GameManager {
             return imposters;
         }
         Random random = new Random();
-    
+
         // Get a random index within the size of the players list
         int randomIndex = random.nextInt(playersMap.size());
-    
+
         // Retrieve the player object at the random index
         Player player = playersMap.get(randomIndex);
-    
+
         if (player != null) {
             Imposter imposter = new Imposter(player.getName(), player.getPosition());
-            imposters.add(imposter);
-            player.setImposter(true);
+            playersMap.add(imposter);
+            playersMap.remove(player);
             System.out.println("Imposter: " + imposter.getName());
-            System.out.println(player.isImposter());
-    
+
             // Send the entire Imposter object to the frontend
             messagingTemplate.convertAndSend("/topic/players", playersMap);
             System.out.println(messagingTemplate);
         } else {
             System.out.println("No players available to become the imposter.");
         }
-    
+
         return getImposters();
     }
-
 
 }

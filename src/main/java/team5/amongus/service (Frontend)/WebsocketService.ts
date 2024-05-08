@@ -73,12 +73,8 @@ export const setPlayer = (stompClient, playerName) => {
   stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
 };
 
-export const subscribeToImposter = (stompClient, setImposter) => {
-  if (!stompClient) return;
+export const killPlayer = (stompClient, playerName, players) => {
+  if (!stompClient || !playerName.trim()) return;
 
-  stompClient.subscribe('/topic/imposter', (message) => {
-    const player = JSON.parse(message.body);
-    const imposterStatus = player.isImposter;
-    setImposter(imposterStatus);
-  });
+  stompClient.send('/app/killPlayer', {}, JSON.stringify({ playerName, players }));
 };

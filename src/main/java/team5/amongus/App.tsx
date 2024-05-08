@@ -9,7 +9,7 @@ import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
 import bgImage from '../../../resources/LoginBG.png';
 import styles from './index.module.css';
-import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribeToImposter } from './service (Frontend)/WebsocketService';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, killPlayer } from './service (Frontend)/WebsocketService';
 import { movePlayer } from '././service (Frontend)/PlayerMovementService';
 import {startGame} from '././service (Frontend)/GameStartingService'
 import KillButton from './components/KillButton';
@@ -64,13 +64,6 @@ const App = ({ history }) => {
     }
   }, [stompClient, playerName, playerSpawned]);
 
-  useEffect(() => {
-    if (stompClient && playerName) {
-      subscribeToImposter(stompClient, setImposter(true));
-    }
-  })
-
-
   const sendMessage = (messageContent) => {
     if (stompClient) {
       sendChatMessage(stompClient, playerName, messageContent);
@@ -94,38 +87,15 @@ const App = ({ history }) => {
     }
   };
 
+  const handleKill = () => {
+    if (stompClient) {
+      killPlayer(stompClient, playerName, players)
+    }
+  };
+
   useEffect(() => {
     startGame(stompClient, setRedirectToSpaceShip)
   }, [stompClient]);
-
-  const handleKill = () => {
-    if (stompClient && playerName && players) {
-      // Find the closest player to the current player
-      let closestPlayer = null;
-      let minDistance = Infinity;
-      for (const [name, player] of Object.entries(players)) {
-        if (name !== playerName) { // Exclude the current player
-          // Calculate distance between current player and other players
-          const distance = calculateDistance(player, players[playerName]);
-          if (distance < minDistance) {
-            minDistance = distance;
-            closestPlayer = name;
-          }
-        }
-      }
-      if (closestPlayer) {
-        // Send a message to the backend indicating the victim's name
-        stompClient.send('/app/kill', {}, closestPlayer);
-      }
-    }
-  };
-  
-  // Function to calculate distance between two players, IDK IF ITS NEEDED ITS CHATGPT
-  function calculateDistance(player1, player2) {
-    const dx = player1.x - player2.x;
-    const dy = player1.y - player2.y;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
 
   return (
     <div style={{ position: 'relative', padding: '20px' }}>

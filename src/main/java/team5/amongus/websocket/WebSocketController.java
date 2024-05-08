@@ -29,7 +29,8 @@ public class WebSocketController {
     private final IPlayerService playerService;
     private final ITaskService taskService;
 
-    public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService, ITaskService taskService, IChatService chatService) {
+    public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
+            ITaskService taskService, IChatService chatService) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.messagingTemplate = messagingTemplate;
@@ -60,7 +61,6 @@ public class WebSocketController {
 
     }
 
-
     @MessageMapping("/move")
     @SendTo("/topic/players")
     public Map<String, Player> move(String payload) {
@@ -74,7 +74,6 @@ public class WebSocketController {
         messagingTemplate.convertAndSend("/topic/players", playersMap);
     }
 
-    
     @MessageMapping("/sendMessage")
     @SendTo("/topic/messages")
     public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor) {
@@ -82,10 +81,19 @@ public class WebSocketController {
         return updatedChatMessages;
     }
 
-    @MessageMapping("/kill")
-    public void handleKill(String victimName) {
-    playerService.handleKill(victimName);
-    broadcastPlayerUpdate(); // Broadcast the updated player state to clients
-    }
-}
+    @MessageMapping("/killPlayer")
+    @SendTo("/topic/players")
+    public Map<String, Player> handleKill(Map<String, Object> payload) {
+        String playerName = (String) payload.get("playerName");
+        Map<String, Player> playersMap = (Map<String, Player>) payload.get("players");
 
+        if (playerName == null || playerName.trim().isEmpty() || playersMap == null) {
+            return playersMap; // Return the current player map if any required data is missing
+        }
+
+        Map<String, Player> updatedPlayersMap = playerService.handleKill(playerName, playersMap);
+        broadcastPlayerUpdate(); // Broadcast the updated player state to clients
+        return updatedPlayersMap;
+    }
+
+}
