@@ -77,14 +77,30 @@ const App = ({ history }) => {
   };
 
   const handleStartButtonClick = () => {
-    setIsStartButtonClicked(true);
+    setIsStartButtonClicked(true); // Set the start button clicked state to true
     if (stompClient) {
-      stompClient.send('/app/startGame');
+      stompClient.send('/app/startGame'); // Send message to start the game
     }
   };
-
+  
   useEffect(() => {
     startGame(stompClient, setRedirectToSpaceShip)
+    
+    const handleGameStart = () => {
+      // When the game starts, redirect all players to the spaceship
+      history.push('/spaceship');
+    };
+  
+    // Subscribe to the game start topic
+    if (stompClient) {
+      const subscription = stompClient.subscribe('/topic/gameStart', () => {
+        handleGameStart();
+      });
+  
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
   }, [stompClient]);
 
   return (
@@ -125,7 +141,7 @@ const App = ({ history }) => {
         </div>
       )}
       {redirectToSpaceShip && (
-        <SpaceShip players={players} /> // Render the SpaceShip component and pass players data
+          <SpaceShip players={players} />
       )}
     </div>
   );
