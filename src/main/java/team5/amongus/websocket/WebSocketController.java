@@ -6,9 +6,12 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import team5.amongus.model.Imposter;
 import team5.amongus.model.Message;
 import team5.amongus.model.Player;
+import team5.amongus.model.Position;
 import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
 import team5.amongus.service.ITaskService;
@@ -22,7 +25,7 @@ import java.util.Map;
 @Controller
 public class WebSocketController {
 
-    private final Map<String, Player> playersMap = new HashMap<>();
+    private Map<String, Player> playersMap = new HashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
     private final IChatService chatService;
     private final List<Message> chatMessages = new ArrayList<>();
@@ -67,6 +70,7 @@ public class WebSocketController {
         Map<String, Player> updatedPlayersMap = playerService.movePlayer(playersMap, payload);
         taskService.updateTaskInteractions(updatedPlayersMap);
         broadcastPlayerUpdate();
+        playersMap = updatedPlayersMap;
         return updatedPlayersMap;
     }
 
@@ -83,17 +87,39 @@ public class WebSocketController {
 
     @MessageMapping("/killPlayer")
     @SendTo("/topic/players")
-    public Map<String, Player> handleKill(Map<String, Object> payload) {
-        String playerName = (String) payload.get("playerName");
-        Map<String, Player> playersMap = (Map<String, Player>) payload.get("players");
+    public Map<String, Player> handleKill(Map<String, Player> payload) {
+        // Iterate through each player in the payload
+        for (Player player : payload.values()) {
+            // Check if player's position is null and initialize it if needed
+            if (player.getPosition() == null) {
+                player.setPosition(new Position(400, 400));
+            }
+        }
+        System.out.println("Get positions...");
 
-        if (playerName == null || playerName.trim().isEmpty() || playersMap == null) {
-            return playersMap; // Return the current player map if any required data is missing
+        // Proceed with handling the kill
+        String playerName = payload.get("playerName").getName();
+        Player player = payload.get("players");
+        System.out.println(playerName);
+        System.out.println(player);
+        
+        System.out.println("Get playername...");
+        
+        // If playerName is still null, return the current player map
+        if (playerName == null || playerName.trim().isEmpty()) {            
+            System.out.println("PlayerName null");
+            return payload;
         }
 
-        Map<String, Player> updatedPlayersMap = playerService.handleKill(playerName, playersMap);
+        System.out.println(playerName);
+
+        // Proceed with handling the kill
+        System.out.println("handlekill aufruf");
+        Map<String, Player> updatedPlayersMap = playerService.handleKill(player, payload);
         broadcastPlayerUpdate(); // Broadcast the updated player state to clients
         return updatedPlayersMap;
     }
+
+
 
 }

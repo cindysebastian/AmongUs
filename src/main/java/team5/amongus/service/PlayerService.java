@@ -88,11 +88,17 @@ public class PlayerService implements IPlayerService {
         }
     }
 
-    public Map<String, Player> handleKill(String playerName, Map<String, Player> playersMap) {
+    public Map<String, Player> handleKill(Player imposter, Map<String, Player> playersMap) {
         System.out.println("Trying to kill...");
-        if (playerName != null && !playerName.isEmpty() && playersMap != null) {
+        if (imposter != null && playersMap != null) {
             // Find the closest player to the player initiating the kill
-            Player currentPlayer = playersMap.get(playerName);
+            List<Imposter> imposters = gameManager.getImposters();
+            Imposter currentPlayer = null;
+            for (Imposter imp : imposters) {
+                if (imp.getName() == imposter.getName()) {
+                    currentPlayer = imp;
+                }
+            }
             if (currentPlayer != null && currentPlayer instanceof Imposter) {
                 Imposter currentImposter = (Imposter) currentPlayer; // Cast currentPlayer to Imposter
                 // If the player initiating the kill is an imposter, find the closest
@@ -104,7 +110,7 @@ public class PlayerService implements IPlayerService {
                 for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
                     String name = entry.getKey();
                     Player player = entry.getValue();
-                    if (!name.equals(playerName) && !(player instanceof Imposter)) { // Exclude the player initiating
+                    if (!name.equals(imposter) && !(player instanceof Imposter)) { // Exclude the player initiating
                                                                                      // the kill and other imposters
                         // Calculate distance between current player and other players
                         double distance = calculateDistance(player, currentImposter);
@@ -116,6 +122,7 @@ public class PlayerService implements IPlayerService {
                 }
 
                 if (closestPlayer != null) {
+                    System.out.println("Killing " + closestPlayer);
                     currentImposter.kill(closestPlayer);
                 } else {
                     System.out.println("No non-imposter player found.");
@@ -127,6 +134,8 @@ public class PlayerService implements IPlayerService {
                 System.out.println("Only imposters can initiate a kill or player not found.");
                 // You can optionally log a message or handle this situation accordingly
             }
+        }else{
+            System.out.println("Imposter is null");
         }
         return playersMap; // Return the updated players map
     }

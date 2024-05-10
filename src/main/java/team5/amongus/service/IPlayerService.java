@@ -8,5 +8,5 @@ import java.util.Map;
 public interface IPlayerService {
     Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload);
 
-    Map<String, Player> handleKill(String playerName, Map<String, Player> playersMap);
+    Map<String, Player> handleKill(Player player, Map<String, Player> playersMap);
 }

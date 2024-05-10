@@ -2,8 +2,11 @@ package team5.amongus.model;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public class Player implements Serializable {
     private String name;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Position position;
     private String colour;
     private Integer step = 30;
@@ -19,6 +22,9 @@ public class Player implements Serializable {
         this.position = position;
     }
 
+    public Player(String name){
+        this.name = name;
+    }
     public String getName() {
         return name;
     }

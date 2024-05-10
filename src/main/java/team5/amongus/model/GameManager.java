@@ -48,6 +48,7 @@ public class GameManager {
         if (player != null) {
             Imposter imposter = new Imposter(player.getName(), player.getPosition());
             playersMap.add(imposter);
+            imposters.add(imposter);
             playersMap.remove(player);
             System.out.println("Imposter: " + imposter.getName());
 
