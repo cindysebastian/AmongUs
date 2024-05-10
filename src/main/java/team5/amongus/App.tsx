@@ -40,6 +40,15 @@ const App = ({ history }) => {
   const [inGamePlayers, setInGamePlayers] = useState({});
 
   useEffect(() => {
+    const heartbeatInterval = setInterval(() => {
+        if (stompClient && playerName) {
+            stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName }));
+        }
+    }, 1000); // Send heartbeat every second (adjust as needed)
+    return () => clearInterval(heartbeatInterval);
+}, [stompClient, playerName]);
+
+  useEffect(() => {
     const unsubscribeWebSocket = connectWebSocket(setStompClient);
     return () => unsubscribeWebSocket();
   }, []);

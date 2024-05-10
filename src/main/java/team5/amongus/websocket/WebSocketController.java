@@ -5,6 +5,8 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import org.springframework.context.event.EventListener;
 
 import team5.amongus.model.Message;
 import team5.amongus.model.Player;
@@ -15,6 +17,7 @@ import team5.amongus.service.ITaskService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +40,22 @@ public class WebSocketController {
         this.chatService = chatService;
     }
 
+    public void removePlayer(String playerName) {
+        playersMap.remove(playerName);
+        inGamePlayersMap.remove(playerName);
+        broadcastPlayerUpdate();
+    }
+
+    @MessageMapping("/heartbeat")
+    public void handleHeartbeat(String playerName) {
+        Player inGameplayer = inGamePlayersMap.get(playerName);
+        Player player = playersMap.get(playerName);
+        if (player != null && inGameplayer != null) {
+            player.updateLastActivityTime();
+            inGameplayer.updateLastActivityTime();
+        }
+    }
+
     @MessageMapping("/setPlayer")
     @SendTo("/topic/inGamePlayers")
     public Map<String, Player> setPlayer(Player player, SimpMessageHeaderAccessor accessor) {
@@ -46,6 +65,9 @@ public class WebSocketController {
         if (playerName.isEmpty() || playerName.equalsIgnoreCase("player")) {
             return inGamePlayersMap; // Do not add invalid player
         }
+
+        String sessionId = accessor.getSessionId();
+        player.setSessionId(sessionId);
 
         inGamePlayersMap.put(playerName, player);
 
@@ -114,5 +136,23 @@ public class WebSocketController {
         }
     
         return "Game has started";
+    }
+
+    // Listen for disconnection events
+    @EventListener
+    public void handleSessionDisconnect(SessionDisconnectEvent event) {
+        String sessionId = event.getSessionId();
+        // Iterate over players to find the disconnected player
+        for (Iterator<Map.Entry<String, Player>> iterator = inGamePlayersMap.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry<String, Player> entry = iterator.next();
+            Player player = entry.getValue();
+            if (player.getSessionId() != null && player.getSessionId().equals(sessionId)) {
+                // Remove the disconnected player from both maps
+                iterator.remove(); // Remove from inGamePlayersMap
+                playersMap.remove(entry.getKey()); // Remove from playersMap
+                broadcastPlayerUpdate(); // Broadcast updated player list
+                break;
+            }
+        }
     }
 }
