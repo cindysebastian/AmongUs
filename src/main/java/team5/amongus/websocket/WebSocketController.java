@@ -28,7 +28,7 @@ public class WebSocketController {
     private final List<Message> chatMessages = new ArrayList<>();
     private final IPlayerService playerService;
     private final ITaskService taskService;
-    private boolean gameStarted = false; // Add a flag to track game start
+    private boolean gameStarted = false;
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService, ITaskService taskService, IChatService chatService) {
         this.playerService = playerService;
@@ -38,21 +38,21 @@ public class WebSocketController {
     }
 
     @MessageMapping("/setPlayer")
-    @SendTo("/topic/players")
+    @SendTo("/topic/inGamePlayers")
     public Map<String, Player> setPlayer(Player player, SimpMessageHeaderAccessor accessor) {
         String playerName = player.getName().trim();
 
         // Check if player name is not empty and not "player"
         if (playerName.isEmpty() || playerName.equalsIgnoreCase("player")) {
-            return playersMap; // Do not add invalid player
+            return inGamePlayersMap; // Do not add invalid player
         }
 
-        playersMap.put(playerName, player);
+        inGamePlayersMap.put(playerName, player);
 
         // Broadcast updated player list to all clients
         broadcastPlayerUpdate();
 
-        return playersMap;
+        return inGamePlayersMap;
     }
 
     @MessageMapping("/interact")
@@ -65,6 +65,15 @@ public class WebSocketController {
     @MessageMapping("/move")
     @SendTo("/topic/players")
     public Map<String, Player> move(String payload) {
+        Map<String, Player> updatedPlayersMap = playerService.movePlayer(playersMap, payload);
+        taskService.updateTaskInteractions(updatedPlayersMap);
+        broadcastPlayerUpdate();
+        return updatedPlayersMap;
+    }
+
+    @MessageMapping("/move/inGamePlayers")
+    @SendTo("/topic/inGamePlayers")
+    public Map<String, Player> moveInGamePlayers(String payload) {
         Map<String, Player> updatedPlayersMap = playerService.movePlayer(playersMap, payload);
         taskService.updateTaskInteractions(updatedPlayersMap);
         broadcastPlayerUpdate();
@@ -91,16 +100,16 @@ public class WebSocketController {
         gameStarted = true; // Set gameStarted flag to true
     
         // Move players from lobby to spaceship
-        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
-            inGamePlayersMap.put(entry.getKey(), entry.getValue());
+        for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
+            playersMap.put(entry.getKey(), entry.getValue());
         }
     
         // Clear the players from the lobby
-        playersMap.clear();
+        inGamePlayersMap.clear();
     
         // Logging to check spaceShipPlayersMap contents
-        System.out.println("Space ship players count: " + inGamePlayersMap.size());
-        for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
+        System.out.println("Space ship players count: " + playersMap.size());
+        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
             System.out.println("Player: " + entry.getKey() + ", Position: " + entry.getValue().getPosition());
         }
     
