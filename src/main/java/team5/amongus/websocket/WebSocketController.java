@@ -22,11 +22,13 @@ import java.util.Map;
 public class WebSocketController {
 
     private final Map<String, Player> playersMap = new HashMap<>();
+    private final Map<String, Player> spaceShipPlayersMap = new HashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
     private final IChatService chatService;
     private final List<Message> chatMessages = new ArrayList<>();
     private final IPlayerService playerService;
     private final ITaskService taskService;
+    private boolean gameStarted = false; // Add a flag to track game start
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService, ITaskService taskService, IChatService chatService) {
         this.playerService = playerService;
@@ -71,6 +73,7 @@ public class WebSocketController {
 
     private void broadcastPlayerUpdate() {
         messagingTemplate.convertAndSend("/topic/players", playersMap);
+        messagingTemplate.convertAndSend("/topic/spaceShipPlayers", spaceShipPlayersMap);
     }
 
     
@@ -79,5 +82,28 @@ public class WebSocketController {
     public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor) {
         List<Message> updatedChatMessages = chatService.processMessage(chatMessages, message);
         return updatedChatMessages;
+    }
+
+    @MessageMapping("/startGame")
+    @SendTo("/topic/gameStart")
+    public String startGame() {
+        System.out.println("Game started!"); // Add logging
+        gameStarted = true; // Set gameStarted flag to true
+    
+        // Move players from lobby to spaceship
+        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+            spaceShipPlayersMap.put(entry.getKey(), entry.getValue());
+        }
+    
+        // Clear the players from the lobby
+        playersMap.clear();
+    
+        // Logging to check spaceShipPlayersMap contents
+        System.out.println("Space ship players count: " + spaceShipPlayersMap.size());
+        for (Map.Entry<String, Player> entry : spaceShipPlayersMap.entrySet()) {
+            System.out.println("Player: " + entry.getKey() + ", Position: " + entry.getValue().getPosition());
+        }
+    
+        return "Game has started";
     }
 }

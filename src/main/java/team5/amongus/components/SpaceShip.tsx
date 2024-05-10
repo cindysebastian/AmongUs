@@ -4,16 +4,16 @@ import PlayerSprite from './PlayerSprite';
 import styles from '../../amongus/spaceship.module.css';
 
 interface Props {
-  players: Record<string, Player>;
+  spaceShipPlayers: Record<string, Player>;
 }
 
-const SpaceShip: React.FC<Props> = ({ players }) => {
+const SpaceShip: React.FC<Props> = ({ spaceShipPlayers }) => {
   return (
     <div>
       <div className={styles.gifBackground}></div>
       <div className={styles.spaceShipBackground}>
         {/* Render players */}
-        {Object.values(players).map(player => (
+        {Object.values(spaceShipPlayers).map(player => (
           <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
             {/* Render each player's sprite */}
             <PlayerSprite
