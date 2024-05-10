@@ -22,7 +22,7 @@ import java.util.Map;
 public class WebSocketController {
 
     private final Map<String, Player> playersMap = new HashMap<>();
-    private final Map<String, Player> spaceShipPlayersMap = new HashMap<>();
+    private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
     private final IChatService chatService;
     private final List<Message> chatMessages = new ArrayList<>();
@@ -73,7 +73,7 @@ public class WebSocketController {
 
     private void broadcastPlayerUpdate() {
         messagingTemplate.convertAndSend("/topic/players", playersMap);
-        messagingTemplate.convertAndSend("/topic/spaceShipPlayers", spaceShipPlayersMap);
+        messagingTemplate.convertAndSend("/topic/inGamePlayers", inGamePlayersMap);
     }
 
     
@@ -92,15 +92,15 @@ public class WebSocketController {
     
         // Move players from lobby to spaceship
         for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
-            spaceShipPlayersMap.put(entry.getKey(), entry.getValue());
+            inGamePlayersMap.put(entry.getKey(), entry.getValue());
         }
     
         // Clear the players from the lobby
         playersMap.clear();
     
         // Logging to check spaceShipPlayersMap contents
-        System.out.println("Space ship players count: " + spaceShipPlayersMap.size());
-        for (Map.Entry<String, Player> entry : spaceShipPlayersMap.entrySet()) {
+        System.out.println("Space ship players count: " + inGamePlayersMap.size());
+        for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
             System.out.println("Player: " + entry.getKey() + ", Position: " + entry.getValue().getPosition());
         }
     
