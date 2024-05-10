@@ -11,7 +11,8 @@ import bgImage from '../../../resources/LoginBG.png';
 import styles from './index.module.css';
 import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer } from './service (Frontend)/WebsocketService';
 import { movePlayer } from '././service (Frontend)/PlayerMovementService';
-import {startGame} from '././service (Frontend)/GameStartingService'
+import { startGame } from '././service (Frontend)/GameStartingService'
+import { handleInteraction } from './service (Frontend)/InteractionService';
 
 const directionMap = {
   'w': 'UP',
@@ -28,6 +29,7 @@ const App = ({ history }) => {
   const [messages, setMessages] = useState([]);
   const [chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
+  const [interactibles, setInteractibles] = useState({})
   const keysPressed = useRef({
     w: false,
     a: false,
@@ -65,10 +67,27 @@ const App = ({ history }) => {
       sendChatMessage(stompClient, playerName, messageContent);
     }
   };
+  
+  useEffect(() => {
+    if (playerSpawned) {
+      window.addEventListener('keydown', handleInteractionKeyPress);
+      return () => {
+        window.removeEventListener('keydown', handleInteractionKeyPress);
+      };
+    }
+  }, [playerSpawned]);
+
+  const handleInteractionKeyPress = (e) => {
+    if (e.key === 'e') {
+      // Handle interaction logic here
+      handleInteraction(stompClient, playerName); // Call the interaction service
+    }
+  };
 
   const handleSpawnPlayer = () => {
     if (!firstPlayerName) {
-      setFirstPlayerName(playerName.trim());}
+      setFirstPlayerName(playerName.trim());
+    }
     if (stompClient && playerName.trim()) {
       setPlayer(stompClient, playerName);
       setPlayerSpawned(true);
@@ -109,7 +128,7 @@ const App = ({ history }) => {
       {playerSpawned && !redirectToSpaceShip && (
         <div>
           {/* Pass firstPlayerName as a prop to the Lobby component */}
-          <Lobby players={players} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} /> 
+          <Lobby players={players} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} />
 
           <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
           {chatVisible && (

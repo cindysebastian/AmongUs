@@ -9,5 +9,5 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public interface ITaskService {
-    void updateTaskInteractions(Map<String, Player> playersMap, ArrayList<Interactible> interactibles, Player player, Task task);
+    ArrayList<Interactible> updateTaskInteractions(Map<String, Player> playersMap, ArrayList<Interactible> interactibles, Player player, Task task);
 }

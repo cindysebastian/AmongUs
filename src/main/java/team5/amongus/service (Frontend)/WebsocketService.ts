@@ -47,7 +47,7 @@ export const subscribeToMessages = (stompClient, setMessages) => {
 export const sendInteraction = (stompClient, playerName) => {
   if (!stompClient || !playerName) return;
 
-  stompClient.send('/app/interaction', {}, JSON.stringify({ playerName: playerName }));
+  stompClient.send('/app/interact', {}, JSON.stringify({ playerName: playerName }));
 };
 
 export const sendChatMessage = (stompClient, playerName, messageContent) => {
