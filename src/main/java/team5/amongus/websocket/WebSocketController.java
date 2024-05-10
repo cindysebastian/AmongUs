@@ -138,11 +138,11 @@ public class WebSocketController {
         return "Game has started";
     }
 
-    // Listen for disconnection events
     @EventListener
     public void handleSessionDisconnect(SessionDisconnectEvent event) {
         String sessionId = event.getSessionId();
-        // Iterate over players to find the disconnected player
+        
+        // Iterate over inGamePlayersMap to find the disconnected player
         for (Iterator<Map.Entry<String, Player>> iterator = inGamePlayersMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String, Player> entry = iterator.next();
             Player player = entry.getValue();
@@ -150,6 +150,18 @@ public class WebSocketController {
                 // Remove the disconnected player from both maps
                 iterator.remove(); // Remove from inGamePlayersMap
                 playersMap.remove(entry.getKey()); // Remove from playersMap
+                broadcastPlayerUpdate(); // Broadcast updated player list
+                break;
+            }
+        }
+    
+        // Iterate over playersMap to find the disconnected player in the spaceship
+        for (Iterator<Map.Entry<String, Player>> iterator = playersMap.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry<String, Player> entry = iterator.next();
+            Player player = entry.getValue();
+            if (player.getSessionId() != null && player.getSessionId().equals(sessionId)) {
+                // Remove the disconnected player from playersMap
+                iterator.remove(); // Remove from playersMap
                 broadcastPlayerUpdate(); // Broadcast updated player list
                 break;
             }
