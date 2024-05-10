@@ -37,7 +37,7 @@ const App = ({ history }) => {
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false); // Add state for tracking start button click
   const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); // Add state to control redirection to SpaceShip
   const [gameStarted, setGameStarted] = useState(false);
-  const [inGamePlayers, setinGamePlayers] = useState({});
+  const [inGamePlayers, setInGamePlayers] = useState({});
 
   useEffect(() => {
     const unsubscribeWebSocket = connectWebSocket(setStompClient);
@@ -46,7 +46,7 @@ const App = ({ history }) => {
 
   useEffect(() => {
     if (stompClient && playerName) {
-      return subscribeToPlayers(stompClient, playerName, setPlayers, setinGamePlayers);
+      return subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers);
     }
   }, [stompClient, playerName]);
 
@@ -91,7 +91,6 @@ const App = ({ history }) => {
     }
   }, [redirectToSpaceShip, gameStarted, history]);
 
-  
   useEffect(() => {
     startGame(stompClient, setRedirectToSpaceShip)
     
