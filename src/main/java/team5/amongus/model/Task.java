@@ -3,10 +3,8 @@ package team5.amongus.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Task {
-    private Position position;
-    private int height = 50;
-    private int width = 50;
+public class Task extends Interactible{
+   
     private boolean completed = false;
     private Player assignedPlayer;
     private TaskType type;
@@ -57,8 +55,9 @@ public class Task {
     public Task(TaskType type, int posx, int posy, Player assignedPlayer) {
         this.type = type;
         this.assignedPlayer = assignedPlayer;
-        position.setX(posx);
-        position.setY(posy);
+        Position newPos= new Position(posx, posy);
+        setPosition(newPos);
+      
         completed = false;
 
         switch (type) {
@@ -77,10 +76,4 @@ public class Task {
         }
 
     }
-
-    // Method to get bounding box
-    public CollisionBox getBounds() {
-        return new CollisionBox(position.getX(), position.getY(), width, height);
-    }
-
 }
