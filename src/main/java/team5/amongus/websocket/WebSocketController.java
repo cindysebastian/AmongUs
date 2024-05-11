@@ -6,7 +6,6 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-
 import team5.amongus.model.*;
 import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
@@ -22,7 +21,8 @@ import java.util.Map;
 public class WebSocketController {
 
     private final Map<String, Player> playersMap = new HashMap<>();
-    private final ArrayList<Interactible> interactibles = new ArrayList<>(); 
+    private ArrayList<Interactible> interactibles = new ArrayList<>();
+    private final Task testTask = new Task(TaskType.SCAN, 500, 500, "dwarf");     
     private final SimpMessagingTemplate messagingTemplate;
     private final IChatService chatService;
     private final List<Message> chatMessages = new ArrayList<>();
@@ -35,6 +35,7 @@ public class WebSocketController {
         this.taskService = taskService;
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
+        
     }
 
     @MessageMapping("/setPlayer")
@@ -56,29 +57,40 @@ public class WebSocketController {
     }
 
     @MessageMapping("/interact")
-    @SendTo("/topic/game")
-    public void handleInteract(Player player) throws IOException {
-        // Assuming you have logic to determine the type of interactable object the
-        // player is interacting with
-        // For demonstration, let's say you have a method
-        // getPlayerInteractableObject(Player player) in your service
+    @SendTo("/topic/interactions")
+    public ArrayList<Interactible> handleInteract(String playerName) throws IOException {
+        interactibles.add(testTask);
 
-        // Retrieve the interactable object the player is interacting with
-        Interactible interactableObject = playerService.getPlayerInteractableObject(interactibles, player);
+        /* TODO to be fixed once we get a response
+        Player player = playersMap.get(playerName);
+        System.out.println(player + " Object in Controller");
+               
+        Interactible interactableObject = playerService.getPlayerInteractableObject(interactibles, player);*/
+
+        Map.Entry<String, Player> entry = playersMap.entrySet().iterator().next();
+        System.out.println(entry.getKey());
+        System.out.println(entry.getValue());
+
+        Player player = entry.getValue();
+
+        Interactible interactableObject = testTask;
 
         if (interactableObject != null) {
             // Handle interaction based on the type of interactable object
             if (interactableObject instanceof Task) {
                 // If the interactable object is a Task, call the TaskService to update task
-                taskService.updateTaskInteractions(playersMap, interactibles, player, (Task) interactableObject);
+                ArrayList<Interactible> updatedInteractables = taskService.updateTaskInteractions(playersMap, interactibles, player, (Task) interactableObject);
                 // Broadcast updated task list to all clients
-                messagingTemplate.convertAndSend("/topic/tasks", interactibles);
+                System.out.println("Sending updated Interactibles");
+                interactibles= updatedInteractables;
 
             } /*else if (interactableObject instanceof deadBody) {
                 // If the interactable object is something else, handle it accordingly
                 otherService.handleInteraction(player, (OtherInteractableObject) interactableObject);
             }*/
         }
+        return interactibles;
+
     }
 
     @MessageMapping("/move")

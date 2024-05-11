@@ -6,7 +6,7 @@ import java.util.Arrays;
 public class Task extends Interactible{
    
     private boolean completed = false;
-    private Player assignedPlayer;
+    private String assignedPlayer;
     private TaskType type;
     private ArrayList<Boolean> completionConditions;
     private Boolean inProgress;
@@ -36,11 +36,11 @@ public class Task extends Interactible{
         return completionConditions.get(pos);
     }
 
-    public Player getAssignedPlayer() {
+    public String getAssignedPlayer() {
         return assignedPlayer;
     }
 
-    public void setAssignedPlayer(Player assignedPlayer) {
+    public void setAssignedPlayer(String assignedPlayer) {
         this.assignedPlayer = assignedPlayer;
     }
 
@@ -52,7 +52,7 @@ public class Task extends Interactible{
         return type;
     }
 
-    public Task(TaskType type, int posx, int posy, Player assignedPlayer) {
+    public Task(TaskType type, int posx, int posy, String assignedPlayer) {
         this.type = type;
         this.assignedPlayer = assignedPlayer;
         Position newPos= new Position(posx, posy);

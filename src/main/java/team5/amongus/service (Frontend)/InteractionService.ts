@@ -11,3 +11,5 @@ export const handleInteraction = (stompClient, playerName) => {
     sendInteraction(stompClient, playerName);
   };
   
+
+  

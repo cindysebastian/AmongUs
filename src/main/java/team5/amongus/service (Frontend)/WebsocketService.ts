@@ -3,9 +3,17 @@
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 
+// Disable Stomp.js logging
+
+
+
 export const connectWebSocket = (setStompClient) => {
+  // Disable Stomp.js logging
+ 
+
   const socket = new SockJS('http://localhost:8080/ws');
   const stomp = Stomp.over(socket);
+  stomp.debug = function (){};//do nothing
 
   stomp.connect({}, () => {
     console.log('Connected to WebSocket');
@@ -14,7 +22,7 @@ export const connectWebSocket = (setStompClient) => {
 
   return () => {
     if (stomp) {
-      stomp.disconnect(() => {}); // Provide an empty function as disconnectCallback
+      stomp.disconnect(() => { }); // Provide an empty function as disconnectCallback
       console.log('Disconnected from WebSocket');
     }
   };
@@ -26,8 +34,7 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers) => {
   stompClient.subscribe('/topic/players', (message) => {
     const updatedPlayers = JSON.parse(message.body);
     setPlayers(updatedPlayers);
-    const currentPlayer = updatedPlayers[playerName];
-    // Your logic related to player updates can go here
+    
   });
 };
 
@@ -44,10 +51,27 @@ export const subscribeToMessages = (stompClient, setMessages) => {
   };
 };
 
+
+export const subscribetoInteractions = (stompClient, setInteractibles) => {
+  if (!stompClient) return;
+  console.log("Subscribing to Interactibles");
+  
+  stompClient.subscribe('/topic/interactions', (message) => {
+    const updatedInteractibles = JSON.parse(message.body);
+    setInteractibles(updatedInteractibles);
+    
+
+  });
+
+ 
+};
+
 export const sendInteraction = (stompClient, playerName) => {
   if (!stompClient || !playerName) return;
+  console.log("Updating Interactibles");
 
-  stompClient.send('/app/interact', {}, JSON.stringify({ playerName: playerName }));
+
+  stompClient.send('/app/interact', {}, JSON.stringify(playerName));
 };
 
 export const sendChatMessage = (stompClient, playerName, messageContent) => {
