@@ -85,6 +85,10 @@ const App = ({ history }) => {
   };
 
   const handleSpawnPlayer = () => {
+    if (Object.values(players as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
+      alert('Player name already exists in the game. Please choose a different name.');
+      return;
+    }
     if (!firstPlayerName) {
       setFirstPlayerName(playerName.trim());
     }
@@ -94,6 +98,7 @@ const App = ({ history }) => {
       history.push('/game');
     }
   };
+  
 
   const handleStartButtonClick = () => {
     setIsStartButtonClicked(true);

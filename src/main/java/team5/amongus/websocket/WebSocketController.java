@@ -99,4 +99,14 @@ public class WebSocketController {
         List<Message> updatedChatMessages = chatService.processMessage(chatMessages, message);
         return updatedChatMessages;
     }
+
+    @Controller
+    public class GameController {
+
+        @MessageMapping("/startGame")
+        @SendTo("/topic/gameStart")
+        public String startGame() {
+            return "Game has started";
+        }
+    }
 }
