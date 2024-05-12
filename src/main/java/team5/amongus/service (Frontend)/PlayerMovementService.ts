@@ -36,8 +36,10 @@ export const movePlayer = (stompClient, playerName, keysPressed) => {
     if (pressedKeys.length > 0) {
       const directionsToSend = pressedKeys.map(key => directionMap[key]);
       stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: directionsToSend }));
+      stompClient.send('/app/move/inGamePlayers', {}, JSON.stringify({ playerName: playerName, directions: directionsToSend }));
     } else {
       stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: [] }));
+      stompClient.send('/app/move/inGamePlayers', {}, JSON.stringify({ playerName: playerName, directions: [] }));
     }
   };
 
