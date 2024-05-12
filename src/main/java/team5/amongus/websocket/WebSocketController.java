@@ -96,10 +96,10 @@ public class WebSocketController {
     @MessageMapping("/move/inGamePlayers")
     @SendTo("/topic/inGamePlayers")
     public Map<String, Player> moveInGamePlayers(String payload) {
-        Map<String, Player> updatedPlayersMap = playerService.movePlayer(playersMap, payload);
-        taskService.updateTaskInteractions(updatedPlayersMap);
+        Map<String, Player> updatedinGamePlayersMap = playerService.movePlayer(inGamePlayersMap, payload);
+        taskService.updateTaskInteractions(updatedinGamePlayersMap);
         broadcastPlayerUpdate();
-        return updatedPlayersMap;
+        return updatedinGamePlayersMap;
     }
 
     private void broadcastPlayerUpdate() {
