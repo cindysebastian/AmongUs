@@ -78,6 +78,10 @@ const App = ({ history }) => {
   };
 
   const handleSpawnPlayer = () => {
+    if (Object.values(inGamePlayers as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
+      alert('Player name already exists in the game. Please choose a different name.');
+      return;
+    }
     if (!firstPlayerName) {
       setFirstPlayerName(playerName.trim());
     }
