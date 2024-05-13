@@ -28,13 +28,19 @@ export const connectWebSocket = (setStompClient) => {
   };
 };
 
-export const subscribeToPlayers = (stompClient, playerName, setPlayers) => {
+export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGamePlayers) => {
   if (!stompClient || !playerName) return;
 
   stompClient.subscribe('/topic/players', (message) => {
     const updatedPlayers = JSON.parse(message.body);
     setPlayers(updatedPlayers);
     
+  });
+
+  stompClient.subscribe('/topic/inGamePlayers', (message) => {
+    const updatedinGamePlayers = JSON.parse(message.body);
+    setInGamePlayers(updatedinGamePlayers);
+    const currentPlayer = updatedinGamePlayers[playerName];
   });
 };
 

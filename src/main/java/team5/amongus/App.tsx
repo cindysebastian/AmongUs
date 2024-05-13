@@ -38,6 +38,17 @@ const App = ({ history }) => {
   });
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false); // Add state for tracking start button click
   const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); // Add state to control redirection to SpaceShip
+  const [gameStarted, setGameStarted] = useState(false);
+  const [inGamePlayers, setInGamePlayers] = useState({});
+
+  useEffect(() => {
+    const heartbeatInterval = setInterval(() => {
+        if (stompClient && playerName) {
+            stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName }));
+        }
+    }, 1000); // Send heartbeat every second (adjust as needed)
+    return () => clearInterval(heartbeatInterval);
+}, [stompClient, playerName]);
 
   useEffect(() => {
     const unsubscribeWebSocket = connectWebSocket(setStompClient);
@@ -46,7 +57,7 @@ const App = ({ history }) => {
 
   useEffect(() => {
     if (stompClient && playerName) {
-      return subscribeToPlayers(stompClient, playerName, setPlayers);
+      return subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers);
     }
   }, [stompClient, playerName]);
 
@@ -108,14 +119,36 @@ const App = ({ history }) => {
   
 
   const handleStartButtonClick = () => {
-    setIsStartButtonClicked(true);
+    setIsStartButtonClicked(true); // Set the start button clicked state to true
     if (stompClient) {
-      stompClient.send('/app/startGame');
+      stompClient.send('/app/startGame'); // Send message to start the game
     }
   };
 
   useEffect(() => {
+    if (redirectToSpaceShip && gameStarted) { // Only redirect if the game has started
+        history.push('/spaceship');
+    }
+  }, [redirectToSpaceShip, gameStarted, history]);
+
+  useEffect(() => {
     startGame(stompClient, setRedirectToSpaceShip)
+    
+    const handleGameStart = () => {
+      // When the game starts, redirect all players to the spaceship
+      history.push('/spaceship');
+    };
+  
+    // Subscribe to the game start topic
+    if (stompClient) {
+      const subscription = stompClient.subscribe('/topic/gameStart', () => {
+        handleGameStart();
+      });
+  
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
   }, [stompClient]);
 
   return (
@@ -140,7 +173,7 @@ const App = ({ history }) => {
       {playerSpawned && !redirectToSpaceShip && (
         <div>
           {/* Pass firstPlayerName as a prop to the Lobby component */}
-          <Lobby players={players} interactibles = {interactibles} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} />
+          <Lobby inGamePlayers={inGamePlayers} interactibles = {interactibles} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} />
 
           <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
           {chatVisible && (
@@ -156,7 +189,7 @@ const App = ({ history }) => {
         </div>
       )}
       {redirectToSpaceShip && (
-        <SpaceShip players={players} /> // Render the SpaceShip component and pass players data
+          <SpaceShip players={players} />
       )}
     </div>
   );
