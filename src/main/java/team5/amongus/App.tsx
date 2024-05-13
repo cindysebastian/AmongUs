@@ -78,18 +78,20 @@ const App = ({ history }) => {
   };
 
   const handleSpawnPlayer = () => {
-    if (Object.values(players as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
-      alert('Player name already exists in the game. Please choose a different name.');
-      return;
-    }
     if (!firstPlayerName) {
-      setFirstPlayerName(playerName.trim());}
+      setFirstPlayerName(playerName.trim());
+    }
     if (stompClient && playerName.trim()) {
+      if (Object.keys(players).length > 0) {
+        alert("The game has already started. You cannot join at this time.");
+        return;
+      }
       setPlayer(stompClient, playerName);
       setPlayerSpawned(true);
       history.push('/game');
     }
   };
+  
   
 
   const handleStartButtonClick = () => {
