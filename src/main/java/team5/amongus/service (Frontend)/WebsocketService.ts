@@ -73,8 +73,8 @@ export const setPlayer = (stompClient, playerName) => {
   stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
 };
 
-export const killPlayer = (stompClient, playerName, players) => {
+export const killPlayer = (stompClient, playerName) => {
   if (!stompClient || !playerName.trim()) return;
 
-  stompClient.send('/app/killPlayer', {}, JSON.stringify({ playerName, players }));
+  stompClient.send('/app/killPlayer', {}, playerName);
 };

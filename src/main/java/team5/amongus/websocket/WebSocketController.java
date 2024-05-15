@@ -87,19 +87,9 @@ public class WebSocketController {
 
     @MessageMapping("/killPlayer")
     @SendTo("/topic/players")
-    public Map<String, Player> handleKill(Map<String, Player> payload) {
-        // Iterate through each player in the payload
-        for (Player player : payload.values()) {
-            // Check if player's position is null and initialize it if needed
-            if (player.getPosition() == null) {
-                player.setPosition(new Position(400, 400));
-            }
-        }
-        System.out.println("Get positions...");
-
+    public Map<String, Player> handleKill(String playerName) {
         // Proceed with handling the kill
-        String playerName = payload.get("playerName").getName();
-        Player player = payload.get("players");
+        Player player = playersMap.get(playerName);
         System.out.println(playerName);
         System.out.println(player);
         
@@ -108,14 +98,14 @@ public class WebSocketController {
         // If playerName is still null, return the current player map
         if (playerName == null || playerName.trim().isEmpty()) {            
             System.out.println("PlayerName null");
-            return payload;
+            return playersMap;
         }
 
         System.out.println(playerName);
 
         // Proceed with handling the kill
         System.out.println("handlekill aufruf");
-        Map<String, Player> updatedPlayersMap = playerService.handleKill(player, payload);
+        Map<String, Player> updatedPlayersMap = playerService.handleKill(player, playersMap);
         broadcastPlayerUpdate(); // Broadcast the updated player state to clients
         return updatedPlayersMap;
     }

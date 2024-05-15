@@ -95,7 +95,7 @@ public class PlayerService implements IPlayerService {
             List<Imposter> imposters = gameManager.getImposters();
             Imposter currentPlayer = null;
             for (Imposter imp : imposters) {
-                if (imp.getName() == imposter.getName()) {
+                if (imp.getName().equals(imposter.getName())) {
                     currentPlayer = imp;
                 }
             }

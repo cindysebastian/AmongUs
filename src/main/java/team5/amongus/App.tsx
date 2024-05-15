@@ -89,7 +89,7 @@ const App = ({ history }) => {
 
   const handleKill = () => {
     if (stompClient) {
-      killPlayer(stompClient, playerName, players)
+      killPlayer(stompClient, playerName)
     }
   };
 
