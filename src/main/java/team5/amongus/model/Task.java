@@ -8,7 +8,7 @@ public class Task extends Interactible{
     private boolean completed = false;
     private String assignedPlayer;
     private TaskType type;
-    private ArrayList<Boolean> completionConditions;
+    
     private Boolean inProgress;
 
     public Boolean getInProgress() {
@@ -27,15 +27,10 @@ public class Task extends Interactible{
         this.completed = comp;
     }
 
-    public void setConditionCompleted(int pos, boolean comp) {
-        completionConditions.set(pos, comp);
-
-    }
-
-    public boolean getConditionCompleted(int pos) {
-        return completionConditions.get(pos);
-    }
-
+   public void setCompleted(boolean completed) {
+       this.completed = completed;
+   }
+    
     public String getAssignedPlayer() {
         return assignedPlayer;
     }
@@ -59,21 +54,6 @@ public class Task extends Interactible{
         setPosition(newPos);
       
         completed = false;
-
-        switch (type) {
-            case SWIPE:
-                completionConditions = new ArrayList<>(Arrays.asList(false));
-                break;
-
-            case SCAN:
-                completionConditions = new ArrayList<>(Arrays.asList(false, false, false));
-                break;
-
-            case MINE:
-                completionConditions = new ArrayList<>(Arrays.asList(false, false));
-                break;
-
-        }
 
     }
 }

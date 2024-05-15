@@ -1,10 +1,11 @@
 interface Interactible {
-    id: string;
+    id: number;
     position: { x: number; y: number };
     width: number;
     height: number;
-    inProgress: Boolean;
+    inProgress: boolean;
     type: TaskType;
+    assignedPlayer: String;
   }
 
   enum TaskType {

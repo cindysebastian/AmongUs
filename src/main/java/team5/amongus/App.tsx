@@ -21,6 +21,7 @@ const directionMap = {
   'd': 'RIGHT',
 };
 
+
 const App = ({ history }) => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
@@ -75,7 +76,9 @@ const App = ({ history }) => {
 
   useEffect(() => {
     if (stompClient && playerSpawned) {
+      
       return movePlayer(stompClient, playerName, keysPressed);
+      
     }
   }, [stompClient, playerName, playerSpawned]);
 
@@ -84,6 +87,8 @@ const App = ({ history }) => {
       sendChatMessage(stompClient, playerName, messageContent);
     }
   };
+
+  
   
   useEffect(() => {
     if (playerSpawned) {
@@ -96,9 +101,8 @@ const App = ({ history }) => {
 
   const handleInteractionKeyPress = (e) => {
     if (e.key === 'e') {
-      // Handle interaction logic here
       
-      handleInteraction(stompClient, playerName.trim()); // Call the interaction service
+      handleInteraction(stompClient, playerName.trim()); 
     }
   };
 
@@ -155,6 +159,7 @@ const App = ({ history }) => {
     <div style={{ padding: '20px' }}>
       {!playerSpawned && (
         <div className={styles.gifBackground}></div>
+        
       )}
       {!playerSpawned && (
         <div className={styles.loginbackground}>
@@ -189,7 +194,7 @@ const App = ({ history }) => {
         </div>
       )}
       {redirectToSpaceShip && (
-          <SpaceShip players={players} interactibles = {interactibles}/>
+          <SpaceShip stompClient={stompClient} players={players} interactibles = {interactibles} currentplayer ={playerName}/>
       )}
     </div>
   );

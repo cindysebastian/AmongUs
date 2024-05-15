@@ -2,6 +2,7 @@
 
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
+import { handleReceivedInteractibles } from './InteractionService';
 
 // Disable Stomp.js logging
 
@@ -57,6 +58,22 @@ export const subscribeToMessages = (stompClient, setMessages) => {
   };
 };
 
+export const markTaskAsCompleted = (stompClient, interactibleId: number) => {
+  if (!stompClient) return;
+
+  // Construct the message body
+  const messageBody = {
+      interactibleId: interactibleId
+  };
+
+  // Send a STOMP message to your backend to mark the task as completed
+  console.log("Sending request to complete Task to Backend")
+  console.log(interactibleId)
+  stompClient.send('/app/completeTask', {}, messageBody);
+};
+
+
+
 
 export const subscribetoInteractions = (stompClient, setInteractibles) => {
   if (!stompClient) return;
@@ -65,7 +82,7 @@ export const subscribetoInteractions = (stompClient, setInteractibles) => {
   stompClient.subscribe('/topic/interactions', (message) => {
     const updatedInteractibles = JSON.parse(message.body);
     setInteractibles(updatedInteractibles);
-    
+    handleReceivedInteractibles(updatedInteractibles, setInteractibles);
 
   });
 

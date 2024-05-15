@@ -12,4 +12,7 @@ public interface ITaskService {
     public ArrayList<Interactible> createTasks(Map<String, Player> playersMap);
 
     ArrayList<Interactible> updateTaskInteractions(Map<String, Player> playersMap, ArrayList<Interactible> interactibles, Player player, Task task);
+
+    public ArrayList<Interactible> completeTask(int interactibleId, ArrayList<Interactible> interactebels);
+    
 }

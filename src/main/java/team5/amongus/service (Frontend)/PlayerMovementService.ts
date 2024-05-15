@@ -17,9 +17,7 @@ export const movePlayer = (stompClient, playerName, keysPressed) => {
       return;
     }
 
-    if (e.key === 'e') {
-      // Interaction logic can go here
-    }
+    
     keysPressed.current[e.key] = true;
   };
 

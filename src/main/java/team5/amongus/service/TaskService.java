@@ -25,6 +25,7 @@ public class TaskService implements ITaskService {
         Map<TaskType, List<Position>> taskPositions = new HashMap<>(); // Map to store task positions by type
 
         Random random = new Random();
+        int taskIdCounter = 1; // Counter for generating unique task IDs
 
         for (Player player : playersMap.values()) {
             // Generate a random index to get a random type of Task
@@ -33,8 +34,9 @@ public class TaskService implements ITaskService {
             // Generate Positions based on Task Type
             Position position = generateUniquePosition(type, taskPositions);
 
-            // Set the Task
+            // Set the Task with a unique ID
             Task task = new Task(type, position.getX(), position.getY(), player.getName());
+            task.setId(taskIdCounter++); // Assign a unique ID
             interactibles.add(task);
         }
         return interactibles;
@@ -98,4 +100,26 @@ public class TaskService implements ITaskService {
         }
         return interactibles;
     }
+
+    
+
+    @Override
+    public ArrayList<Interactible> completeTask(int interactibleId, ArrayList<Interactible> interactibles) {
+        if (interactibleId >= 0 && interactibleId < interactibles.size()) {
+            Interactible interactible = interactibles.get(interactibleId);
+            if (interactible instanceof Task) {
+                Task task = (Task) interactible;
+                if (task.getInProgress()) {
+                    // Set completed to true and inProgress to false
+                    task.setCompleted(true);
+                    task.setInProgress(false);
+                    // Update the interactible in the list
+                    interactibles.set(interactibleId, task);
+                    return interactibles;
+                }
+            }
+        }
+        return null; // Task not found, not a Task instance, or already completed
+    }
+    
 }
