@@ -148,7 +148,7 @@ public class WebSocketController {
     public String startGame() {
         System.out.println("Game started!"); // Add logging
         gameStarted = true; // Set gameStarted flag to true
-        interactibles.add(testTask);
+       
     
         // Move players from lobby to spaceship
         for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
@@ -163,7 +163,11 @@ public class WebSocketController {
         for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
             System.out.println("Player: " + entry.getKey() + ", Position: " + entry.getValue().getPosition());
         }
-        
+
+        //Create a Task list based on set players
+
+        interactibles = taskService.createTasks(playersMap);
+
         broadcastInteractiblesUpdate();
     
         return "Game has started";

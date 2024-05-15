@@ -9,5 +9,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public interface ITaskService {
+    public ArrayList<Interactible> createTasks(Map<String, Player> playersMap);
+
     ArrayList<Interactible> updateTaskInteractions(Map<String, Player> playersMap, ArrayList<Interactible> interactibles, Player player, Task task);
 }
