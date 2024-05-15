@@ -82,21 +82,14 @@ public class WebSocketController {
     @MessageMapping("/interact")
     @SendTo("/topic/interactions")
     public ArrayList<Interactible> handleInteract(String playerName) throws IOException {
-        interactibles.add(testTask);
+        
 
-        /* TODO to be fixed once we get a response
+       
         Player player = playersMap.get(playerName);
-        System.out.println(player + " Object in Controller");
+        
                
-        Interactible interactableObject = playerService.getPlayerInteractableObject(interactibles, player);*/
+        Interactible interactableObject = playerService.getPlayerInteractableObject(interactibles, player);
 
-        Map.Entry<String, Player> entry = playersMap.entrySet().iterator().next();
-        System.out.println(entry.getKey());
-        System.out.println(entry.getValue());
-
-        Player player = entry.getValue();
-
-        Interactible interactableObject = testTask;
 
         if (interactableObject != null) {
             // Handle interaction based on the type of interactable object
@@ -112,6 +105,7 @@ public class WebSocketController {
                 otherService.handleInteraction(player, (OtherInteractableObject) interactableObject);
             }*/
         }
+        broadcastInteractiblesUpdate();
         return interactibles;
 
     }
@@ -138,6 +132,10 @@ public class WebSocketController {
         messagingTemplate.convertAndSend("/topic/inGamePlayers", inGamePlayersMap);
     }
 
+    private void broadcastInteractiblesUpdate() {
+        messagingTemplate.convertAndSend("/topic/interactions", interactibles);
+    }
+
     @MessageMapping("/sendMessage")
     @SendTo("/topic/messages")
     public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor) {
@@ -150,6 +148,7 @@ public class WebSocketController {
     public String startGame() {
         System.out.println("Game started!"); // Add logging
         gameStarted = true; // Set gameStarted flag to true
+        interactibles.add(testTask);
     
         // Move players from lobby to spaceship
         for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
@@ -164,6 +163,8 @@ public class WebSocketController {
         for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
             System.out.println("Player: " + entry.getKey() + ", Position: " + entry.getValue().getPosition());
         }
+        
+        broadcastInteractiblesUpdate();
     
         return "Game has started";
     }

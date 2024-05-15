@@ -27,17 +27,16 @@ public class TaskService implements ITaskService {
 
 
         // Check whether the player is allowed to interact with the Task
-        System.out.println(interactibles.contains(task));
-        System.out.println(player.collidesWith(task));
-        System.out.println(task.getAssignedPlayer() == player.getName());
+        
+
         if (interactibles.contains(task) && player.collidesWith(task)
-                && task.getAssignedPlayer() == player.getName()) {
-                    System.out.println("Gonna Update");
+                && task.getAssignedPlayer().equals(player.getName())) {
+                    
             for (Interactible currentObj : interactibles) {
                 if (currentObj instanceof Task) {
-                    System.out.println("Updating");
+                    
                     if (currentObj.equals(task)) {
-                        System.out.println("More Update");
+                        
                         task.setInProgress(true);
                         ((Task) currentObj).setInProgress(true);
                     }

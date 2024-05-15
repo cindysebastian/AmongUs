@@ -77,7 +77,7 @@ export const sendInteraction = (stompClient, playerName) => {
   console.log("Updating Interactibles");
 
 
-  stompClient.send('/app/interact', {}, JSON.stringify(playerName));
+  stompClient.send('/app/interact', {},playerName);
 };
 
 export const sendChatMessage = (stompClient, playerName, messageContent) => {

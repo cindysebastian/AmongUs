@@ -7,12 +7,11 @@ import styles from '../../amongus/lobby.module.css';
 
 interface Props {
   inGamePlayers: Record<string, Player>;
-  interactibles: Interactible[];
   firstPlayerName: string;
   onStartButtonClick: () => void;
 }
 
-const Lobby: React.FC<Props> = ({ inGamePlayers, interactibles, firstPlayerName, onStartButtonClick }) => {
+const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick }) => {
   const [playerCount, setPlayerCount] = useState(Object.keys(inGamePlayers).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
 
@@ -22,7 +21,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, interactibles, firstPlayerName,
 
   // Check if the current player is the first one
   const isFirstPlayer = firstPlayerName === Object.keys(inGamePlayers)[0];
-  console.log(interactibles);
+ // console.log(interactibles);
 
   return (
     <div style={{ position: 'relative' }}>
@@ -40,17 +39,6 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, interactibles, firstPlayerName,
             />
           </div>
         )}
-      </div>
-
-      {/* Render interactibles */}
-      <div>
-        
-
-        {interactibles.map(interactible => (
-          <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y, left: interactible.position.x }}>
-            <div className={styles.interactible} style={{ width: interactible.width, height: interactible.height, backgroundColor: 'pink' }}></div>
-          </div>
-        ))}
       </div>
 
       {/* Render players */}
