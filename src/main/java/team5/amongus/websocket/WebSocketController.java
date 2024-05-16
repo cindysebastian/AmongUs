@@ -94,7 +94,6 @@ public class WebSocketController {
         Map<String, Player> updatedPlayersMap = playerService.movePlayer(playersMap, payload);
         taskService.updateTaskInteractions(updatedPlayersMap);
         broadcastPlayerUpdate();
-        playersMap = updatedPlayersMap;
         return updatedPlayersMap;
     }
 
