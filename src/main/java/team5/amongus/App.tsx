@@ -40,6 +40,17 @@ const App = ({ history }) => {
   });
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false); // Add state for tracking start button click
   const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); // Add state to control redirection to SpaceShip
+  const [gameStarted, setGameStarted] = useState(false);
+  const [inGamePlayers, setInGamePlayers] = useState({});
+
+  useEffect(() => {
+    const heartbeatInterval = setInterval(() => {
+        if (stompClient && playerName) {
+            stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName }));
+        }
+    }, 1000); // Send heartbeat every second (adjust as needed)
+    return () => clearInterval(heartbeatInterval);
+}, [stompClient, playerName]);
 
   useEffect(() => {
     const unsubscribeWebSocket = connectWebSocket(setStompClient);
@@ -48,7 +59,7 @@ const App = ({ history }) => {
 
   useEffect(() => {
     if (stompClient && playerName) {
-      return subscribeToPlayers(stompClient, playerName, setPlayers);
+      return subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers);
     }
   }, [stompClient, playerName]);
 
@@ -71,17 +82,28 @@ const App = ({ history }) => {
   };
 
   const handleSpawnPlayer = () => {
+    if (Object.values(inGamePlayers as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
+      alert('Player name already exists in the game. Please choose a different name.');
+      return;
+    }
     if (!firstPlayerName) {
-      setFirstPlayerName(playerName.trim());}
+      setFirstPlayerName(playerName.trim());
+    }
     if (stompClient && playerName.trim()) {
+      if (Object.keys(players).length > 0) {
+        alert("The game has already started. You cannot join at this time.");
+        return;
+      }
       setPlayer(stompClient, playerName);
       setPlayerSpawned(true);
       history.push('/game');
     }
   };
+  
+  
 
   const handleStartButtonClick = () => {
-    setIsStartButtonClicked(true);
+    setIsStartButtonClicked(true); // Set the start button clicked state to true
     if (stompClient) {
       stompClient.send('/app/startGame', {}, JSON.stringify(Object.values(players)));
     }
@@ -94,7 +116,29 @@ const App = ({ history }) => {
   };
 
   useEffect(() => {
+    if (redirectToSpaceShip && gameStarted) { // Only redirect if the game has started
+        history.push('/spaceship');
+    }
+  }, [redirectToSpaceShip, gameStarted, history]);
+
+  useEffect(() => {
     startGame(stompClient, setRedirectToSpaceShip)
+    
+    const handleGameStart = () => {
+      // When the game starts, redirect all players to the spaceship
+      history.push('/spaceship');
+    };
+  
+    // Subscribe to the game start topic
+    if (stompClient) {
+      const subscription = stompClient.subscribe('/topic/gameStart', () => {
+        handleGameStart();
+      });
+  
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
   }, [stompClient]);
 
   return (
@@ -117,8 +161,9 @@ const App = ({ history }) => {
         </div>
       )}
       {playerSpawned && !redirectToSpaceShip && (
-        <div style={{ position: 'relative' }}>
-          <Lobby players={players} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} /> 
+        <div>
+          {/* Pass firstPlayerName as a prop to the Lobby component */}
+          <Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} /> 
 
           <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
           {chatVisible && (
@@ -134,9 +179,7 @@ const App = ({ history }) => {
         </div>
       )}
       {redirectToSpaceShip && (
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }}>
           <SpaceShip players={players} />
-        </div>
       )}
       <div>
         <KillButton onKill={handleKill} />

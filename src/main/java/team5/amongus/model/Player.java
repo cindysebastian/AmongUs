@@ -16,15 +16,36 @@ public class Player implements Serializable {
     private int height = 150;
     private boolean canInteract = false;
     private boolean isAlive = true;
+    private boolean canKill = false;
+    private long lastActivityTime;
+    private String sessionId;
 
     public Player(String name, Position position) {
         this.name = name;
         this.position = position;
+        this.lastActivityTime = System.currentTimeMillis();
     }
 
-    public Player(String name){
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public void updateLastActivityTime() {
+        this.lastActivityTime = System.currentTimeMillis();
+    }
+
+    public long getLastActivityTime() {
+        return lastActivityTime;
+    }
+
+    public Player(String name) {
         this.name = name;
     }
+
     public String getName() {
         return name;
     }

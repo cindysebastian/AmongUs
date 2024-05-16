@@ -5,22 +5,22 @@ import Space from './Space';
 import styles from '../../amongus/lobby.module.css';
 
 interface Props {
-  players: Record<string, Player>;
+  inGamePlayers: Record<string, Player>;
   firstPlayerName: string;
   onStartButtonClick: (playersData: Record<string, Player>) => void;
 }
 
-const Lobby: React.FC<Props> = ({ players, firstPlayerName, onStartButtonClick}) => {
-  const [playerCount, setPlayerCount] = useState(Object.keys(players).length);
+const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick}) => {
+  const [playerCount, setPlayerCount] = useState(Object.keys(inGamePlayers).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
   const [impostersChosen, setImpostersChosen] = useState(false);
 
   useEffect(() => {
-    setPlayerCount(Object.keys(players).length);
-  }, [players]);
+    setPlayerCount(Object.keys(inGamePlayers).length);
+  }, [inGamePlayers]);
 
   // Check if the current player is the first one
-  const isFirstPlayer = firstPlayerName === Object.keys(players)[0];
+  const isFirstPlayer = firstPlayerName === Object.keys(inGamePlayers)[0];
 
   const handleStartButtonClick = () => {
     if (!impostersChosen) {
@@ -50,7 +50,7 @@ const Lobby: React.FC<Props> = ({ players, firstPlayerName, onStartButtonClick})
       </div>
 
       {/* Render players */}
-      {Object.values(players).map(player => {
+      {Object.values(inGamePlayers).map(player => {
         // Ensure that isMoving property is present and initialized before accessing it
         const isMoving = player.isMoving !== undefined ? player.isMoving : false;
         console.log(`Player ${player.name} isMoving:`, isMoving);

@@ -20,7 +20,7 @@ export const connectWebSocket = (setStompClient) => {
   };
 };
 
-export const subscribeToPlayers = (stompClient, playerName, setPlayers) => {
+export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGamePlayers) => {
   if (!stompClient || !playerName) return;
 
   stompClient.subscribe('/topic/players', (message) => {
@@ -29,6 +29,12 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers) => {
     const currentPlayer = updatedPlayers[playerName];
 
     // Your logic related to player updates can go here
+  });
+
+  stompClient.subscribe('/topic/inGamePlayers', (message) => {
+    const updatedinGamePlayers = JSON.parse(message.body);
+    setInGamePlayers(updatedinGamePlayers);
+    const currentPlayer = updatedinGamePlayers[playerName];
   });
 };
 
