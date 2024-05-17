@@ -3,6 +3,8 @@ import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import Space from './Space';
 import styles from '../../amongus/lobby.module.css';
+import KillButton from './KillButton';
+import { killPlayer } from '../service (Frontend)/WebsocketService';
 
 interface Props {
   inGamePlayers: Record<string, Player>;
@@ -26,10 +28,9 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
     if (!impostersChosen) {
       setIsStartButtonClicked(true);
       setImpostersChosen(true);
-      onStartButtonClick(players); // Pass players' data to the onStartButtonClick function
+      onStartButtonClick(inGamePlayers); // Pass players' data to the onStartButtonClick function
     }
   };
-
 
   return (
     <div style={{ position: 'relative' }}>

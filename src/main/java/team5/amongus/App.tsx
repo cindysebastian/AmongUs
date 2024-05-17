@@ -109,12 +109,6 @@ const App = ({ history }) => {
     }
   };
 
-  const handleKill = () => {
-    if (stompClient) {
-      killPlayer(stompClient, playerName)
-    }
-  };
-
   useEffect(() => {
     if (redirectToSpaceShip && gameStarted) { // Only redirect if the game has started
         history.push('/spaceship');
@@ -179,11 +173,8 @@ const App = ({ history }) => {
         </div>
       )}
       {redirectToSpaceShip && (
-          <SpaceShip players={players} />
+          <SpaceShip players={players} playerName={playerName} stompClient={stompClient} />
       )}
-      <div>
-        <KillButton onKill={handleKill} />
-      </div>
     </div>
   );
 };

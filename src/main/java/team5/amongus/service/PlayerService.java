@@ -110,8 +110,9 @@ public class PlayerService implements IPlayerService {
                 for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
                     String name = entry.getKey();
                     Player player = entry.getValue();
-                    if (!name.equals(imposter) && !(player instanceof Imposter)) { // Exclude the player initiating
-                                                                                     // the kill and other imposters
+                    if (!name.equals(imposter.getName()) && !(player instanceof Imposter)) { // Exclude the player
+                                                                                             // initiating
+                        // the kill and other imposters
                         // Calculate distance between current player and other players
                         double distance = calculateDistance(player, currentImposter);
                         if (distance < minDistance) {
@@ -134,7 +135,7 @@ public class PlayerService implements IPlayerService {
                 System.out.println("Only imposters can initiate a kill or player not found.");
                 // You can optionally log a message or handle this situation accordingly
             }
-        }else{
+        } else {
             System.out.println("Imposter is null");
         }
         return playersMap; // Return the updated players map

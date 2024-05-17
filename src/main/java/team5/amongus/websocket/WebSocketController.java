@@ -10,6 +10,7 @@ import org.springframework.context.event.EventListener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import team5.amongus.model.GameManager;
 import team5.amongus.model.Imposter;
 import team5.amongus.model.Message;
 import team5.amongus.model.Player;
@@ -35,14 +36,16 @@ public class WebSocketController {
     private final List<Message> chatMessages = new ArrayList<>();
     private final IPlayerService playerService;
     private final ITaskService taskService;
+    private final GameManager gameManager;
     private boolean gameStarted = false;
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
-            ITaskService taskService, IChatService chatService) {
+            ITaskService taskService, IChatService chatService, GameManager gameManager) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
+        this.gameManager = gameManager;
     }
 
     public void removePlayer(String playerName) {
@@ -153,6 +156,14 @@ public class WebSocketController {
         for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
             playersMap.put(entry.getKey(), entry.getValue());
         }
+
+        List<Player> playerList = new ArrayList<Player>(playersMap.values());
+        for (Player player : playerList) {
+            gameManager.addPlayer(player);
+        }
+
+        // Trigger the logic to choose imposters in the GameManager
+        gameManager.chooseImposter();
 
         // Clear the players from the lobby
         inGamePlayersMap.clear();
