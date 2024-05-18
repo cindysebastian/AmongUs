@@ -119,6 +119,7 @@ public class PlayerService implements IPlayerService {
                 if (collidingPlayer != null) {
                     System.out.println("Killing " + collidingPlayer.getName());
                     currentImposter.kill(collidingPlayer);
+                    imposter.setPosition(collidingPlayer.getPosition());
                 } else {
                     System.out.println("No colliding non-imposter player found.");
                 }
