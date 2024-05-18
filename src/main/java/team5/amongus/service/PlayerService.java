@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import team5.amongus.model.Player;
 import team5.amongus.model.PlayerMoveRequest;
 import team5.amongus.model.Position;
+import team5.amongus.model.CollisionMask;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class PlayerService implements IPlayerService {
 
     @Override
-    public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload) {
+    public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask) {
         try {
             final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -40,10 +41,11 @@ public class PlayerService implements IPlayerService {
                 existingPlayer.setIsMoving(false);
             } else {
                 // If there are directions, handle the movement
-                for (String direction : directions) {
+                for (String directionStr : directions) {
+                    Position.Direction direction = Position.Direction.valueOf(directionStr.toUpperCase());
                     // Check if the next position will collide with the collision mask
-                    //TODO: what the fuck do i put here
                     if (!collidesWithMask(existingPlayer, direction, collisionMask)) {
+                        System.out.println("doesn't collide with mask");
                         existingPlayer.handleMovementRequest(direction);
                     }
                 }
@@ -74,42 +76,37 @@ public class PlayerService implements IPlayerService {
                 player.setCanInteract(canInteract);
             }
 
-            // Broadcast updated player positions to all clients
-            return playersMap;
+            // Calculate new player positions and update the map
+            Position newPosition = existingPlayer.getPosition();
+
+            System.out.println("Updated position for player " + playerName + ": " + newPosition.toString());
 
         } catch (IOException e) {
             e.printStackTrace();
-            return playersMap; // Return the current player map if an error occurs
         }
+
+        return playersMap;
     }
 
-    // Method to check if the player collides with the collision mask based on direction
-    private boolean collidesWithMask(Player player, String direction, int[][] collisionMask) {
-        // Get the current position of the player
-        Position pos = player.getPosition();
+    private boolean collidesWithMask(Player player, Position.Direction direction, CollisionMask collisionMask) {
+        Position nextPosition = player.getPosition().getNextPosition(direction, player.getStep());
 
-        int x = pos.getX();
-        int y = pos.getY();
+        // Get the dimensions of the mask
+        int maskWidth = collisionMask.getImageWidth();
+        int maskHeight = collisionMask.getImageHeight();
+        int x = nextPosition.getX();
+        int y = nextPosition.getY();
 
-        // Calculate the next position based on direction
-        switch (direction) {
-            case "UP":
-                y--;
-                break;
-            case "DOWN":
-                y++;
-                break;
-            case "LEFT":
-                x--;
-                break;
-            case "RIGHT":
-                x++;
-                break;
-            default:
-                return false; // Invalid direction
+        // Check if the position is out of bounds
+        if (x < 0 || x >= maskWidth || y < 0 || y >= maskHeight) {
+            System.out.println("Out of bounds");
+            return true; // Out of bounds, considered as collision
         }
 
-        // Check if the next position is within the collision mask boundaries and if it's a solid (non-zero) value
-        return x >= 0 && x < collisionMask.length && y >= 0 && y < collisionMask[0].length && collisionMask[x][y] == 1;
+        if(collisionMask.collidesWith(nextPosition.getX(), nextPosition.getY(), player.getWidth(), player.getHeight())){
+            return true;
+        }
+
+        return false;
     }
 }

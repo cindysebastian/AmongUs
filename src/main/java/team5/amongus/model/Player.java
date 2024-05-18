@@ -22,6 +22,18 @@ public class Player implements Serializable {
         this.lastActivityTime = System.currentTimeMillis();
     }
 
+    public int getWidth(){
+        return width;
+    }
+
+    public int getHeight(){
+        return height;
+    }
+
+    public int getStep(){
+        return step;
+    }
+
     public String getSessionId() {
         return sessionId;
     }
@@ -90,28 +102,14 @@ public class Player implements Serializable {
         this.canKill = canKill;
     }
 
-    public void handleMovementRequest(String direction) {
-        switch (direction) {
-            case "UP":
-                position.setY(position.getY() - step);
-                System.out.println("Up");
-                break;
-            case "DOWN":
-                position.setY(position.getY() + step);
-                System.out.println("Down");
-                break;
-            case "LEFT":
-                position.setX(position.getX() - step);
-                setFacing("LEFT");
-                break;
-            case "RIGHT":
-                position.setX(position.getX() + step);
-                setFacing("RIGHT");
-                break;
-            default:
-                break;
+    public void handleMovementRequest(Position.Direction direction) {
+        Position newPosition = position.getNextPosition(direction, step);
+        if (newPosition.getX() < position.getX()) {
+            setFacing("LEFT");
+        } else if(newPosition.getX() > position.getX()){
+            setFacing("RIGHT");
         }
-        
+        this.position = newPosition;
     }
 
 
