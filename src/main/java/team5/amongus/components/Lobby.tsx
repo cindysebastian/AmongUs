@@ -7,22 +7,22 @@ import CollisionMask from './CollisionMask';
 import LobbyBG_withTransparentGround from '../../../../resources/LobbyBG_withTransparentGround.png';
 
 interface Props {
-  players: Record<string, Player>;
+  inGamePlayers: Record<string, Player>;
   firstPlayerName: string;
   onStartButtonClick: () => void;
 }
 
-const Lobby: React.FC<Props> = ({ players, firstPlayerName, onStartButtonClick }) => {
-  const [playerCount, setPlayerCount] = useState(Object.keys(players).length);
+const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick}) => {
+  const [playerCount, setPlayerCount] = useState(Object.keys(inGamePlayers).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
   const [collisionMask, setCollisionMask] = useState<Uint8Array | null>(null);
 
   useEffect(() => {
-    setPlayerCount(Object.keys(players).length);
-  }, [players]);
+    setPlayerCount(Object.keys(inGamePlayers).length);
+  }, [inGamePlayers]);
 
   // Check if the current player is the first one
-  const isFirstPlayer = firstPlayerName === Object.keys(players)[0];
+  const isFirstPlayer = firstPlayerName === Object.keys(inGamePlayers)[0];
 
   useEffect(() => {
     // Load collision mask when component mounts
@@ -80,7 +80,7 @@ const Lobby: React.FC<Props> = ({ players, firstPlayerName, onStartButtonClick }
       {collisionMask && <CollisionMask maskData={collisionMask} />}
 
       {/* Render players */}
-      {Object.values(players).map(player => {
+      {Object.values(inGamePlayers).map(player => {
         // Ensure that isMoving property is present and initialized before accessing it
         const isMoving = player.isMoving !== undefined ? player.isMoving : false;
         console.log(`Player ${player.name} isMoving:`, isMoving);
