@@ -1,21 +1,37 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Player from './interfaces/Player'; // Import the Player interface
 import PlayerSprite from './PlayerSprite';
 import styles from '../../amongus/spaceship.module.css';
 import KillButton from './KillButton';
-import { killPlayer } from '../service (Frontend)/WebsocketService';
+import { killPlayer, subscribeToPlayerKilled } from '../service (Frontend)/WebsocketService';
 
 interface Props {
   players: Record<string, Player>;
   playerName: string;
-  stompClient
+  stompClient // Adjust the type of stompClient as per your implementation
 }
 
 const SpaceShip: React.FC<Props> = ({ players, playerName, stompClient }) => {
+  const [showKillGif, setShowKillGif] = useState(false);
+
+  // Subscribe to player killed events when the component mounts
+  useEffect(() => {
+    const unsubscribe = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
+    return unsubscribe;
+  }, [stompClient]);
+
+  // Handler for player killed event
+  const handlePlayerKilled = (killedPlayer: Player) => {
+    // Check if the killed player is the current player
+    if (killedPlayer.name === playerName) {
+      setShowKillGif(true);
+      setTimeout(() => setShowKillGif(false), 3000);
+    }
+  };
+
   const handleKill = () => {
     killPlayer(stompClient, playerName);
   };
-
   return (
     <div>
       <div className={styles.gifBackground}></div>
@@ -35,6 +51,9 @@ const SpaceShip: React.FC<Props> = ({ players, playerName, stompClient }) => {
         <div>
           <KillButton onKill={handleKill} />
         </div>
+        {showKillGif && (
+          <div className={styles.killGifContainer}></div>
+        )}
       </div>
     </div>
   );

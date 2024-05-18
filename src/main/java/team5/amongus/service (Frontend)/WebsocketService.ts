@@ -84,3 +84,18 @@ export const killPlayer = (stompClient, playerName) => {
 
   stompClient.send('/app/killPlayer', {}, playerName);
 };
+
+export const subscribeToPlayerKilled = (stompClient, setPlayerKilled) => {
+  if (!stompClient) return;
+
+  const subscription = stompClient.subscribe('/topic/killedPlayer', (message) => {
+      const killedPlayer = JSON.parse(message.body);
+      setPlayerKilled(killedPlayer);
+  });
+
+  return () => {
+      subscription.unsubscribe();
+  };
+};
+
+

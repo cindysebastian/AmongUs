@@ -62,4 +62,8 @@ public class GameManager {
         return getImposters();
     }
 
+    public void notifyPlayerKilled(Player killedPlayer) {
+        messagingTemplate.convertAndSend("/topic/killedPlayer", killedPlayer);
+    }
+
 }

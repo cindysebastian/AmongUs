@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from '../../amongus/spaceship.module.css';
 
 const KillButton = ({ onKill }) => {
   const handleKill = () => {
@@ -7,7 +8,9 @@ const KillButton = ({ onKill }) => {
   };
 
   return (
-    <button onClick={handleKill}>Kill</button>
+    <button className={styles.killButton} onClick={handleKill}>
+      <img src="src/main/resources/killButtonIcon.png" alt="Kill Button" className={styles.killButtonIcon} />
+    </button>
   );
 };
 

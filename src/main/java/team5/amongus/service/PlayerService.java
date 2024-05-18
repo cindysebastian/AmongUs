@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import team5.amongus.model.Imposter;
 import team5.amongus.model.Player;
 import team5.amongus.model.PlayerMoveRequest;
+import team5.amongus.model.Position;
 import team5.amongus.model.GameManager;
 
 import java.io.IOException;
@@ -119,7 +120,9 @@ public class PlayerService implements IPlayerService {
                 if (collidingPlayer != null) {
                     System.out.println("Killing " + collidingPlayer.getName());
                     currentImposter.kill(collidingPlayer);
-                    imposter.setPosition(collidingPlayer.getPosition());
+                    Position newPosition = new Position(collidingPlayer.getPosition().getX(), collidingPlayer.getPosition().getY());
+                    imposter.setPosition(newPosition);
+                    gameManager.notifyPlayerKilled(collidingPlayer);
                 } else {
                     System.out.println("No colliding non-imposter player found.");
                 }
