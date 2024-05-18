@@ -99,39 +99,30 @@ public class PlayerService implements IPlayerService {
                     currentPlayer = imp;
                 }
             }
+
             if (currentPlayer != null && currentPlayer instanceof Imposter) {
                 Imposter currentImposter = (Imposter) currentPlayer; // Cast currentPlayer to Imposter
-                // If the player initiating the kill is an imposter, find the closest
-                // non-imposter player
-                Player closestPlayer = null;
-                double minDistance = Double.POSITIVE_INFINITY; // Initialize minDistance with a large value
-
+                Player collidingPlayer = null;
                 // Iterate through other players to find the closest one
                 for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
                     String name = entry.getKey();
                     Player player = entry.getValue();
                     if (!name.equals(imposter.getName()) && !(player instanceof Imposter)) { // Exclude the player
                                                                                              // initiating
-                        // the kill and other imposters
-                        // Calculate distance between current player and other players
-                        double distance = calculateDistance(player, currentImposter);
-                        if (distance < minDistance) {
-                            minDistance = distance;
-                            closestPlayer = player;
-                        }
+                        if (currentImposter.collidesWith(player)) {
+                        collidingPlayer = player;
+                        break;
+                    }
                     }
                 }
 
-                if (closestPlayer != null) {
-                    System.out.println("Killing " + closestPlayer);
-                    currentImposter.kill(closestPlayer);
+                if (collidingPlayer != null) {
+                    System.out.println("Killing " + collidingPlayer.getName());
+                    currentImposter.kill(collidingPlayer);
                 } else {
-                    System.out.println("No non-imposter player found.");
-                    // Handle situation when no non-imposter player is found
+                    System.out.println("No colliding non-imposter player found.");
                 }
             } else {
-                // If the player initiating the kill is not an imposter, they cannot initiate
-                // the kill
                 System.out.println("Only imposters can initiate a kill or player not found.");
                 // You can optionally log a message or handle this situation accordingly
             }
@@ -140,11 +131,4 @@ public class PlayerService implements IPlayerService {
         }
         return playersMap; // Return the updated players map
     }
-
-    private double calculateDistance(Player player1, Player player2) {
-        double dx = player1.getPosition().getX() - player2.getPosition().getX();
-        double dy = player1.getPosition().getY() - player2.getPosition().getY();
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
 }
