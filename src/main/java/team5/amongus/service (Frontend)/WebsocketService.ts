@@ -67,8 +67,7 @@ export const markTaskAsCompleted = (stompClient, interactibleId: number) => {
   };
 
   // Send a STOMP message to your backend to mark the task as completed
-  console.log("Sending request to complete Task to Backend")
-  console.log(interactibleId)
+
   stompClient.send('/app/completeTask', {}, JSON.stringify(messageBody));
 };
 
@@ -77,7 +76,7 @@ export const markTaskAsCompleted = (stompClient, interactibleId: number) => {
 
 export const subscribetoInteractions = (stompClient, setInteractibles) => {
   if (!stompClient) return;
-  console.log("Subscribing to Interactibles");
+
   
   stompClient.subscribe('/topic/interactions', (message) => {
     const updatedInteractibles = JSON.parse(message.body);
@@ -91,7 +90,6 @@ export const subscribetoInteractions = (stompClient, setInteractibles) => {
 
 export const sendInteraction = (stompClient, playerName) => {
   if (!stompClient || !playerName) return;
-  console.log("Updating Interactibles");
 
 
   stompClient.send('/app/interact', {},playerName);

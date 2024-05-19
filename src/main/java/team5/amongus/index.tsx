@@ -1,10 +1,15 @@
+import ReactDOM from 'react-dom';
 import { createBrowserHistory } from 'history';
-import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/index.module.css';
+import { InputBlockProvider } from './service (Frontend)/InputBlockContext'; // Correctly import the context provider
 
 const history = createBrowserHistory();
-const rootNode = document.getElementById('root') as HTMLElement;
-const root = ReactDOM.createRoot(rootNode);
+const rootNode = document.getElementById('root');
 
-root.render(<App history={history} />);
+ReactDOM.render(
+  <InputBlockProvider> {/* Wrap your App with InputBlockProvider */}
+    <App history={history} />
+  </InputBlockProvider>,
+  rootNode
+);

@@ -1,5 +1,3 @@
-// App.tsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
@@ -13,6 +11,8 @@ import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteract
 import { movePlayer } from '././service (Frontend)/PlayerMovementService';
 import { startGame } from '././service (Frontend)/GameStartingService'
 import { handleInteraction } from './service (Frontend)/InteractionService';
+import { useInputBlock } from './service (Frontend)/InputBlockContext'; // Import useInputBlock hook
+
 
 const directionMap = {
   'w': 'UP',
@@ -20,7 +20,6 @@ const directionMap = {
   's': 'DOWN',
   'd': 'RIGHT',
 };
-
 
 const App = ({ history }) => {
   const [stompClient, setStompClient] = useState(null);
@@ -41,15 +40,17 @@ const App = ({ history }) => {
   const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); // Add state to control redirection to SpaceShip
   const [gameStarted, setGameStarted] = useState(false);
   const [inGamePlayers, setInGamePlayers] = useState({});
+  const { isInputBlocked } = useInputBlock(); // Get isInputBlocked from context
 
   useEffect(() => {
     const heartbeatInterval = setInterval(() => {
-        if (stompClient && playerName) {
-            stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName }));
-        }
+      if (stompClient && playerName) {
+        stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName }));
+      }
     }, 1000); // Send heartbeat every second (adjust as needed)
     return () => clearInterval(heartbeatInterval);
-}, [stompClient, playerName]);
+  }, [stompClient, playerName]);
+
 
   useEffect(() => {
     const unsubscribeWebSocket = connectWebSocket(setStompClient);
@@ -74,22 +75,54 @@ const App = ({ history }) => {
     }
   }, [stompClient]);
 
-  useEffect(() => {
-    if (stompClient && playerSpawned) {
-      
-      return movePlayer(stompClient, playerName, keysPressed);
-      
-    }
-  }, [stompClient, playerName, playerSpawned]);
+  const movementTimeout = useRef(null);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isInputBlocked) return;
+
+      const direction = directionMap[e.key];
+      if (direction && !keysPressed.current[direction]) {
+        keysPressed.current[direction] = true;
+        movePlayerWithDebounce(stompClient, playerName, keysPressed);
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      if (isInputBlocked) return;
+
+      const direction = directionMap[e.key];
+      if (direction) {
+        keysPressed.current[direction] = false;
+        clearTimeout(movementTimeout.current);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [stompClient, playerName, isInputBlocked]);
+
+  const movePlayerWithDebounce = (client, name, keys) => {
+    clearTimeout(movementTimeout.current);
+    movementTimeout.current = setTimeout(() => {
+      movePlayer(client, name, keys);
+    }, 100); // Adjust delay as needed
+  };
+  
+  
+  
   const sendMessage = (messageContent) => {
-    if (stompClient) {
+    if (!isInputBlocked && stompClient) { // Check if input is not blocked
       sendChatMessage(stompClient, playerName, messageContent);
     }
   };
 
-  
-  
+    
   useEffect(() => {
     if (playerSpawned) {
       window.addEventListener('keydown', handleInteractionKeyPress);
@@ -100,55 +133,53 @@ const App = ({ history }) => {
   }, [playerSpawned]);
 
   const handleInteractionKeyPress = (e) => {
-    if (e.key === 'e') {
-      
+    if (!isInputBlocked && e.key === 'e') {
       handleInteraction(stompClient, playerName.trim()); 
     }
   };
 
   const handleSpawnPlayer = () => {
-    if (Object.values(players as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
+    if (!isInputBlocked && Object.values(players as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
       alert('Player name already exists in the game. Please choose a different name.');
       return;
     }
-    if (!firstPlayerName) {
+    if (!isInputBlocked && !firstPlayerName) {
       setFirstPlayerName(playerName.trim());
     }
-    if (stompClient && playerName.trim()) {
+    if (!isInputBlocked && stompClient && playerName.trim()) {
       setPlayer(stompClient, playerName);
       setPlayerSpawned(true);
       history.push('/game');
     }
   };
-  
 
   const handleStartButtonClick = () => {
     setIsStartButtonClicked(true); // Set the start button clicked state to true
-    if (stompClient) {
+    if (!isInputBlocked && stompClient) {
       stompClient.send('/app/startGame'); // Send message to start the game
     }
   };
 
   useEffect(() => {
     if (redirectToSpaceShip && gameStarted) { // Only redirect if the game has started
-        history.push('/spaceship');
+      history.push('/spaceship');
     }
   }, [redirectToSpaceShip, gameStarted, history]);
 
   useEffect(() => {
     startGame(stompClient, setRedirectToSpaceShip)
-    
+
     const handleGameStart = () => {
       // When the game starts, redirect all players to the spaceship
       history.push('/spaceship');
     };
-  
+
     // Subscribe to the game start topic
     if (stompClient) {
       const subscription = stompClient.subscribe('/topic/gameStart', () => {
         handleGameStart();
       });
-  
+
       return () => {
         subscription.unsubscribe();
       };
@@ -159,7 +190,7 @@ const App = ({ history }) => {
     <div style={{ padding: '20px' }}>
       {!playerSpawned && (
         <div className={styles.gifBackground}></div>
-        
+
       )}
       {!playerSpawned && (
         <div className={styles.loginbackground}>
@@ -194,10 +225,12 @@ const App = ({ history }) => {
         </div>
       )}
       {redirectToSpaceShip && (
-          <SpaceShip stompClient={stompClient} players={players} interactibles = {interactibles} currentPlayer ={playerName}/>
+        <SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} />
       )}
     </div>
   );
 };
 
+
 export default App;
+

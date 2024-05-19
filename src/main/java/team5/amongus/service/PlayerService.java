@@ -83,10 +83,6 @@ public class PlayerService implements IPlayerService {
 
     @Override
     public Interactible getPlayerInteractableObject(ArrayList<Interactible> interactibles, Player player) {
-        System.out.println(player);
-        System.out.println(interactibles);
-
-        //TODO: Add check whether player is the player for the Task if the interactable object type
       
         for (Interactible object : interactibles) {
             if (player.collidesWith(object)) {

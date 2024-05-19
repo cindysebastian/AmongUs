@@ -7,6 +7,7 @@ import styles from './MiniGame.module.css'; // Import CSS module
 interface Props {
   stompClient: Stomp.Client | null;
   interactible: Task;
+
 }
 
 const MineMinigame: React.FC<Props> = ({ stompClient, interactible }) => {

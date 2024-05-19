@@ -16,7 +16,6 @@ export const handleInteraction = (stompClient, playerName) => {
 export const handleReceivedInteractibles = (interactiblesData, setInteractibles) => {
 
   const parsedInteractibles = interactiblesData.map((data) => {   
-    console.log('Received WebSocket message:', data);
     
     return {
       id: data.id,

@@ -8,6 +8,7 @@ import Task from "../interfaces/Interactible";
 interface Props {
     stompClient: Stomp.Client | null;
     interactible: Task;
+
 }
 
 const SwipeMinigame: React.FC<Props> = ({ stompClient, interactible }) => {

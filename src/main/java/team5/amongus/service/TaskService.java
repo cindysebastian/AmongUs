@@ -126,8 +126,8 @@ public class TaskService implements ITaskService {
         // Add your predetermined swipe positions to the positions list
         // Example:
         positions.add(new Position(700, 700));
-        positions.add(new Position(800, 800));
-        positions.add(new Position(900, 900));
+        positions.add(new Position(450, 700));
+        positions.add(new Position(400, 600));
         // Add more positions as needed
     }
    
@@ -148,9 +148,13 @@ public class TaskService implements ITaskService {
                 if (currentObj instanceof Task) {
 
                     if (currentObj.equals(task)) {
+                        if(!((Task) currentObj).getTaskCompleted()){
 
                         task.setInProgress(true);
                         ((Task) currentObj).setInProgress(true);
+                    }else{
+                        System.out.println("Task already Completed");
+                    }
                     }
                 }
             }
