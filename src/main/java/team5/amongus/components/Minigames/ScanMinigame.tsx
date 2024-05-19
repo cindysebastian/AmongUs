@@ -17,25 +17,28 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
     const handleHoldStart = () => {
         // Start timer when holding button
         setTimer(setInterval(() => {
-            setProgress(prevProgress => Math.min(prevProgress + 10, 100)); // Increment progress by 1 every second
+            setProgress(prevProgress => {
+                const newProgress = Math.min(prevProgress + 10, 100); // Increment progress by 10% every second
+                if (newProgress >= 100 && !isCompleted) {
+                    if (stompClient) {
+                        completeMiniGame(stompClient, interactible.id);
+                        setIsCompleted(true);
+                    }
+                    playSound();
+                }
+                return newProgress;
+            });
         }, 1000));
     };
 
     const handleHoldEnd = () => {
-        // Stop timer and check if completion condition met
+        // Stop timer when releasing button
         if (timer) clearInterval(timer);
-        if (progress >= 100 && !isCompleted) {
-            if (stompClient) {
-                completeMiniGame(stompClient, interactible.id);
-                setIsCompleted(true);
-            }
-            playSound();
-        }
         setProgress(0); // Reset progress
     };
 
     const playSound = () => {
-        const audio = new Audio('/scan_complete.mp3'); // Path relative to the public directory
+        const audio = new Audio('/scan_completed.mp3'); // Path relative to the public directory
         audio.volume = 1.0; // Ensure volume is set to 100%
         audio.play().catch(error => {
             console.error('Error playing audio:', error);
@@ -67,3 +70,4 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
 };
 
 export default ScanMinigame;
+
