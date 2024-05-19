@@ -16,9 +16,11 @@ const MineMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
   const handleClick = () => {
     setClickCount(prevCount => prevCount + 1);
     setIsShaking(true); // Trigger animation on click
-    playSound(); // Play sound effect
+    playSound(); // Play existing sound effect
+     // Play ding sound effect
     if (clickCount === 4) {
       // Call completeMiniGame function with stompClient
+      playDingSound();
       completeMiniGame(stompClient, interactible.id);
     }
   };
@@ -33,8 +35,6 @@ const MineMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
     const randomTime = intervals[Math.floor(Math.random() * intervals.length)]; // Pick a random time from the array
     audio.currentTime = randomTime; // Set the playback position to the random time
     audio.volume = 1.0; // Ensure volume is set to 100%
-
-   
     audio.play().then(() => {
       
       // Stop the audio after 3 seconds
@@ -42,6 +42,15 @@ const MineMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
         audio.pause();
       }, 900);
     }).catch(error => {
+      console.log(error);
+    });
+  };
+  
+
+  const playDingSound = () => {
+    const audio = new Audio('/scan_completed.mp3'); // Path relative to the public directory
+    audio.volume = 1.0; // Ensure volume is set to 100%
+    audio.play().catch(error => {
       console.error('Error playing audio:', error);
     });
   };

@@ -71,6 +71,44 @@
     /* Ensure smooth transition */
 }
 
+@keyframes shake {
+    0% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-10px);
+    }
+
+    25% {
+        transform: translateY(-10px);
+    }
+
+    50% {
+        transform: translateX(10px);
+    }
+
+    75% {
+        transform: translateX(-10px);
+    }
+
+    75% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.shake {
+    animation: shake 0.3s ease;
+}
+
 
 .swipepopup {
     width: 80%;
@@ -110,24 +148,28 @@
 .scanProgress {
     width: 0;
     height: 10px;
-    background-color: #00cc00; /* Green color for progress */
+    background-color: #00cc00;
+    /* Green color for progress */
     border-radius: 5px;
     margin-bottom: 10px;
-    transition: width 1s; /* Smooth transition for progress */
+    transition: width 1s;
+    /* Smooth transition for progress */
 }
 
 .scanButton {
     padding: 10px 20px;
     font-size: 16px;
-    background-color: #007bff; /* Blue color for button */
+    background-color: #007bff;
+    /* Blue color for button */
     color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s; /* Smooth transition for button */
+    transition: background-color 0.3s;
+    /* Smooth transition for button */
 }
 
 .scanButton:hover {
-    background-color: #0056b3; /* Darker blue color on hover */
+    background-color: #0056b3;
+    /* Darker blue color on hover */
 }
-
