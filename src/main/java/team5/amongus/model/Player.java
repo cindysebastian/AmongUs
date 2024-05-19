@@ -8,8 +8,8 @@ public class Player implements Serializable {
     private Integer step = 30;
     private Boolean isMoving = false ; 
     private String facing = "RIGHT";
-    private int width = 100;
-    private int height = 150;
+    private int width = 130;
+    private int height = 130;
     private boolean canInteract = false;
     private boolean canKill = false;
     private long lastActivityTime;

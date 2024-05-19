@@ -1,93 +1,45 @@
 package team5.amongus.model;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 
 public class CollisionMask {
-    private boolean[][] mask;
-    private int imageWidth;
-    private int imageHeight;
+    private final boolean[][] mask;
+    private final int imageWidth;
+    private final int imageHeight;
 
-    public CollisionMask(String imageUrl) {
-        loadImage(imageUrl);
-    }
-
-    public CollisionMask(int width, int height, byte[] mask) {
+    public CollisionMask(int width, int height, boolean[][] mask) {
         this.imageWidth = width;
         this.imageHeight = height;
-        this.mask = new boolean[height][width];
-        System.out.println("CollisionMask length " + mask.length);
-
-        for (int i = 0; i < mask.length; i++) {
-            int x = i % width;
-            int y = i / width;
-            this.mask[y][x] = mask[i] == 1;
-        }
+        this.mask = mask;
     }
 
-    public boolean getCollidesWithBorder(int x, int y){
-        if(mask[x][y]){
-            return true;
-        } else{
-            return false;
-        }
-    }
-
-    private void loadImage(String imageUrl) {
-        try {
-            BufferedImage image = ImageIO.read(new URL(imageUrl));
-            imageWidth = image.getWidth();
-            imageHeight = image.getHeight();
-            mask = createCollisionMask(image);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private boolean[][] createCollisionMask(BufferedImage image) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-        boolean[][] mask = new boolean[height][width];
-    
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int alpha = (image.getRGB(x, y) >> 24) & 0xFF;
-                mask[y][x] = alpha > 5; // Store true if pixel is solid, false otherwise
-            }
-        }
-    
-        return mask;
-    }
-    
-
-    public boolean collidesWith(int playerX, int playerY, int playerWidth, int playerHeight) {
-        if (mask == null || playerX < 0 || playerY < 0 || playerX >= imageWidth || playerY >= imageHeight) {
+    public boolean getCollidesWithBorder(int x, int y) {
+        if (x < 0 || y < 0 || x >= imageWidth || y >= imageHeight) {
             return true; // Consider out of bounds as collision
         }
+        return mask[y][x];
+    }
 
-        // Calculate the range of pixels that the player's bounding box covers in the collision mask
-        int startX = Math.max(0, playerX);
-        int endX = Math.min(imageWidth, playerX + playerWidth);
-        int startY = Math.max(0, playerY);
-        int endY = Math.min(imageHeight, playerY + playerHeight);
+    public boolean collidesWith(int playerX, int playerY, int playerWidth, int playerHeight) {
+        int startX = playerX + 30;
+        int endX = playerX + playerWidth - 20;
+        int startY = playerY;
+        int endY = playerY + playerHeight;
 
-        // Check each pixel in the player's bounding box against the collision mask
         for (int row = startY; row < endY; row++) {
             for (int col = startX; col < endX; col++) {
                 if (mask[row][col]) {
+                    System.out.println("[CollisionMask] collision detected: row: " + row + " col: " + col + " " + mask[row][col]);
                     return true; // Collision detected
                 }
             }
         }
 
+        System.out.println("[CollisionMask] NO collision detected");
         return false; // No collision detected
     }
 
-    // Getters for imageWidth and imageHeight
     public int getImageWidth() {
         return imageWidth;
     }
@@ -96,7 +48,6 @@ public class CollisionMask {
         return imageHeight;
     }
 
-    // Method to create a debug image
     public BufferedImage createDebugImage() {
         BufferedImage debugImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
         for (int y = 0; y < imageHeight; y++) {

@@ -14,6 +14,7 @@ import team5.amongus.model.Player;
 import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
 import team5.amongus.service.ITaskService;
+import team5.amongus.service.ICollisionMaskService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,15 +33,17 @@ public class WebSocketController {
     private final List<Message> chatMessages = new ArrayList<>();
     private final IPlayerService playerService;
     private final ITaskService taskService;
-    private final CollisionMask collisionMask;
+    private final ICollisionMaskService collisionMaskService;
+    private CollisionMask collisionMask;
     private boolean gameStarted = false;
 
-    public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService, ITaskService taskService, IChatService chatService, CollisionMask collisionMask) {
+    public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService, ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
-        this.collisionMask = collisionMask;
+        this.collisionMaskService = collisionMaskService;
+        this.collisionMask = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
     }
 
     public void removePlayer(String playerName) {
@@ -128,6 +131,8 @@ public class WebSocketController {
 
         // Clear the players from the lobby
         inGamePlayersMap.clear();
+        //TODO load new mask
+        //collisionMask = collisionMaskService.loadCollisionMask(null);
 
         // Logging to check spaceShipPlayersMap contents
         System.out.println("Space ship players count: " + playersMap.size());

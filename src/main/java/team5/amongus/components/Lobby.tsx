@@ -3,7 +3,7 @@ import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import Space from './Space';
 import styles from '../../amongus/lobby.module.css';
-import LobbyBG_withTransparentGround from '../../../../resources/LobbyBG_withTransparentGround.png';
+import LobbyBG_withTransparentGround from '../../../../resources/LobbyBG_borders.png';
 import DebugCollisionMask from '../../../../resources/debug_collision_mask.png'; // Path to your debug collision mask image
 
 interface Props {
