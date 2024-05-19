@@ -1,16 +1,20 @@
+.scrollContainer {
+    position: relative;
+    width: 100vw; /* Full viewport width */
+    height: 100vh; /* Full viewport height */
+    overflow: scroll; /* Enable scrollbars */
+}
+
 .spaceShipBackground {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
+    width: 4000px;
+    height: 2316px;
     background-image: url("../../../resources/spaceShipBG.png");
-
-    z-index: 2;
     background-position: center;
     background-repeat: no-repeat;
+    z-index: 2;
 }
 
 .gifBackground {
@@ -28,4 +32,4 @@
 .smallPlayer {
     width: 50px;
     height: 50px;
-}  
+}

@@ -11,19 +11,22 @@ const SpaceShip: React.FC<Props> = ({ players }) => {
   return (
     <div>
       <div className={styles.gifBackground}></div>
-      <div className={styles.spaceShipBackground}>
-        {/* Render players */}
-        {Object.values(players).map(player => (
-          <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
-            {/* Render each player's sprite */}
-            <PlayerSprite
-              player={player}
-              facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-              isMoving={player.isMoving !== undefined ? player.isMoving : false}
-            />
-          </div>
-        ))}
+      <div className={styles.scrollContainer}>
+        <div className={styles.spaceShipBackground}>
+          {/* Render players */}
+          {Object.values(players).map(player => (
+            <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
+              {/* Render each player's sprite */}
+              <PlayerSprite
+                player={player}
+                facing={player.facing !== undefined ? player.facing : 'RIGHT'}
+                isMoving={player.isMoving !== undefined ? player.isMoving : false}
+              />
+            </div>
+          ))}
+        </div>
       </div>
+      
     </div>
   );
 };

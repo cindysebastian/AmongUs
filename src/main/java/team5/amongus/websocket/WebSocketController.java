@@ -11,6 +11,7 @@ import org.springframework.context.event.EventListener;
 import team5.amongus.model.CollisionMask;
 import team5.amongus.model.Message;
 import team5.amongus.model.Player;
+import team5.amongus.model.Position;
 import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
 import team5.amongus.service.ITaskService;
@@ -126,13 +127,14 @@ public class WebSocketController {
 
         // Move players from lobby to spaceship
         for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
+            entry.getValue().setPosition(new Position(2300, 170));
             playersMap.put(entry.getKey(), entry.getValue());
         }
 
         // Clear the players from the lobby
         inGamePlayersMap.clear();
         //TODO load new mask
-        //collisionMask = collisionMaskService.loadCollisionMask(null);
+        collisionMask = collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
 
         // Logging to check spaceShipPlayersMap contents
         System.out.println("Space ship players count: " + playersMap.size());

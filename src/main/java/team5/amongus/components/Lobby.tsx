@@ -23,34 +23,6 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
 
   const isFirstPlayer = firstPlayerName === Object.keys(inGamePlayers)[0];
 
-  useEffect(() => {
-    const image = new Image();
-    image.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = image.width;
-      canvas.height = image.height;
-      const context = canvas.getContext('2d');
-      context.drawImage(image, 0, 0, image.width, image.height);
-      const imageData = context.getImageData(0, 0, image.width, image.height);
-      const mask = createCollisionMask(imageData);
-      setCollisionMask(mask);
-    };
-    image.src = LobbyBG_withTransparentGround;
-  }, []);
-
-  const createCollisionMask = (imageData: ImageData): Uint8Array => {
-    const { width, height, data } = imageData;
-    const mask = new Uint8Array(width * height);
-
-    for (let i = 0; i < data.length; i += 4) {
-      const alpha = data[i + 3];
-      const pixelIndex = i / 4;
-      mask[pixelIndex] = alpha > 5 ? 1 : 0;
-    }
-
-    return mask;
-  };
-
   return (
     <div style={{ position: 'relative' }}>
       <div className={styles.lobbyBackground}></div>
