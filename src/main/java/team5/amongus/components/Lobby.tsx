@@ -4,7 +4,6 @@ import PlayerSprite from './PlayerSprite';
 import Space from './Space';
 import styles from '../../amongus/lobby.module.css';
 import LobbyBG_withTransparentGround from '../../../../resources/LobbyBG_borders.png';
-import DebugCollisionMask from '../../../../resources/debug_collision_mask.png'; // Path to your debug collision mask image
 
 interface Props {
   inGamePlayers: Record<string, Player>;
@@ -15,7 +14,6 @@ interface Props {
 const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick }) => {
   const [playerCount, setPlayerCount] = useState(Object.keys(inGamePlayers).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
-  const [collisionMask, setCollisionMask] = useState<Uint8Array | null>(null);
 
   useEffect(() => {
     setPlayerCount(Object.keys(inGamePlayers).length);
@@ -55,9 +53,6 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
           </div>
         );
       })}
-
-      {/* Overlay the debug collision mask */}
-      <img src={DebugCollisionMask} className={styles.collisionMask} alt="Debug Collision Mask" />
     </div>
   );
 };
