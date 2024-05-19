@@ -14,6 +14,24 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
     const [progress, setProgress] = useState(0);
     const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
     const [isSoundPlaying, setIsSoundPlaying] = useState(false);
+    const [sound, setSound] = useState<HTMLAudioElement | null>(null);
+
+    useEffect(() => {
+        if (isSoundPlaying && !isCompleted) {
+            // Start sound when holding button
+            playContinuousSound();
+        } else if (!isSoundPlaying && sound) {
+            // Pause sound if not holding button or task is completed
+            sound.pause();
+        }
+        return () => {
+            // Cleanup sound on component unmount
+            if (sound) {
+                sound.pause();
+                sound.currentTime = 0;
+            }
+        };
+    }, [isSoundPlaying, isCompleted]);
 
     const handleHoldStart = () => {
         // Start timer when holding button
@@ -25,17 +43,15 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
                         completeMiniGame(stompClient, interactible.id);
                         setIsCompleted(true);
                     }
+                    setIsSoundPlaying(false); // Stop continuous sound when task completed
                     playSound(); // Play sound when completion reached
                 }
                 return newProgress;
             });
         }, 1000));
 
-        // Start sound when holding button
-        if (!isSoundPlaying) {
-            playContinuousSound();
-            setIsSoundPlaying(true);
-        }
+        // Start sound 30 seconds in when holding button
+        setIsSoundPlaying(true);
     };
 
     const handleHoldEnd = () => {
@@ -49,10 +65,11 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
         const audio = new Audio('/hobbitstoisengard.mp3'); // Path relative to the public directory
         audio.volume = 0.5; // Adjust volume as needed
         audio.loop = true; // Make the sound loop continuously
-        audio.playbackRate = 3;
+        audio.currentTime = 30; // Start 30 seconds in
         audio.play().catch(error => {
             console.error('Error playing audio:', error);
         });
+        setSound(audio);
     };
 
     const playSound = () => {
@@ -65,11 +82,10 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
 
     useEffect(() => {
         return () => {
-            // Cleanup timer and sound on component unmount
+            // Cleanup timer on component unmount
             if (timer) clearInterval(timer);
-            if (isSoundPlaying) setIsSoundPlaying(false);
         };
-    }, [timer, isSoundPlaying]);
+    }, [timer]);
 
     return (
         <div className={styles.overlay}>
