@@ -4,6 +4,7 @@ import React from 'react';
 import Interactible from './interfaces/Interactible';
 import MineMinigame from './Minigames/MineMinigame';
 import Stomp from "stompjs";
+import SwipeMinigame from './Minigames/SwipeMinigame';
 
 
 interface Props {
@@ -37,11 +38,11 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer }) =>
                 if (interactible.assignedPlayer == currentPlayer && interactible.inProgress) {
                     switch (interactible.type) {
                         case 'MINE':
-                            return <MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} />;
+                            return <SwipeMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} />;
                         case 'SCAN':
-                            return <MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} />;
+                            return <SwipeMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} />;
                         case 'SWIPE':
-                            return <MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} />;
+                            return <SwipeMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} />;
                         default:
                             return null;
                     }

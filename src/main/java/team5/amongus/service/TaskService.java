@@ -27,11 +27,12 @@ public class TaskService implements ITaskService {
         this.objectMapper = objectMapper;
     }
 
+    private final Map<TaskType, List<Position>> taskPositionsMap = new HashMap<>(); // Map to store task positions by type
+
     @Override
     public ArrayList<Interactible> createTasks(Map<String, Player> playersMap) {
         ArrayList<Interactible> interactibles = new ArrayList<>();
         TaskType[] taskTypes = TaskType.values();
-        Map<TaskType, List<Position>> taskPositions = new HashMap<>(); // Map to store task positions by type
 
         Random random = new Random();
         int taskIdCounter = 1; // Counter for generating unique task IDs
@@ -41,7 +42,7 @@ public class TaskService implements ITaskService {
             TaskType type = taskTypes[random.nextInt(taskTypes.length)];
 
             // Generate Positions based on Task Type
-            Position position = generateUniquePosition(type, taskPositions);
+            Position position = generateUniquePosition(type);
 
             // Set the Task with a unique ID
             Task task = new Task(type, position.getX(), position.getY(), player.getName());
@@ -52,35 +53,82 @@ public class TaskService implements ITaskService {
     }
 
     // Method to generate a unique position for the task based on its type
-    private Position generateUniquePosition(TaskType type, Map<TaskType, List<Position>> taskPositions) {
+    private Position generateUniquePosition(TaskType type) {
         Random random = new Random();
-        List<Position> positions = taskPositions.getOrDefault(type, new ArrayList<>());
+        List<Position> positions = taskPositionsMap.getOrDefault(type, new ArrayList<>());
 
-        int posX;
-        int posY;
-
-        do {
-            // Generate random positions
-            posX = random.nextInt(1000); // Adjust the range according to your requirements
-            posY = random.nextInt(1000); // Adjust the range according to your requirements
-        } while (positionExists(positions, posX, posY));
-
-        // Add the generated position to the list
-        positions.add(new Position(posX, posY));
-        taskPositions.put(type, positions);
-
-        return new Position(posX, posY);
-    }
-
-    // Method to check if a position already exists for the given task type
-    private boolean positionExists(List<Position> positions, int posX, int posY) {
-        for (Position position : positions) {
-            if (position.getX() == posX && position.getY() == posY) {
-                return true;
+        if (positions.isEmpty()) {
+            // Populate the list with predetermined coordinates for the task type
+            switch (type) {
+                case MINE:
+                    populateMinePositions(positions);
+                    break;
+                case SCAN:
+                    populateScanPositions(positions);
+                    break;
+                case SWIPE:
+                    populateSwipePositions(positions);
+                    break;
+                default:
+                    // Handle other task types if needed
             }
         }
-        return false;
+
+        // Shuffle the positions to randomize their selection
+        // This is important to ensure tasks are distributed evenly across the map
+        if (positions.size() > 1) {
+            shufflePositions(positions, random);
+        }
+
+        // Get the first position from the shuffled list
+        Position position = positions.remove(0);
+
+        // Update the taskPositionsMap with the modified list
+        taskPositionsMap.put(type, positions);
+
+        return position;
     }
+
+    // Method to shuffle the positions list
+    private void shufflePositions(List<Position> positions, Random random) {
+        for (int i = positions.size() - 1; i > 0; i--) {
+            int index = random.nextInt(i + 1);
+            Position temp = positions.get(index);
+            positions.set(index, positions.get(i));
+            positions.set(i, temp);
+        }
+    }
+
+    // Method to populate predetermined mine positions
+    private void populateMinePositions(List<Position> positions) {
+        // Add your predetermined mine positions to the positions list
+        // Example:
+        positions.add(new Position(100, 100));
+        positions.add(new Position(200, 200));
+        positions.add(new Position(300, 300));
+        // Add more positions as needed
+    }
+
+    // Method to populate predetermined scan positions
+    private void populateScanPositions(List<Position> positions) {
+        // Add your predetermined scan positions to the positions list
+        // Example:
+        positions.add(new Position(400, 400));
+        positions.add(new Position(500, 500));
+        positions.add(new Position(600, 600));
+        // Add more positions as needed
+    }
+
+    // Method to populate predetermined swipe positions
+    private void populateSwipePositions(List<Position> positions) {
+        // Add your predetermined swipe positions to the positions list
+        // Example:
+        positions.add(new Position(700, 700));
+        positions.add(new Position(800, 800));
+        positions.add(new Position(900, 900));
+        // Add more positions as needed
+    }
+   
 
     @Override
     public ArrayList<Interactible> updateTaskInteractions(Map<String, Player> playersMap,
