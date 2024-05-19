@@ -33,21 +33,23 @@ public class TaskService implements ITaskService {
     public ArrayList<Interactible> createTasks(Map<String, Player> playersMap) {
         ArrayList<Interactible> interactibles = new ArrayList<>();
         TaskType[] taskTypes = TaskType.values();
-
+    
         Random random = new Random();
         int taskIdCounter = 1; // Counter for generating unique task IDs
-
+    
         for (Player player : playersMap.values()) {
-            // Generate a random index to get a random type of Task
-            TaskType type = taskTypes[random.nextInt(taskTypes.length)];
-
-            // Generate Positions based on Task Type
-            Position position = generateUniquePosition(type);
-
-            // Set the Task with a unique ID
-            Task task = new Task(type, position.getX(), position.getY(), player.getName());
-            task.setId(taskIdCounter++); // Assign a unique ID
-            interactibles.add(task);
+            for (int i = 0; i < 5; i++) { // Create five tasks for each player
+                // Generate a random index to get a random type of Task
+                TaskType type = taskTypes[random.nextInt(taskTypes.length)];
+    
+                // Generate Positions based on Task Type
+                Position position = generateUniquePosition(type);
+    
+                // Set the Task with a unique ID
+                Task task = new Task(type, position.getX(), position.getY(), player.getName());
+                task.setId(taskIdCounter++); // Assign a unique ID
+                interactibles.add(task);
+            }
         }
         return interactibles;
     }

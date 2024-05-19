@@ -90,6 +90,11 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
     return (
         <div className={styles.overlay}>
             <div className={styles.scanPopup}>
+                <video className={styles.scanBackgroundVideo} autoPlay loop muted>
+                    <source src="/hobbitstoisengard.mp4" type="video/mp4" />
+                    {/* Add additional source elements for different video formats if needed */}
+                    Your browser does not support the video tag.
+                </video>
                 <div className={styles.scanProgress} style={{ width: `${progress}%` }}></div>
                 <button
                     className={styles.scanButton}
@@ -97,8 +102,9 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
                     onMouseUp={handleHoldEnd}
                     onMouseLeave={handleHoldEnd}
                 >
-                    Hold to Scan
+                    Sound the Horn!
                 </button>
+                <div className={styles.scanForegroundImage}></div>
             </div>
         </div>
     );

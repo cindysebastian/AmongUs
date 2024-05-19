@@ -1,5 +1,3 @@
-/* MiniGame.module.css */
-
 .overlay {
     position: fixed;
     top: 0;
@@ -58,9 +56,7 @@
     height: 128px;
     top: 50%;
     left: 20%;
-    /* Adjusted to move 30% from the left */
     transform: translateX(-30%);
-    /* Center the wooden beam horizontally */
     background-image: url(../../../../../resources/wood_beam.png);
     background-position: center;
     background-size: 100% 100%;
@@ -68,7 +64,6 @@
     cursor: pointer;
     z-index: 4;
     transition: left 0.3s ease;
-    /* Ensure smooth transition */
 }
 
 @keyframes shake {
@@ -93,7 +88,7 @@
     }
 
     75% {
-        transform: translateY(-10px);
+        transform: translateY(-px);
     }
 
     100% {
@@ -108,7 +103,6 @@
 .shake {
     animation: shake 0.3s ease;
 }
-
 
 .swipepopup {
     width: 80%;
@@ -132,9 +126,7 @@
 
 .slider {
     left: -20%;
-    /* Update to use left instead of transform */
 }
-
 
 .scanPopup {
     background-color: #fff;
@@ -143,33 +135,74 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    height: 80%;
+    width: 80%;
+    background-image: url(../../../../../resources/cave.jpg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
 }
 
 .scanProgress {
     width: 0;
     height: 10px;
-    background-color: #00cc00;
-    /* Green color for progress */
+    background-color: #500b06;
     border-radius: 5px;
     margin-bottom: 10px;
     transition: width 1s;
-    /* Smooth transition for progress */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
 }
 
+
 .scanButton {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #007bff;
-    /* Blue color for button */
+    padding:  20px;
+    font-size: 20px;
+    background-color: grey;
     color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
-    /* Smooth transition for button */
+    font-family: 'Lucida Console';
+    z-index: 2;
+    left: 0;
+    position: relative;
+    
 }
 
 .scanButton:hover {
-    background-color: #0056b3;
-    /* Darker blue color on hover */
+    background-color: darkgray;
+}
+
+.scanForegroundImage {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url(../../../../../resources/scan.png);
+    background-repeat: no-repeat;
+    background-size:contain;
+    z-index: 3;
+}
+
+.scanBackgroundVideo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    opacity: 0.3;
+    z-index: 2;
+    object-fit: cover;
+    transform: translate(-25%, -25%);
 }
