@@ -1,18 +1,19 @@
 interface Interactible {
-    id: number;
-    position: { x: number; y: number };
-    width: number;
-    height: number;
-    inProgress: boolean;
-    type: TaskType;
-    assignedPlayer: String;
-  }
+  completed: boolean;
+  id: number;
+  position: { x: number; y: number };
+  width: number;
+  height: number;
+  inProgress: boolean;
+  type: TaskType;
+  assignedPlayer: String;
+}
 
-  enum TaskType {
-    SWIPE = "SWIPE",
-    MINE = "MINE",
-    SCAN = "SCAN"
+enum TaskType {
+  SWIPE = "SWIPE",
+  MINE = "MINE",
+  SCAN = "SCAN"
 }
 
 
-  export default Interactible
+export default Interactible

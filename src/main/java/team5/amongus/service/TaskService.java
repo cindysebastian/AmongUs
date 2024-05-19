@@ -27,7 +27,6 @@ public class TaskService implements ITaskService {
         this.objectMapper = objectMapper;
     }
 
-
     @Override
     public ArrayList<Interactible> createTasks(Map<String, Player> playersMap) {
         ArrayList<Interactible> interactibles = new ArrayList<>();
@@ -111,24 +110,24 @@ public class TaskService implements ITaskService {
         return interactibles;
     }
 
-    @Override
     public ArrayList<Interactible> completeTask(String payload, ArrayList<Interactible> interactibles) {
         try {
+            for (Interactible task : interactibles) {
+                System.out.println(task.toString());
+            }
+    
             JsonNode jsonNode = objectMapper.readTree(payload);
-            int interactibleId = jsonNode.asInt();
-
-            if (interactibleId >= 0 && interactibleId < interactibles.size()) {
-                Interactible interactible = interactibles.get(interactibleId);
-                if (interactible instanceof Task) {
-                    Task task = (Task) interactible;
-                    if (task.getInProgress()) {
-                        // Set completed to true and inProgress to false
-                        task.setCompleted(true);
-                        task.setInProgress(false);
-                        // Update the interactible in the list
-                        interactibles.set(interactibleId, task);
-                        return interactibles;
-                    }
+            int interactibleId = jsonNode.get("interactibleId").asInt();
+    
+            Interactible interactibleToUpdate = Interactible.getInteractibleById(interactibleId, interactibles);
+            if (interactibleToUpdate != null && interactibleToUpdate instanceof Task) {
+                Task task = (Task) interactibleToUpdate;
+                if (task.getInProgress()) {
+                    // Set completed to true and inProgress to false
+                    task.setCompleted(true);
+                    task.setInProgress(false);
+                    // No need to set the interactible back into the list, as it's already a reference
+                    return interactibles;
                 }
             }
         } catch (IOException e) {
@@ -138,5 +137,5 @@ public class TaskService implements ITaskService {
         System.out.println("Task Completion Error");
         return interactibles;
     }
-
+    
 }

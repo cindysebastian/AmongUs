@@ -1,15 +1,13 @@
 package team5.amongus.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 
-public class Task extends Interactible{
-   
+public class Task extends Interactible {
+
     private boolean completed = false;
     private String assignedPlayer;
     private TaskType type;
-    
-    private Boolean inProgress;
+
+    private Boolean inProgress =false;
 
     public Boolean getInProgress() {
         return inProgress;
@@ -27,10 +25,10 @@ public class Task extends Interactible{
         this.completed = comp;
     }
 
-   public void setCompleted(boolean completed) {
-       this.completed = completed;
-   }
-    
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
     public String getAssignedPlayer() {
         return assignedPlayer;
     }
@@ -56,4 +54,18 @@ public class Task extends Interactible{
         completed = false;
 
     }
+       
+   @Override
+    public String toString() {
+        return "Task{" +
+                "completed= " + completed +
+                ", assignedPlayer= '" + assignedPlayer + '\'' +
+                ", type= " + type +
+                ", inProgress= " + inProgress +
+                ", id= " + getId() +
+                ", position x= " + getPosition().getX() +
+                ", position y= " + getPosition().getY() +
+                '}';
+    }
+    
 }

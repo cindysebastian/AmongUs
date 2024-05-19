@@ -1,5 +1,7 @@
 package team5.amongus.model;
 
+import java.util.ArrayList;
+
 public class Interactible {
 
     private Position position;
@@ -42,4 +44,22 @@ public class Interactible {
     public void setWidth(int width) {
         this.width = width;
     }
+
+    @Override
+    public String toString() {
+        return "Interactible{" +
+                "id=" + id +
+                '}';
+    }
+
+    public static Interactible getInteractibleById(int interactibleId, ArrayList<Interactible> interactibles) {
+    for (Interactible interactible : interactibles) {
+        if (interactible.getId() == interactibleId) { 
+            return interactible;
+        }
+    }
+    return null; 
+}
+
+    
 }
