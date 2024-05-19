@@ -13,6 +13,6 @@ public interface ITaskService {
 
     ArrayList<Interactible> updateTaskInteractions(Map<String, Player> playersMap, ArrayList<Interactible> interactibles, Player player, Task task);
 
-    public ArrayList<Interactible> completeTask(int interactibleId, ArrayList<Interactible> interactebels);
+    public ArrayList<Interactible> completeTask(String payload, ArrayList<Interactible> interactebels);
     
 }

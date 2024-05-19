@@ -69,7 +69,7 @@ export const markTaskAsCompleted = (stompClient, interactibleId: number) => {
   // Send a STOMP message to your backend to mark the task as completed
   console.log("Sending request to complete Task to Backend")
   console.log(interactibleId)
-  stompClient.send('/app/completeTask', {}, messageBody);
+  stompClient.send('/app/completeTask', {}, JSON.stringify(messageBody));
 };
 
 

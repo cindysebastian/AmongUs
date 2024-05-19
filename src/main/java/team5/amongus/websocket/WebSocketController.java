@@ -147,16 +147,17 @@ public class WebSocketController {
 
 
     @MessageMapping("/completeTask")
-    public void completeTask(@Payload int interactibleId) {
-        
-        
-        // For demonstration purposes, let's just echo back the completed task ID
-        System.out.println("Recieved Interactible ID: " + interactibleId);
-        ArrayList<Interactible> updatedInteractables = taskService.completeTask(interactibleId, interactibles);
+    @SendTo("/topic/interactions")
+    public List<Interactible> completeTask(String payload) {
+        // Complete the task using the taskService
+        ArrayList<Interactible> updatedInteractables = taskService.completeTask(payload, interactibles);
         interactibles = updatedInteractables;
-        // Broadcast the updated interactible to all clients
+        // Broadcast the updated interactibles to all clients
         broadcastInteractiblesUpdate();
+        return interactibles;
     }
+
+    
 
     @MessageMapping("/startGame")
     @SendTo("/topic/gameStart")
@@ -192,8 +193,7 @@ public class WebSocketController {
         String sessionId = event.getSessionId();
 
         // Iterate over inGamePlayersMap to find the disconnected player
-        for (Iterator<Map.Entry<String, Player>> iterator = inGamePlayersMap.entrySet().iterator(); iterator
-                .hasNext();) {
+        for (Iterator<Map.Entry<String, Player>> iterator = inGamePlayersMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String, Player> entry = iterator.next();
             Player player = entry.getValue();
             if (player.getSessionId() != null && player.getSessionId().equals(sessionId)) {

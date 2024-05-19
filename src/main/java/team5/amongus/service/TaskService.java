@@ -7,6 +7,7 @@ import team5.amongus.model.Position;
 import team5.amongus.model.Task;
 import team5.amongus.model.TaskType;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,8 +16,17 @@ import java.util.Random;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Service
 public class TaskService implements ITaskService {
+    private final ObjectMapper objectMapper;
+
+    public TaskService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
 
     @Override
     public ArrayList<Interactible> createTasks(Map<String, Player> playersMap) {
@@ -101,25 +111,32 @@ public class TaskService implements ITaskService {
         return interactibles;
     }
 
-    
-
     @Override
-    public ArrayList<Interactible> completeTask(int interactibleId, ArrayList<Interactible> interactibles) {
-        if (interactibleId >= 0 && interactibleId < interactibles.size()) {
-            Interactible interactible = interactibles.get(interactibleId);
-            if (interactible instanceof Task) {
-                Task task = (Task) interactible;
-                if (task.getInProgress()) {
-                    // Set completed to true and inProgress to false
-                    task.setCompleted(true);
-                    task.setInProgress(false);
-                    // Update the interactible in the list
-                    interactibles.set(interactibleId, task);
-                    return interactibles;
+    public ArrayList<Interactible> completeTask(String payload, ArrayList<Interactible> interactibles) {
+        try {
+            JsonNode jsonNode = objectMapper.readTree(payload);
+            int interactibleId = jsonNode.asInt();
+
+            if (interactibleId >= 0 && interactibleId < interactibles.size()) {
+                Interactible interactible = interactibles.get(interactibleId);
+                if (interactible instanceof Task) {
+                    Task task = (Task) interactible;
+                    if (task.getInProgress()) {
+                        // Set completed to true and inProgress to false
+                        task.setCompleted(true);
+                        task.setInProgress(false);
+                        // Update the interactible in the list
+                        interactibles.set(interactibleId, task);
+                        return interactibles;
+                    }
                 }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Handle JSON parsing exception
         }
-        return null; // Task not found, not a Task instance, or already completed
+        System.out.println("Task Completion Error");
+        return interactibles;
     }
-    
+
 }
