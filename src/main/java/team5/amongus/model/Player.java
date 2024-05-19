@@ -103,27 +103,28 @@ public class Player implements Serializable {
     }
 
     public void handleMovementRequest(String direction) {
-        switch (direction) {
-            case "UP":
-                position.setY(position.getY() - step);
-                System.out.println("Up");
-                break;
-            case "DOWN":
-                position.setY(position.getY() + step);
-                System.out.println("Down");
-                break;
-            case "LEFT":
-                position.setX(position.getX() - step);
-                setFacing("LEFT");
-                break;
-            case "RIGHT":
-                position.setX(position.getX() + step);
-                setFacing("RIGHT");
-                break;
-            default:
-                break;
+        if (isAlive) {
+            switch (direction) {
+                case "UP":
+                    position.setY(position.getY() - step);
+                    System.out.println("Up");
+                    break;
+                case "DOWN":
+                    position.setY(position.getY() + step);
+                    System.out.println("Down");
+                    break;
+                case "LEFT":
+                    position.setX(position.getX() - step);
+                    setFacing("LEFT");
+                    break;
+                case "RIGHT":
+                    position.setX(position.getX() + step);
+                    setFacing("RIGHT");
+                    break;
+                default:
+                    break;
+            }
         }
-
     }
 
     public boolean collidesWith(Player otherPlayer) {

@@ -164,6 +164,7 @@ public class WebSocketController {
 
         // Trigger the logic to choose imposters in the GameManager
         gameManager.chooseImposter();
+        
 
         // Clear the players from the lobby
         inGamePlayersMap.clear();

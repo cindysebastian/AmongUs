@@ -98,4 +98,16 @@ export const subscribeToPlayerKilled = (stompClient, setPlayerKilled) => {
   };
 };
 
+export const subscribeToImposter = (stompClient, setIsImposter) => {
+  if (!stompClient) return;
+
+  const subscription = stompClient.subscribe('/topic/isImposter', (message) => {
+    const isImposter = JSON.parse(message.body);
+    setIsImposter(isImposter); 
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
+};
 

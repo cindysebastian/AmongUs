@@ -49,6 +49,7 @@ public class GameManager {
             Imposter imposter = new Imposter(player.getName(), player.getPosition());
             playersMap.add(imposter);
             imposters.add(imposter);
+            notifyPlayerisImposter(imposter);
             playersMap.remove(player);
             System.out.println("Imposter: " + imposter.getName());
 
@@ -64,6 +65,10 @@ public class GameManager {
 
     public void notifyPlayerKilled(Player killedPlayer) {
         messagingTemplate.convertAndSend("/topic/killedPlayer", killedPlayer);
+    }
+
+    public void notifyPlayerisImposter(Player imposter) {
+        messagingTemplate.convertAndSend("/topic/isImposter", imposter);
     }
 
 }

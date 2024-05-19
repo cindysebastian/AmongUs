@@ -25,7 +25,7 @@ const SpaceShip: React.FC<Props> = ({ players, playerName, stompClient }) => {
     // Check if the killed player is the current player
     if (killedPlayer.name === playerName) {
       setShowKillGif(true);
-      setTimeout(() => setShowKillGif(false), 3000);
+      setTimeout(() => setShowKillGif(false), 2500);
     }
   };
 
