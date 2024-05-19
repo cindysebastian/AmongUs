@@ -1,14 +1,14 @@
 // MineMinigame.tsx
 
 import React, { useState } from 'react';
-import Interactible from '../interfaces/Interactible';
+import Task from '../interfaces/Interactible';
 import {completeMiniGame} from "../../service (Frontend)/TaskService"
 import Stomp from "stompjs"
 
 
 interface Props {
   stompClient: Stomp.Client | null; // Add stompClient to props
-  interactible: Interactible;
+  interactible: Task;
 }
 
 const MineMinigame: React.FC<Props> = ({ stompClient, interactible }) => {

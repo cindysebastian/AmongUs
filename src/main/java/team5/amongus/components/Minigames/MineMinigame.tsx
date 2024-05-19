@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import Interactible from '../interfaces/Interactible';
+import Task from '../interfaces/Interactible';
 import { completeMiniGame } from "../../service (Frontend)/TaskService";
 import Stomp from "stompjs";
 import styles from './MiniGame.module.css'; // Import CSS module
 
 interface Props {
   stompClient: Stomp.Client | null;
-  interactible: Interactible;
+  interactible: Task;
 }
 
 const MineMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
@@ -34,9 +34,9 @@ const MineMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
     audio.currentTime = randomTime; // Set the playback position to the random time
     audio.volume = 1.0; // Ensure volume is set to 100%
 
-    console.log(`Playing sound at time: ${randomTime}`);
+   
     audio.play().then(() => {
-      console.log('Audio started playing');
+      
       // Stop the audio after 3 seconds
       setTimeout(() => {
         audio.pause();
@@ -50,7 +50,6 @@ const MineMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
     <div className={styles.overlay}>
       <div className={styles.popup}>
         <div className={styles.popupContent}>
-          <img src="src/main/resources/miningGame.jpg" alt="Mine" />
           <div className={styles.imageWrapper}>
             <img
               src="src/main/resources/mine.png"

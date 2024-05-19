@@ -2,7 +2,7 @@
 
 import Stomp from 'stompjs';
 import { markTaskAsCompleted } from './WebsocketService';
-import Interactible from '../components/interfaces/Interactible';
+import Task from '../components/interfaces/Interactible';
 
 
 export const completeMiniGame = (stompClient, interactibleId: number) => {
@@ -12,7 +12,7 @@ export const completeMiniGame = (stompClient, interactibleId: number) => {
   markTaskAsCompleted(stompClient, interactibleId);
 };
 
-export const getRequiredButtonClicks = (interactible: Interactible): number => {
+export const getRequiredButtonClicks = (interactible: Task): number => {
   switch (interactible.type) {
     case 'SWIPE':
       return 1;

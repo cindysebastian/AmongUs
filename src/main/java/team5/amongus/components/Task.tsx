@@ -33,7 +33,7 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer }) =>
             {/* Render minigame components for each interactible */}
             {interactibles.map(interactible => {
                 // Check if the player assigned to the task is the current player and if the task is in progress
-                console.log(currentPlayer);
+             
                 if (interactible.assignedPlayer == currentPlayer && interactible.inProgress) {
                     switch (interactible.type) {
                         case 'MINE':

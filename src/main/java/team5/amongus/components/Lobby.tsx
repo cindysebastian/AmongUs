@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Player from './interfaces/Player';
-import Interactible from './interfaces/Interactible'
+import Task from './interfaces/Interactible'
 import PlayerSprite from './PlayerSprite';
 import Space from './Space';
-import styles from '../../amongus/lobby.module.css';
+import styles from '../styles/lobby.module.css';
 
 interface Props {
   inGamePlayers: Record<string, Player>;

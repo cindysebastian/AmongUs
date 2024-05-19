@@ -8,7 +8,7 @@ import MessageInput from './components/MessageInput';
 import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
 import bgImage from '../../../resources/LoginBG.png';
-import styles from './index.module.css';
+import styles from './styles/index.module.css';
 import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions } from './service (Frontend)/WebsocketService';
 import { movePlayer } from '././service (Frontend)/PlayerMovementService';
 import { startGame } from '././service (Frontend)/GameStartingService'
@@ -194,7 +194,7 @@ const App = ({ history }) => {
         </div>
       )}
       {redirectToSpaceShip && (
-          <SpaceShip stompClient={stompClient} players={players} interactibles = {interactibles} currentplayer ={playerName}/>
+          <SpaceShip stompClient={stompClient} players={players} interactibles = {interactibles} currentPlayer ={playerName}/>
       )}
     </div>
   );

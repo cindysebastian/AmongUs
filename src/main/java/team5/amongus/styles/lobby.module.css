@@ -4,7 +4,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url("../../../resources/LobbyBG.png");
+    background-image: url("../../../../resources/LobbyBG.png");
     background-size: cover;
     z-index: -1;
     background-position: center;
