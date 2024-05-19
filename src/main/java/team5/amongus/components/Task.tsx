@@ -1,50 +1,56 @@
 // Task.tsx
 
 import React from 'react';
-import  Interactible  from './interfaces/Interactible';
-import styles from '../../amongus/spaceship.module.css';
-import { handleButtonClick, getRequiredButtonClicks } from '../service (Frontend)/TaskService';
-import Stomp from 'stompjs';
+import Interactible from './interfaces/Interactible';
+import MineMinigame from './Minigames/MineMinigame';
+import Stomp from "stompjs";
+
 
 interface Props {
-    interactible: Interactible;
-    currentplayer: string;
-    stompClient: Stomp.Client | null;
+    stompClient: Stomp.Client | null; // Add stompClient to props
     interactibles: Interactible[];
-  }
-  
-  const Task: React.FC<Props> = ({ interactible, currentplayer, stompClient, interactibles }) => {
-    const handleButton = (buttonIndex: number) => {
-      handleButtonClick(stompClient, interactible.id, buttonIndex, interactibles);
-    };
-  
-    const renderButtons = () => {
-      const numButtons = getRequiredButtonClicks(interactible.id, interactibles);
-      const buttons = [];
-      for (let i = 0; i < numButtons; i++) {
-        buttons.push(
-          <button key={i} onClick={() => handleButton(i)}>Button {i + 1}</button>
-        );
-      }
-      return buttons;
-    };
-  
+    currentPlayer: String;
+}
+
+const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer }) => {
     return (
-      <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y, left: interactible.position.x, zIndex: 1 }}>
-        <div className={styles.interactible} style={{ width: interactible.width, height: interactible.height, backgroundColor: 'pink' }}>
-          {/* Check if the interactible is in progress and show the popup */}
-          {interactible.inProgress && !interactible.completed && (
-            <div className={styles.popup}>
-              <div className={styles.popupContent}>
-                {renderButtons()}
-              </div>
-            </div>
-          )}
+        <div>
+            {/* Render images at the coordinates of interactibles */}
+            {interactibles.map(interactible => (
+                <img
+                    key={interactible.id}
+                    src={`src/main/resources/${interactible.type.toLowerCase()}.png`} // Assuming you have images named after interactible types
+                    alt={interactible.type}
+                    style={{
+                        position: 'absolute',
+                        top: interactible.position.y,
+                        left: interactible.position.x,
+                        width: '150px', // Adjust the width as needed
+                        height: '150px', // Adjust the height as needed
+                    }}
+                />
+            ))}
+            {/* Render minigame components for each interactible */}
+            {interactibles.map(interactible => {
+                // Check if the player assigned to the task is the current player and if the task is in progress
+                console.log(currentPlayer);
+                if (interactible.assignedPlayer == currentPlayer && interactible.inProgress) {
+                    switch (interactible.type) {
+                        case 'MINE':
+                            return <MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} />;
+                        case 'SCAN':
+                            return <MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} />;
+                        case 'SWIPE':
+                            return <MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} />;
+                        default:
+                            return null;
+                    }
+                } else {
+                    return null;
+                }
+            })}
         </div>
-      </div>
     );
-  };
-  
-  export default Task;
+};
 
-
+export default Task;

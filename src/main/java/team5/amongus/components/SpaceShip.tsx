@@ -1,18 +1,20 @@
 // SpaceShip.tsx
 
 import React from 'react';
+import Stomp from 'stompjs'; // Import Stomp
+import Task from './Task'; // Import the Task component
+
+
+import styles from '../../amongus/spaceship.module.css';
 import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
-import Task from './Task';
-import styles from '../../amongus/spaceship.module.css';
-import Stomp from 'stompjs';
 
 interface Props {
+  stompClient: Stomp.Client | null; // Add stompClient to props
   players: Record<string, Player>;
   interactibles: Interactible[];
-  currentplayer: string;
-  stompClient: Stomp.Client | null;
+  currentplayer: String;
 }
 
 const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, currentplayer }) => {
@@ -32,11 +34,11 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
           </div>
         ))}
 
-        {/* Render interactibles using Task component */}
+
+
         <div>
-          {interactibles.map(interactible => (
-            <Task key={interactible.id} interactible={interactible} currentplayer={currentplayer} stompClient={stompClient} interactibles={interactibles} />
-          ))}
+          {/* Pass stompClient to Task component */}
+          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentplayer}/>
         </div>
       </div>
     </div>

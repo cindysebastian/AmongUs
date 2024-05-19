@@ -7,6 +7,7 @@ interface Interactible {
   inProgress: boolean;
   type: TaskType;
   assignedPlayer: String;
+  buttonsClicked?: boolean[]; // New property to track button clicks
 }
 
 enum TaskType {
