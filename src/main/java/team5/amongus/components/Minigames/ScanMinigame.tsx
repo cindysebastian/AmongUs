@@ -13,6 +13,7 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
     const [isCompleted, setIsCompleted] = useState(false);
     const [progress, setProgress] = useState(0);
     const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+    const [isSoundPlaying, setIsSoundPlaying] = useState(false);
 
     const handleHoldStart = () => {
         // Start timer when holding button
@@ -24,17 +25,34 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
                         completeMiniGame(stompClient, interactible.id);
                         setIsCompleted(true);
                     }
-                    playSound();
+                    playSound(); // Play sound when completion reached
                 }
                 return newProgress;
             });
         }, 1000));
+
+        // Start sound when holding button
+        if (!isSoundPlaying) {
+            playContinuousSound();
+            setIsSoundPlaying(true);
+        }
     };
 
     const handleHoldEnd = () => {
         // Stop timer when releasing button
         if (timer) clearInterval(timer);
         setProgress(0); // Reset progress
+        setIsSoundPlaying(false); // Stop sound when releasing button
+    };
+
+    const playContinuousSound = () => {
+        const audio = new Audio('/hobbitstoisengard.mp3'); // Path relative to the public directory
+        audio.volume = 0.5; // Adjust volume as needed
+        audio.loop = true; // Make the sound loop continuously
+        audio.playbackRate = 3;
+        audio.play().catch(error => {
+            console.error('Error playing audio:', error);
+        });
     };
 
     const playSound = () => {
@@ -47,10 +65,11 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
 
     useEffect(() => {
         return () => {
-            // Cleanup timer on component unmount
+            // Cleanup timer and sound on component unmount
             if (timer) clearInterval(timer);
+            if (isSoundPlaying) setIsSoundPlaying(false);
         };
-    }, [timer]);
+    }, [timer, isSoundPlaying]);
 
     return (
         <div className={styles.overlay}>
@@ -70,4 +89,3 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
 };
 
 export default ScanMinigame;
-
