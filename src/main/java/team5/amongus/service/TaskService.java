@@ -202,8 +202,8 @@ public class TaskService implements ITaskService {
         // Add your predetermined swipe positions to the positions list
         // Example:
         positions.add(new Position(700, 700));
-        positions.add(new Position(450, 700));
-        positions.add(new Position(400, 600));
+        positions.add(new Position(800, 800));
+        positions.add(new Position(900, 900));
         // Add more positions as needed
     }
 
@@ -234,17 +234,14 @@ public class TaskService implements ITaskService {
                 }
             }
 
-            System.out.println("Updated task information sent successfully.");
+            
         }
         return interactibles;
     }
 
     public ArrayList<Interactible> completeTask(String payload, ArrayList<Interactible> interactibles) {
         try {
-            for (Interactible task : interactibles) {
-                System.out.println(task.toString());
-            }
-
+            
             JsonNode jsonNode = objectMapper.readTree(payload);
             int interactibleId = jsonNode.get("interactibleId").asInt();
 

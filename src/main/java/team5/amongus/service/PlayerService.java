@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import team5.amongus.model.Interactible;
 import team5.amongus.model.Player;
 import team5.amongus.model.PlayerMoveRequest;
+import team5.amongus.model.Task;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -83,10 +84,13 @@ public class PlayerService implements IPlayerService {
 
     @Override
     public Interactible getPlayerInteractableObject(ArrayList<Interactible> interactibles, Player player) {
-      
+
         for (Interactible object : interactibles) {
-            if (player.collidesWith(object)) {
-                return object;
+            if (((Task) object).getAssignedPlayer() == player.getName()) {
+                if (player.collidesWith(object)) {
+
+                    return object;
+                }
             }
 
         }

@@ -95,7 +95,7 @@ public class WebSocketController {
                 ArrayList<Interactible> updatedInteractables = taskService.updateTaskInteractions(playersMap,
                         interactibles, player, (Task) interactableObject);
                 // Broadcast updated task list to all clients
-                System.out.println("Sending updated Interactibles");
+                
                 interactibles = updatedInteractables;
 
             } /*
@@ -135,7 +135,7 @@ public class WebSocketController {
 
     private void broadcastInteractiblesUpdate() {
         messagingTemplate.convertAndSend("/topic/interactions", interactibles);
-        System.out.println(interactibles.getFirst());
+        
     }
 
     @MessageMapping("/sendMessage")
