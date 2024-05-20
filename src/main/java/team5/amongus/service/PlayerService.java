@@ -125,9 +125,9 @@ public class PlayerService implements IPlayerService {
                     if (!name.equals(imposter.getName()) && !(player instanceof Imposter)) { // Exclude the player
                                                                                              // initiating
                         if (currentImposter.collidesWith(player)) {
-                        collidingPlayer = player;
-                        break;
-                    }
+                            collidingPlayer = player;
+                            break;
+                        }
                     }
                 }
 

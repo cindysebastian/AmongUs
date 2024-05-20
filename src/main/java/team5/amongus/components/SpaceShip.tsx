@@ -87,9 +87,9 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
         ))}
         {/* Render PNG image for killed players */}
         {killedPlayers.map(killedPlayerName => (
-          <div key={killedPlayerName} style={{ position: 'absolute', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x }}>
+          <div key={killedPlayerName} style={{ position: 'relative', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x }}>
             {/* Render the PNG image for the killed player */}
-            <img src="src\main\resources\deadbodycrewmate.png" alt="Dead Player" style={{width: '80px', height: '90px', marginTop: "25px" }} />
+            <img src="src\main\resources\deadbodycrewmate.png" alt="Dead Player" style={{width: '80px', height: '90px', position: 'relative' }} />
           </div>
         ))}
         <div>

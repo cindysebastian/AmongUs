@@ -124,12 +124,14 @@ public class Player implements Serializable {
 
     public void handleMovementRequest(Position.Direction direction) {
         Position newPosition = position.getNextPosition(direction, step);
-        if (newPosition.getX() < position.getX()) {
-            setFacing("LEFT");
-        } else if(newPosition.getX() > position.getX()){
-            setFacing("RIGHT");
-        }
-        this.position = newPosition;
+        if (isAlive) {
+            if (newPosition.getX() < position.getX()) {
+                setFacing("LEFT");
+            } else if(newPosition.getX() > position.getX()){
+                setFacing("RIGHT");
+            }
+            this.position = newPosition;
+        }        
     }
 
     public boolean collidesWith(Player otherPlayer) {
