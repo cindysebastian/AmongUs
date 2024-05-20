@@ -103,7 +103,7 @@ public class Player implements Serializable {
     }
 
     public void handleMovementRequest(String direction) {
-        if (isAlive) {
+        if (isAlive) { // so dead player cannot move, it should be dead body but idk how
             switch (direction) {
                 case "UP":
                     position.setY(position.getY() - step);

@@ -66,7 +66,7 @@ public class GameManager {
     public void notifyPlayerKilled(Player killedPlayer) {
         messagingTemplate.convertAndSend("/topic/killedPlayer", killedPlayer);
     }
-
+    //should inform player he is imposter for KillButton
     public void notifyPlayerisImposter(Player imposter) {
         messagingTemplate.convertAndSend("/topic/isImposter", imposter);
     }

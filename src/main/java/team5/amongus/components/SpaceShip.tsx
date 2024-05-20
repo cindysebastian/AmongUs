@@ -3,7 +3,7 @@ import Player from './interfaces/Player'; // Import the Player interface
 import PlayerSprite from './PlayerSprite';
 import styles from '../../amongus/spaceship.module.css';
 import KillButton from './KillButton';
-import { killPlayer, subscribeToPlayerKilled } from '../service (Frontend)/WebsocketService';
+import { killPlayer, subscribeToPlayerKilled, subscribeToImposter } from '../service (Frontend)/WebsocketService';
 
 interface Props {
   players: Record<string, Player>;
@@ -13,12 +13,22 @@ interface Props {
 
 const SpaceShip: React.FC<Props> = ({ players, playerName, stompClient }) => {
   const [showKillGif, setShowKillGif] = useState(false);
+  const [isImposter, setIsImposter] = useState(false);
 
   // Subscribe to player killed events when the component mounts
   useEffect(() => {
-    const unsubscribe = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
-    return unsubscribe;
-  }, [stompClient]);
+    const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
+    const unsubscribeImposter = subscribeToImposter(stompClient, (imposterName: string) => {
+      if (imposterName === playerName) {
+        setIsImposter(true);
+      }
+    });
+
+    return () => {
+      unsubscribeKilled();
+      unsubscribeImposter();
+    };
+  }, [stompClient, playerName]);
 
   // Handler for player killed event
   const handlePlayerKilled = (killedPlayer: Player) => {

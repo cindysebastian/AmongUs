@@ -103,7 +103,7 @@ export const subscribeToImposter = (stompClient, setIsImposter) => {
 
   const subscription = stompClient.subscribe('/topic/isImposter', (message) => {
     const isImposter = JSON.parse(message.body);
-    setIsImposter(isImposter); 
+    setIsImposter(isImposter.name); 
   });
 
   return () => {
