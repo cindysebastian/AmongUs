@@ -9,8 +9,8 @@ public class Player implements Serializable {
     private Integer step = 12;
     private Boolean isMoving = false;
     private String facing = "RIGHT";
-    private int width = 100;
-    private int height = 150;
+    private int width = 130;
+    private int height = 130;
     private boolean canInteract = false;
     private boolean canKill = false;
     private long lastActivityTime;
@@ -20,6 +20,18 @@ public class Player implements Serializable {
         this.name = name;
         this.position = position;
         this.lastActivityTime = System.currentTimeMillis();
+    }
+
+    public int getWidth(){
+        return width;
+    }
+
+    public int getHeight(){
+        return height;
+    }
+
+    public int getStep(){
+        return step;
     }
 
     public String getSessionId() {
@@ -94,28 +106,14 @@ public class Player implements Serializable {
         this.canKill = canKill;
     }
 
-    public void handleMovementRequest(String direction) {
-        switch (direction) {
-            case "UP":
-                position.setY(position.getY() - step);
-
-                break;
-            case "DOWN":
-                position.setY(position.getY() + step);
-
-                break;
-            case "LEFT":
-                position.setX(position.getX() - step);
-                setFacing("LEFT");
-                break;
-            case "RIGHT":
-                position.setX(position.getX() + step);
-                setFacing("RIGHT");
-                break;
-            default:
-                break;
+    public void handleMovementRequest(Position.Direction direction) {
+        Position newPosition = position.getNextPosition(direction, step);
+        if (newPosition.getX() < position.getX()) {
+            setFacing("LEFT");
+        } else if(newPosition.getX() > position.getX()){
+            setFacing("RIGHT");
         }
-
+        this.position = newPosition;
     }
 
     public boolean collidesWith(Player otherPlayer) {

@@ -27,4 +27,36 @@ public class Position implements Serializable {
     public void setY(int y) {
         this.y = y;
     }
+
+    // Directions enum for clarity
+    public enum Direction {
+        UP, DOWN, LEFT, RIGHT
+    }
+
+    // Method to calculate the next position
+    public Position getNextPosition(Direction direction, int stepSize) {
+        int newX = this.x;
+        int newY = this.y;
+
+        switch (direction) {
+            case UP:
+                newY -= stepSize;
+                break;
+            case DOWN:
+                newY += stepSize;
+                break;
+            case LEFT:
+                newX -= stepSize;
+                break;
+            case RIGHT:
+                newX += stepSize;
+                break;
+        }
+
+        return new Position(newX, newY);
+    }
+
+    public String toString(){
+        return "Position: X " + getX() + " Y " + getY();
+    }
 }

@@ -7,7 +7,7 @@ import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
 import bgImage from '../../../resources/LoginBG.png';
 import styles from './styles/index.module.css';
-import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions } from './service (Frontend)/WebsocketService';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions, fetchCollisionMask } from './service (Frontend)/WebsocketService';
 import { movePlayer } from './service (Frontend)/PlayerMovementService';
 import { startGame } from './service (Frontend)/GameStartingService';
 import { handleInteraction } from './service (Frontend)/InteractionService';
@@ -35,6 +35,7 @@ const App = ({ history }) => {
     s: false,
     d: false,
   });
+  const [collisionMask, setCollisionMask] = useState(null);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false); // Add state for tracking start button click
   const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); // Add state to control redirection to SpaceShip
   const [gameStarted, setGameStarted] = useState(false);
@@ -92,6 +93,18 @@ useEffect(() => {
     }
 }, [interactibles, playerName]);
 
+useEffect(() => {
+  startGame(stompClient, setRedirectToSpaceShip);
+}, [stompClient]);
+
+useEffect(() => {
+  const fetchMask = async () => {
+    const maskData = await fetchCollisionMask();
+    setCollisionMask(maskData);
+  };
+
+  fetchMask();
+}, []);
 
   useEffect(() => {
     if (stompClient && playerSpawned) {

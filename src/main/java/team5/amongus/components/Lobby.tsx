@@ -19,19 +19,16 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
     setPlayerCount(Object.keys(inGamePlayers).length);
   }, [inGamePlayers]);
 
-  // Check if the current player is the first one
   const isFirstPlayer = firstPlayerName === Object.keys(inGamePlayers)[0];
 
   return (
     <div style={{ position: 'relative' }}>
-      {/* Render Background */}
       <div className={styles.lobbyBackground}></div>
       <Space />
 
       <div className={styles.playerCountContainer}>
-        <img src="src\main\resources\playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
+        <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
         <div className={styles.playerCount}>{playerCount}</div>
-        {/* Render the start button only for the first player */}
         {isFirstPlayer && (
           <div className={styles.startButtonContainer} onClick={onStartButtonClick}> {/* Call onStartButtonClick on click */}
             <img src="src\main\resources\startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
@@ -40,18 +37,15 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
         )}
       </div>
 
-      {/* Render players */}
       {Object.values(inGamePlayers).map(player => {
-        // Ensure that isMoving property is present and initialized before accessing it
         const isMoving = player.isMoving !== undefined ? player.isMoving : false;
 
         return (
           <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
-            {/* Pass the correct isMoving value to PlayerSprite */}
             <PlayerSprite
               player={player}
               facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-              isMoving={isMoving} // Pass isMoving prop
+              isMoving={isMoving}
             />
           </div>
         );

@@ -57,6 +57,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
           <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer}/>
         </div>
       </div>
+      
     </div>
   );
 };

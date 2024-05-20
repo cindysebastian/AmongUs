@@ -1,4 +1,3 @@
-// PlayerServiceImpl.java
 package team5.amongus.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import team5.amongus.model.Interactible;
 import team5.amongus.model.Player;
 import team5.amongus.model.PlayerMoveRequest;
+import team5.amongus.model.Position;
+import team5.amongus.model.CollisionMask;
 import team5.amongus.model.Task;
 
 import java.io.IOException;
@@ -18,17 +19,15 @@ import org.springframework.stereotype.Service;
 public class PlayerService implements IPlayerService {
 
     @Override
-    public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload) {
+    public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask) {
         try {
             final ObjectMapper objectMapper = new ObjectMapper();
 
-            // Parse the JSON payload into a PlayerMoveRequest object
             PlayerMoveRequest moveRequest = objectMapper.readValue(payload, PlayerMoveRequest.class);
 
             String playerName = moveRequest.getPlayerName();
             List<String> directions = moveRequest.getDirections();
 
-            // Rest of your existing logic...
             if (playerName == null || playerName.isEmpty() || directions == null) {
                 return playersMap; // Ignore move requests without player name or directions
             }
@@ -38,25 +37,23 @@ public class PlayerService implements IPlayerService {
                 return playersMap; // Player not found
             }
 
-            // Update the player's position for each direction
             if (directions.isEmpty()) {
-                // If there are no directions, set isMoving to false
                 existingPlayer.setIsMoving(false);
             } else {
-                // If there are directions, handle the movement
-                for (String direction : directions) {
-                    existingPlayer.handleMovementRequest(direction);
+                for (String directionStr : directions) {
+                    Position.Direction direction = Position.Direction.valueOf(directionStr.toUpperCase());
+                    if (!collidesWithMask(existingPlayer, direction, collisionMask)) {
+                        System.out.println("[PlayerService] doesn't collide with mask");
+                        existingPlayer.handleMovementRequest(direction);
+                        existingPlayer.setIsMoving(true);
+                    }
                 }
-                existingPlayer.setIsMoving(true);
             }
             playersMap.put(playerName, existingPlayer);
 
-            // Calculate canKill and canInteract for each player
             for (Player player : playersMap.values()) {
-
                 boolean canInteract = false;
 
-                // Check collision with other players
                 for (Player otherPlayer : playersMap.values()) {
                     if (!player.getName().equals(otherPlayer.getName())) {
                         if (player.collidesWith(otherPlayer)) {
@@ -66,20 +63,28 @@ public class PlayerService implements IPlayerService {
                             player.setCanKill(false);
                             break;
                         }
-
                     }
                 }
 
                 player.setCanInteract(canInteract);
             }
 
-            // Broadcast updated player positions to all clients
-            return playersMap;
-
         } catch (IOException e) {
             e.printStackTrace();
-            return playersMap; // Return the current player map if an error occurs
         }
+
+        return playersMap;
+    }
+
+    private boolean collidesWithMask(Player player, Position.Direction direction, CollisionMask collisionMask) {
+        Position nextPosition = player.getPosition().getNextPosition(direction, player.getStep());
+
+        if (collisionMask.collidesWith(nextPosition.getX(), nextPosition.getY(), player.getWidth(), player.getHeight())) {
+            System.out.println("[PlayerService] nextPosition: " + nextPosition.getX() + ", " + nextPosition.getY());
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -96,5 +101,5 @@ public class PlayerService implements IPlayerService {
         }
         return null;
     }
-
 }
+
