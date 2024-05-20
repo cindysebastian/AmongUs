@@ -1,4 +1,3 @@
-// TaskServiceImpl.java
 package team5.amongus.service;
 
 import team5.amongus.model.Interactible;
@@ -10,9 +9,11 @@ import team5.amongus.model.TaskType;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -27,68 +28,107 @@ public class TaskService implements ITaskService {
         this.objectMapper = objectMapper;
     }
 
-    private final Map<TaskType, List<Position>> taskPositionsMap = new HashMap<>(); // Map to store task positions by type
+    private final Map<TaskType, List<Position>> taskPositionsMap = new HashMap<>(); // Map to store task positions by
+                                                                                    // type
 
     @Override
     public ArrayList<Interactible> createTasks(Map<String, Player> playersMap) {
         ArrayList<Interactible> interactibles = new ArrayList<>();
         TaskType[] taskTypes = TaskType.values();
-    
+
         Random random = new Random();
         int taskIdCounter = 1; // Counter for generating unique task IDs
-    
+
+        Map<Player, Set<Position>> playerPositionsMap = new HashMap<>(); // Map to track positions assigned to each
+                                                                         // player
+        Set<Position> allAssignedPositions = new HashSet<>(); // Set to track all assigned positions
+
         for (Player player : playersMap.values()) {
+            playerPositionsMap.put(player, new HashSet<>());
+
             for (int i = 0; i < 5; i++) { // Create five tasks for each player
                 // Generate a random index to get a random type of Task
                 TaskType type = taskTypes[random.nextInt(taskTypes.length)];
-    
+
                 // Generate Positions based on Task Type
-                Position position = generateUniquePosition(type);
-    
+                Position position = generateUniquePosition(type, playerPositionsMap.get(player), allAssignedPositions,
+                        taskTypes, random);
+
                 // Set the Task with a unique ID
                 Task task = new Task(type, position.getX(), position.getY(), player.getName());
                 task.setId(taskIdCounter++); // Assign a unique ID
                 interactibles.add(task);
+
+                // Track the position assigned to this player and globally
+                playerPositionsMap.get(player).add(position);
+                allAssignedPositions.add(position);
             }
         }
         return interactibles;
     }
 
     // Method to generate a unique position for the task based on its type
-    private Position generateUniquePosition(TaskType type) {
-        Random random = new Random();
-        List<Position> positions = taskPositionsMap.getOrDefault(type, new ArrayList<>());
+    private Position generateUniquePosition(TaskType initialType, Set<Position> assignedPositions,
+            Set<Position> allAssignedPositions, TaskType[] taskTypes, Random random) {
+        TaskType currentType = initialType;
+        List<Position> positions;
+        int attempts = 0;
 
-        if (positions.isEmpty()) {
-            // Populate the list with predetermined coordinates for the task type
-            switch (type) {
-                case MINE:
-                    populateMinePositions(positions);
-                    break;
-                case SCAN:
-                    populateScanPositions(positions);
-                    break;
-                case SWIPE:
-                    populateSwipePositions(positions);
-                    break;
-                default:
-                    // Handle other task types if needed
+        while (attempts < taskTypes.length) {
+            positions = taskPositionsMap.getOrDefault(currentType, new ArrayList<>());
+            if (positions.isEmpty()) {
+                // Populate the list with predetermined coordinates for the task type
+                switch (currentType) {
+                    case MINE:
+                        populateMinePositions(positions);
+                        break;
+                    case SCAN:
+                        populateScanPositions(positions);
+                        break;
+                    case SWIPE:
+                        populateSwipePositions(positions);
+                        break;
+                    default:
+                        // Handle other task types if needed
+                }
+            }
+
+            // Shuffle the positions to randomize their selection
+            if (positions.size() > 1) {
+                shufflePositions(positions, random);
+            }
+
+            for (Position pos : positions) {
+                if (!positionIsUsed(pos, assignedPositions) && !positionIsUsed(pos, allAssignedPositions)) {
+                    // Update assignedPositions and allAssignedPositions with the chosen position
+                    assignedPositions.add(pos);
+                    allAssignedPositions.add(pos);
+                    return new Position(pos.getX(), pos.getY()); // Return a new instance to avoid modifying the
+                                                                 // original position
+                }
+            }
+
+            // Try the next task type
+            attempts++;
+            currentType = taskTypes[attempts % taskTypes.length];
+        }
+
+        // Fallback: return the position (0, 0) if all types are exhausted
+        Position fallbackPosition = new Position(0, 0);
+        // Update assignedPositions and allAssignedPositions with the fallback position
+        assignedPositions.add(fallbackPosition);
+        allAssignedPositions.add(fallbackPosition);
+        return fallbackPosition;
+    }
+
+    // Method to check if a position is already used
+    private boolean positionIsUsed(Position pos, Set<Position> positions) {
+        for (Position p : positions) {
+            if (p.getX() == pos.getX() && p.getY() == pos.getY()) {
+                return true;
             }
         }
-
-        // Shuffle the positions to randomize their selection
-        // This is important to ensure tasks are distributed evenly across the map
-        if (positions.size() > 1) {
-            shufflePositions(positions, random);
-        }
-
-        // Get the first position from the shuffled list
-        Position position = positions.remove(0);
-
-        // Update the taskPositionsMap with the modified list
-        taskPositionsMap.put(type, positions);
-
-        return position;
+        return false;
     }
 
     // Method to shuffle the positions list
@@ -130,7 +170,6 @@ public class TaskService implements ITaskService {
         positions.add(new Position(400, 600));
         // Add more positions as needed
     }
-   
 
     @Override
     public ArrayList<Interactible> updateTaskInteractions(Map<String, Player> playersMap,
@@ -148,13 +187,13 @@ public class TaskService implements ITaskService {
                 if (currentObj instanceof Task) {
 
                     if (currentObj.equals(task)) {
-                        if(!((Task) currentObj).getTaskCompleted()){
+                        if (!((Task) currentObj).getTaskCompleted()) {
 
-                        task.setInProgress(true);
-                        ((Task) currentObj).setInProgress(true);
-                    }else{
-                        System.out.println("Task already Completed");
-                    }
+                            task.setInProgress(true);
+                            ((Task) currentObj).setInProgress(true);
+                        } else {
+                            System.out.println("Task already Completed");
+                        }
                     }
                 }
             }
@@ -169,10 +208,10 @@ public class TaskService implements ITaskService {
             for (Interactible task : interactibles) {
                 System.out.println(task.toString());
             }
-    
+
             JsonNode jsonNode = objectMapper.readTree(payload);
             int interactibleId = jsonNode.get("interactibleId").asInt();
-    
+
             Interactible interactibleToUpdate = Interactible.getInteractibleById(interactibleId, interactibles);
             if (interactibleToUpdate != null && interactibleToUpdate instanceof Task) {
                 Task task = (Task) interactibleToUpdate;
@@ -180,7 +219,8 @@ public class TaskService implements ITaskService {
                     // Set completed to true and inProgress to false
                     task.setCompleted(true);
                     task.setInProgress(false);
-                    // No need to set the interactible back into the list, as it's already a reference
+                    // No need to set the interactible back into the list, as it's already a
+                    // reference
                     return interactibles;
                 }
             }
@@ -191,5 +231,4 @@ public class TaskService implements ITaskService {
         System.out.println("Task Completion Error");
         return interactibles;
     }
-    
 }
