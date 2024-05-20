@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Player from './interfaces/Player';
+import Task from './interfaces/Interactible'
 import PlayerSprite from './PlayerSprite';
 import Space from './Space';
-import styles from '../../amongus/lobby.module.css';
-import LobbyBG_withTransparentGround from '../../../../resources/LobbyBG_borders.png';
+import styles from '../styles/lobby.module.css';
 
 interface Props {
   inGamePlayers: Record<string, Player>;
@@ -30,11 +30,8 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
         <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
         <div className={styles.playerCount}>{playerCount}</div>
         {isFirstPlayer && (
-          <div className={styles.startButtonContainer} onClick={onStartButtonClick}>
-            <img
-              src="src/main/resources/startButtonIcon.png"
-              alt="Start Button Icon"
-              className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
+          <div className={styles.startButtonContainer} onClick={onStartButtonClick}> {/* Call onStartButtonClick on click */}
+            <img src="src\main\resources\startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
             />
           </div>
         )}
@@ -42,7 +39,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
 
       {Object.values(inGamePlayers).map(player => {
         const isMoving = player.isMoving !== undefined ? player.isMoving : false;
-        console.log(`Player ${player.name} isMoving:`, isMoving);
+
         return (
           <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
             <PlayerSprite

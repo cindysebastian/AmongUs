@@ -1,12 +1,13 @@
 package team5.amongus.model;
+
 import java.io.Serializable;
 
 public class Player implements Serializable {
     private String name;
     private Position position;
     private String colour;
-    private Integer step = 30;
-    private Boolean isMoving = false ; 
+    private Integer step = 12;
+    private Boolean isMoving = false;
     private String facing = "RIGHT";
     private int width = 130;
     private int height = 130;
@@ -14,9 +15,8 @@ public class Player implements Serializable {
     private boolean canKill = false;
     private long lastActivityTime;
     private String sessionId;
-   
 
-    public Player (String name, Position position) {
+    public Player(String name, Position position) {
         this.name = name;
         this.position = position;
         this.lastActivityTime = System.currentTimeMillis();
@@ -73,32 +73,36 @@ public class Player implements Serializable {
     public void setColour(String colour) {
         this.colour = colour;
     }
+
     public String getFacing() {
         return facing;
     }
+
     public Boolean getIsMoving() {
         return isMoving;
     }
+
     public void setFacing(String direction) {
         this.facing = direction;
     }
+
     public void setIsMoving(Boolean isMoving) {
         this.isMoving = isMoving;
     }
 
-    public boolean getCanInteract(){
+    public boolean getCanInteract() {
         return canInteract;
     }
 
-    public void setCanInteract(boolean canInteract){
+    public void setCanInteract(boolean canInteract) {
         this.canInteract = canInteract;
     }
 
-    public boolean getCanKill(){
+    public boolean getCanKill() {
         return canKill;
     }
 
-    public void setCanKill(boolean canKill){
+    public void setCanKill(boolean canKill) {
         this.canKill = canKill;
     }
 
@@ -112,16 +116,17 @@ public class Player implements Serializable {
         this.position = newPosition;
     }
 
-
     public boolean collidesWith(Player otherPlayer) {
         return this.getBounds().intersects(otherPlayer.getBounds());
     }
-    
+
     // Method to check collision with an Interactable thing
     public boolean collidesWith(Interactible thing) {
-        return this.getBounds().intersects(thing.getBounds());
+        Boolean collidesWith = this.getBounds().intersects(thing.getBounds());
+        System.out.println(collidesWith);
+        return collidesWith;
     }
-    
+
     // Method to get bounding box of the player
     public CollisionBox getBounds() {
         return new CollisionBox(position.getX(), position.getY(), width, height);

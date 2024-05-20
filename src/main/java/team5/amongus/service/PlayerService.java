@@ -1,12 +1,16 @@
 package team5.amongus.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import team5.amongus.model.Interactible;
 import team5.amongus.model.Player;
 import team5.amongus.model.PlayerMoveRequest;
 import team5.amongus.model.Position;
 import team5.amongus.model.CollisionMask;
+import team5.amongus.model.Task;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -62,8 +66,6 @@ public class PlayerService implements IPlayerService {
                     }
                 }
 
-                // TODO: Add Logic for collision with tasks here
-
                 player.setCanInteract(canInteract);
             }
 
@@ -84,4 +86,20 @@ public class PlayerService implements IPlayerService {
 
         return false;
     }
+
+    @Override
+    public Interactible getPlayerInteractableObject(ArrayList<Interactible> interactibles, Player player) {
+
+        for (Interactible object : interactibles) {
+            if (((Task) object).getAssignedPlayer() == player.getName()) {
+                if (player.collidesWith(object)) {
+
+                    return object;
+                }
+            }
+
+        }
+        return null;
+    }
 }
+

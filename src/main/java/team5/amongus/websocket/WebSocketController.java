@@ -1,6 +1,7 @@
 package team5.amongus.websocket;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -8,10 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.context.event.EventListener;
 
-import team5.amongus.model.CollisionMask;
-import team5.amongus.model.Message;
-import team5.amongus.model.Player;
-import team5.amongus.model.Position;
+import team5.amongus.model.*;
 import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
 import team5.amongus.service.ITaskService;
@@ -28,6 +26,8 @@ import java.util.Map;
 public class WebSocketController {
 
     private final Map<String, Player> playersMap = new HashMap<>();
+    private ArrayList<Interactible> interactibles = new ArrayList<>();
+    private final Task testTask = new Task(TaskType.SCAN, 500, 500, "dwarf");
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
     private final IChatService chatService;
@@ -84,8 +84,33 @@ public class WebSocketController {
     }
 
     @MessageMapping("/interact")
-    @SendTo("/topic/game")
-    public void handleInteract() throws IOException {
+    @SendTo("/topic/interactions")
+    public ArrayList<Interactible> handleInteract(String playerName) throws IOException {
+
+        Player player = playersMap.get(playerName);
+
+        Interactible interactableObject = playerService.getPlayerInteractableObject(interactibles, player);
+
+        if (interactableObject != null) {
+            // Handle interaction based on the type of interactable object
+            if (interactableObject instanceof Task) {
+                // If the interactable object is a Task, call the TaskService to update task
+                ArrayList<Interactible> updatedInteractables = taskService.updateTaskInteractions(playersMap,
+                        interactibles, player, (Task) interactableObject);
+                // Broadcast updated task list to all clients
+                
+                interactibles = updatedInteractables;
+
+            } /*
+               * else if (interactableObject instanceof deadBody) {
+               * // If the interactable object is something else, handle it accordingly
+               * otherService.handleInteraction(player, (OtherInteractableObject)
+               * interactableObject);
+               * }
+               */
+        }
+        broadcastInteractiblesUpdate();
+        return interactibles;
 
     }
 
@@ -93,7 +118,6 @@ public class WebSocketController {
     @SendTo("/topic/players")
     public Map<String, Player> move(String payload) {
         Map<String, Player> updatedPlayersMap = playerService.movePlayer(playersMap, payload, collisionMask);
-        taskService.updateTaskInteractions(updatedPlayersMap);
         broadcastPlayerUpdate();
         return updatedPlayersMap;
     }
@@ -102,7 +126,6 @@ public class WebSocketController {
     @SendTo("/topic/inGamePlayers")
     public Map<String, Player> moveInGamePlayers(String payload) {
         Map<String, Player> updatedinGamePlayersMap = playerService.movePlayer(inGamePlayersMap, payload, collisionMask);
-        taskService.updateTaskInteractions(updatedinGamePlayersMap);
         broadcastPlayerUpdate();
         return updatedinGamePlayersMap;
     }
@@ -112,12 +135,27 @@ public class WebSocketController {
         messagingTemplate.convertAndSend("/topic/inGamePlayers", inGamePlayersMap);
     }
 
+    private void broadcastInteractiblesUpdate() {
+        messagingTemplate.convertAndSend("/topic/interactions", interactibles);
+    }
+
     @MessageMapping("/sendMessage")
     @SendTo("/topic/messages")
     public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor) {
         List<Message> updatedChatMessages = chatService.processMessage(chatMessages, message);
         return updatedChatMessages;
     }
+
+    @MessageMapping("/completeTask")
+    @SendTo("/topic/interactions")
+    public List<Interactible> completeTask(String payload) {
+        // Complete the task using the taskService
+        ArrayList<Interactible> updatedInteractables = taskService.completeTask(payload, interactibles);
+        interactibles = updatedInteractables;
+        // Broadcast the updated interactibles to all clients
+        broadcastInteractiblesUpdate();
+        return interactibles;
+    }    
 
     @MessageMapping("/startGame")
     @SendTo("/topic/gameStart")
@@ -142,7 +180,13 @@ public class WebSocketController {
             System.out.println("Player: " + entry.getKey());
         }
 
-        return "Game started!";
+        // Create a Task list based on set players
+
+        interactibles = taskService.createTasks(playersMap);
+
+        broadcastInteractiblesUpdate();
+
+        return "Game has started";
     }
 
     @EventListener

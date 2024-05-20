@@ -6,7 +6,7 @@ const directionMap = {
   'd': 'RIGHT',
 };
 
-export const movePlayer = (stompClient, playerName, keysPressed) => {
+export const movePlayer = (stompClient, playerName, keysPressed, interactionInProgress) => {
   if (!stompClient || !playerName) return;
 
   const handleKeyPress = (e: KeyboardEvent) => {
@@ -17,9 +17,6 @@ export const movePlayer = (stompClient, playerName, keysPressed) => {
       return;
     }
 
-    if (e.key === 'e') {
-      // Interaction logic can go here
-    }
     keysPressed.current[e.key] = true;
   };
 
@@ -31,8 +28,14 @@ export const movePlayer = (stompClient, playerName, keysPressed) => {
   window.addEventListener('keyup', handleKeyUp);
 
   const handleMovement = () => {
+    if (interactionInProgress) {
+      // If interaction is in progress, do nothing
+      return;
+    }
+
     const directions = ['w', 'a', 's', 'd'];
     const pressedKeys = directions.filter(direction => keysPressed.current[direction]);
+
     if (pressedKeys.length > 0) {
       const directionsToSend = pressedKeys.map(key => directionMap[key]);
       stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: directionsToSend }));
@@ -43,8 +46,7 @@ export const movePlayer = (stompClient, playerName, keysPressed) => {
     }
   };
 
-  handleMovement();
-  const movementInterval = setInterval(handleMovement, 100);
+  const movementInterval = setInterval(handleMovement, 15);
 
   return () => {
     window.removeEventListener('keydown', handleKeyPress);
