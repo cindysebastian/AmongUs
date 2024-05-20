@@ -117,7 +117,7 @@ public class PlayerService implements IPlayerService {
                     }
                 }
 
-                if (collidingPlayer != null) {
+                if (collidingPlayer != null && collidingPlayer.isAlive()) {
                     System.out.println("Killing " + collidingPlayer.getName());
                     currentImposter.kill(collidingPlayer);
                     Position newPosition = new Position(collidingPlayer.getPosition().getX(), collidingPlayer.getPosition().getY());
