@@ -1,7 +1,8 @@
 import { createBrowserHistory } from 'history';
-import ReactDOM from 'react-dom/client';
 import App from './App';
-import './index.module.css';
+import './styles/index.module.css';
+import ReactDOM from 'react-dom/client';
+
 
 const history = createBrowserHistory();
 const rootNode = document.getElementById('root') as HTMLElement;

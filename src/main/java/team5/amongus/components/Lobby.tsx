@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Player from './interfaces/Player';
+import Task from './interfaces/Interactible'
 import PlayerSprite from './PlayerSprite';
 import Space from './Space';
-import styles from '../../amongus/lobby.module.css';
+import styles from '../styles/lobby.module.css';
 
 interface Props {
   inGamePlayers: Record<string, Player>;
@@ -10,7 +11,7 @@ interface Props {
   onStartButtonClick: () => void;
 }
 
-const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick}) => {
+const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick }) => {
   const [playerCount, setPlayerCount] = useState(Object.keys(inGamePlayers).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
 
@@ -34,7 +35,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
         {isFirstPlayer && (
           <div className={styles.startButtonContainer} onClick={onStartButtonClick}> {/* Call onStartButtonClick on click */}
             <img src="src\main\resources\startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
-          />
+            />
           </div>
         )}
       </div>
@@ -43,7 +44,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
       {Object.values(inGamePlayers).map(player => {
         // Ensure that isMoving property is present and initialized before accessing it
         const isMoving = player.isMoving !== undefined ? player.isMoving : false;
-        console.log(`Player ${player.name} isMoving:`, isMoving);
+
         return (
           <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
             {/* Pass the correct isMoving value to PlayerSprite */}

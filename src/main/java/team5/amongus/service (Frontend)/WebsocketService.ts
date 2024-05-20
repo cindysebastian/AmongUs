@@ -2,10 +2,19 @@
 
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
+import { handleReceivedInteractibles } from './InteractionService';
+
+// Disable Stomp.js logging
+
+
 
 export const connectWebSocket = (setStompClient) => {
+  // Disable Stomp.js logging
+ 
+
   const socket = new SockJS('http://localhost:8080/ws');
   const stomp = Stomp.over(socket);
+  stomp.debug = function (){};//do nothing
 
   stomp.connect({}, () => {
     console.log('Connected to WebSocket');
@@ -14,7 +23,7 @@ export const connectWebSocket = (setStompClient) => {
 
   return () => {
     if (stomp) {
-      stomp.disconnect(() => {}); // Provide an empty function as disconnectCallback
+      stomp.disconnect(() => { }); // Provide an empty function as disconnectCallback
       console.log('Disconnected from WebSocket');
     }
   };
@@ -26,8 +35,13 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
   stompClient.subscribe('/topic/players', (message) => {
     const updatedPlayers = JSON.parse(message.body);
     setPlayers(updatedPlayers);
-    const currentPlayer = updatedPlayers[playerName];
-    // Your logic related to player updates can go here
+    
+  });
+
+  stompClient.subscribe('/topic/inGamePlayers', (message) => {
+    const updatedinGamePlayers = JSON.parse(message.body);
+    setInGamePlayers(updatedinGamePlayers);
+    const currentPlayer = updatedinGamePlayers[playerName];
   });
 
   stompClient.subscribe('/topic/inGamePlayers', (message) => {
@@ -50,10 +64,41 @@ export const subscribeToMessages = (stompClient, setMessages) => {
   };
 };
 
+export const markTaskAsCompleted = (stompClient, interactibleId: number) => {
+  if (!stompClient) return;
+
+  // Construct the message body
+  const messageBody = {
+      interactibleId: interactibleId
+  };
+
+  // Send a STOMP message to your backend to mark the task as completed
+
+  stompClient.send('/app/completeTask', {}, JSON.stringify(messageBody));
+};
+
+
+
+
+export const subscribetoInteractions = (stompClient, setInteractibles) => {
+  if (!stompClient) return;
+
+  
+  stompClient.subscribe('/topic/interactions', (message) => {
+    const updatedInteractibles = JSON.parse(message.body);
+    setInteractibles(updatedInteractibles);
+    handleReceivedInteractibles(updatedInteractibles, setInteractibles);
+
+  });
+
+ 
+};
+
 export const sendInteraction = (stompClient, playerName) => {
   if (!stompClient || !playerName) return;
 
-  stompClient.send('/app/interaction', {}, JSON.stringify({ playerName: playerName }));
+
+  stompClient.send('/app/interact', {},playerName);
 };
 
 export const sendChatMessage = (stompClient, playerName, messageContent) => {
