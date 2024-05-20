@@ -43,6 +43,12 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
     setInGamePlayers(updatedinGamePlayers);
     const currentPlayer = updatedinGamePlayers[playerName];
   });
+
+  stompClient.subscribe('/topic/inGamePlayers', (message) => {
+    const updatedinGamePlayers = JSON.parse(message.body);
+    setInGamePlayers(updatedinGamePlayers);
+    const currentPlayer = updatedinGamePlayers[playerName];
+  });
 };
 
 export const subscribeToMessages = (stompClient, setMessages) => {

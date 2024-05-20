@@ -42,14 +42,12 @@ const App = ({ history }) => {
 
   useEffect(() => {
     const heartbeatInterval = setInterval(() => {
-      if (stompClient && playerName) {
-        
-        stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName }));
-
-      }
+        if (stompClient && playerName) {
+            stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName }));
+        }
     }, 1000); // Send heartbeat every second (adjust as needed)
     return () => clearInterval(heartbeatInterval);
-  }, [stompClient, playerName]);
+}, [stompClient, playerName]);
 
   useEffect(() => {
     const unsubscribeWebSocket = connectWebSocket(setStompClient);
@@ -123,14 +121,18 @@ useEffect(() => {
   };
 
   const handleSpawnPlayer = () => {
-    if (Object.values(players as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
+    if (Object.values(inGamePlayers as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
       alert('Player name already exists in the game. Please choose a different name.');
       return;
     }
     if (!firstPlayerName) {
       setFirstPlayerName(playerName.trim());
     }
-    if (stompClient && playerName) {
+    if (stompClient && playerName.trim()) {
+      if (Object.keys(players).length > 0) {
+        alert("The game has already started. You cannot join at this time.");
+        return;
+      }
       setPlayer(stompClient, playerName);
       setPlayerSpawned(true);
       history.push('/game');
@@ -157,13 +159,11 @@ useEffect(() => {
       // When the game starts, redirect all players to the spaceship
       history.push('/spaceship');
     };
-
     // Subscribe to the game start topic
     if (stompClient) {
       const subscription = stompClient.subscribe('/topic/gameStart', () => {
         handleGameStart();
       });
-
       return () => {
         subscription.unsubscribe();
       };

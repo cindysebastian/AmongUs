@@ -21,7 +21,6 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
 
   // Check if the current player is the first one
   const isFirstPlayer = firstPlayerName === Object.keys(inGamePlayers)[0];
- // console.log(interactibles);
 
   return (
     <div style={{ position: 'relative' }}>

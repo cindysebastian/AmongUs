@@ -123,7 +123,6 @@ public class WebSocketController {
     @SendTo("/topic/inGamePlayers")
     public Map<String, Player> moveInGamePlayers(String payload) {
         Map<String, Player> updatedinGamePlayersMap = playerService.movePlayer(inGamePlayersMap, payload);
-
         broadcastPlayerUpdate();
         return updatedinGamePlayersMap;
     }
@@ -135,7 +134,6 @@ public class WebSocketController {
 
     private void broadcastInteractiblesUpdate() {
         messagingTemplate.convertAndSend("/topic/interactions", interactibles);
-        
     }
 
     @MessageMapping("/sendMessage")
@@ -144,7 +142,6 @@ public class WebSocketController {
         List<Message> updatedChatMessages = chatService.processMessage(chatMessages, message);
         return updatedChatMessages;
     }
-
 
     @MessageMapping("/completeTask")
     @SendTo("/topic/interactions")
@@ -155,9 +152,7 @@ public class WebSocketController {
         // Broadcast the updated interactibles to all clients
         broadcastInteractiblesUpdate();
         return interactibles;
-    }
-
-    
+    }    
 
     @MessageMapping("/startGame")
     @SendTo("/topic/gameStart")
@@ -192,7 +187,14 @@ public class WebSocketController {
     public void handleSessionDisconnect(SessionDisconnectEvent event) {
         String sessionId = event.getSessionId();
 
-        // Iterate over inGamePlayersMap to find the disconnected player
+        boolean isFirstPlayer = false;
+        String firstPlayerName = "";
+
+        if (!inGamePlayersMap.isEmpty()) {
+            firstPlayerName = inGamePlayersMap.keySet().iterator().next();
+            isFirstPlayer = inGamePlayersMap.get(firstPlayerName).getSessionId().equals(sessionId);
+        }
+        
         for (Iterator<Map.Entry<String, Player>> iterator = inGamePlayersMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String, Player> entry = iterator.next();
             Player player = entry.getValue();
@@ -205,6 +207,12 @@ public class WebSocketController {
             }
         }
 
+        if (isFirstPlayer && !inGamePlayersMap.isEmpty()) {
+            String nextPlayerName = inGamePlayersMap.keySet().iterator().next();
+            // Broadcast to the lobby that the next player should have the start game button
+            messagingTemplate.convertAndSend("/topic/nextPlayerStartButton", nextPlayerName);
+        }
+    
         // Iterate over playersMap to find the disconnected player in the spaceship
         for (Iterator<Map.Entry<String, Player>> iterator = playersMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String, Player> entry = iterator.next();
