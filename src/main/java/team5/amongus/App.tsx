@@ -28,7 +28,7 @@ const App = ({ history }) => {
   const [chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
   const [interactibles, setInteractibles] = useState([]);
-  const [interactionInProgress, setInteractionInProgress] = useState(false); // New state for interaction in progress
+  const [interactionInProgress, setInteractionInProgress] = useState(false); 
   const keysPressed = useRef({
     w: false,
     a: false,
@@ -36,19 +36,19 @@ const App = ({ history }) => {
     d: false,
   });
   const [collisionMask, setCollisionMask] = useState(null);
-  const [isStartButtonClicked, setIsStartButtonClicked] = useState(false); // Add state for tracking start button click
-  const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); // Add state to control redirection to SpaceShip
+  const [isStartButtonClicked, setIsStartButtonClicked] = useState(false); 
+  const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); 
   const [gameStarted, setGameStarted] = useState(false);
   const [inGamePlayers, setInGamePlayers] = useState({});
 
   useEffect(() => {
     const heartbeatInterval = setInterval(() => {
-        if (stompClient && playerName) {
-            stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName }));
-        }
-    }, 1000); // Send heartbeat every second (adjust as needed)
+      if (stompClient && playerName) {
+        stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName }));
+      }
+    }, 1000);
     return () => clearInterval(heartbeatInterval);
-}, [stompClient, playerName]);
+  }, [stompClient, playerName]);
 
   useEffect(() => {
     const unsubscribeWebSocket = connectWebSocket(setStompClient);
@@ -69,54 +69,71 @@ const App = ({ history }) => {
 
   useEffect(() => {
     let subscription;
-    
+
     if (stompClient) {
-        subscription = subscribetoInteractions(stompClient, (interactibles) => {
-            setInteractibles(interactibles);
-        });
+      subscription = subscribetoInteractions(stompClient, (interactibles) => {
+        setInteractibles(interactibles);
+      });
     }
 
     return () => {
-        // Unsubscribe when the component unmounts or when stompClient changes
-        if (subscription) {
-            subscription.unsubscribe();
-        }
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
-}, [stompClient]);
-
-useEffect(() => {
-    if (interactibles && playerName) {
-        let playerInteracting = interactibles.some(interactible =>
-            interactible.inProgress && interactible.assignedPlayer === playerName
-        );
-        setInteractionInProgress(playerInteracting);
-    }
-}, [interactibles, playerName]);
-
-useEffect(() => {
-  startGame(stompClient, setRedirectToSpaceShip);
-}, [stompClient]);
-
-useEffect(() => {
-  const fetchMask = async () => {
-    const maskData = await fetchCollisionMask();
-    setCollisionMask(maskData);
-  };
-
-  fetchMask();
-}, []);
+  }, [stompClient]);
 
   useEffect(() => {
-    if (stompClient && playerSpawned) {
-      return movePlayer(stompClient, playerName, keysPressed, interactionInProgress); // Pass interactionInProgress to movePlayer
+    if (interactibles && playerName) {
+      let playerInteracting = interactibles.some(interactible =>
+        interactible.inProgress && interactible.assignedPlayer === playerName
+      );
+      setInteractionInProgress(playerInteracting);
     }
-  }, [stompClient, playerName, playerSpawned, interactionInProgress]);
+  }, [interactibles, playerName]);
 
   const sendMessage = (messageContent) => {
-    if (stompClient) {
+    if (!interactionInProgress && stompClient) {
       sendChatMessage(stompClient, playerName, messageContent);
     }
   };
+
+  useEffect(() => {
+    startGame(stompClient, setRedirectToSpaceShip);
+  }, [stompClient]);
+
+  useEffect(() => {
+    const fetchMask = async () => {
+      const maskData = await fetchCollisionMask();
+      setCollisionMask(maskData);
+    };
+
+    fetchMask();
+  }, []);
+
+  useEffect(() => {
+    if (stompClient && playerSpawned) {
+      return movePlayer(stompClient, playerName, keysPressed, interactionInProgress);
+    }
+  }, [stompClient, playerName, playerSpawned, interactionInProgress]);
+
+  useEffect(() => {
+    const handleBlur = () => {
+      // When window loses focus, reset all keys to false
+      keysPressed.current = {
+        w: false,
+        a: false,
+        s: false,
+        d: false,
+      };
+    };
+
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
 
   useEffect(() => {
     if (playerSpawned) {
@@ -153,14 +170,14 @@ useEffect(() => {
   };
 
   const handleStartButtonClick = () => {
-    setIsStartButtonClicked(true); // Set the start button clicked state to true
+    setIsStartButtonClicked(true);
     if (stompClient) {
-      stompClient.send('/app/startGame'); // Send message to start the game
+      stompClient.send('/app/startGame');
     }
   };
 
   useEffect(() => {
-    if (redirectToSpaceShip && gameStarted) { // Only redirect if the game has started
+    if (redirectToSpaceShip && gameStarted) {
       history.push('/spaceship');
     }
   }, [redirectToSpaceShip, gameStarted, history]);
@@ -169,10 +186,9 @@ useEffect(() => {
     startGame(stompClient, setRedirectToSpaceShip);
 
     const handleGameStart = () => {
-      // When the game starts, redirect all players to the spaceship
       history.push('/spaceship');
     };
-    // Subscribe to the game start topic
+
     if (stompClient) {
       const subscription = stompClient.subscribe('/topic/gameStart', () => {
         handleGameStart();
