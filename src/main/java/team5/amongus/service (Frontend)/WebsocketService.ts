@@ -29,25 +29,44 @@ export const connectWebSocket = (setStompClient) => {
   };
 };
 
-export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGamePlayers) => {
+export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGamePlayers, setIsImposter) => {
   if (!stompClient || !playerName) return;
+
+  // Function to determine if a player is an imposter
+  const determineIfImposter = (player) => {
+    // Assuming `Imposter` has a specific property, e.g., 'role' or a method specific to Imposter
+    // Adjust this check based on your actual data
+    return 'role' in player && player.role === 'imposter';
+  };
 
   stompClient.subscribe('/topic/players', (message) => {
     const updatedPlayers = JSON.parse(message.body);
-    setPlayers(updatedPlayers);
-    const currentPlayer = updatedPlayers[playerName];
-  });
 
-  stompClient.subscribe('/topic/inGamePlayers', (message) => {
-    const updatedinGamePlayers = JSON.parse(message.body);
-    setInGamePlayers(updatedinGamePlayers);
-    const currentPlayer = updatedinGamePlayers[playerName];
-  });
+    // Set the `isImposter` property for each player based on the inGamePlayers data
+    stompClient.subscribe('/topic/inGamePlayers', (inGameMessage) => {
+      const updatedInGamePlayers = JSON.parse(inGameMessage.body);
+      const currentPlayer = updatedInGamePlayers[playerName];
 
-  stompClient.subscribe('/topic/inGamePlayers', (message) => {
-    const updatedinGamePlayers = JSON.parse(message.body);
-    setInGamePlayers(updatedinGamePlayers);
-    const currentPlayer = updatedinGamePlayers[playerName];
+      // Determine if the current player is an imposter
+      const isCurrentPlayerImposter = determineIfImposter(currentPlayer);
+      setIsImposter(isCurrentPlayerImposter);
+
+      // Update players with the isImposter flag
+      const updatedPlayersWithImposterFlag = Object.keys(updatedPlayers).reduce((acc, key) => {
+        acc[key] = {
+          ...updatedPlayers[key],
+          isImposter: updatedInGamePlayers[key] ? determineIfImposter(updatedInGamePlayers[key]) : false,
+        };
+        return acc;
+      }, {});
+
+      // Set the updated players and in-game players
+      setPlayers(updatedPlayersWithImposterFlag);
+      setInGamePlayers(updatedInGamePlayers);
+
+      // Debug: Log the current player's imposter status
+      console.log(`Current player ${playerName} is ${isCurrentPlayerImposter ? '' : 'not '}an imposter.`);
+    });
   });
 };
 
