@@ -68,7 +68,7 @@ public class TaskService implements ITaskService {
     }
 
     private Position generateUniquePosition(TaskType initialType, Set<Position> assignedPositions,
-        Set<Position> allAssignedPositions, TaskType[] taskTypes, Random random) {
+                                        Set<Position> allAssignedPositions, TaskType[] taskTypes, Random random) {
     TaskType currentType = initialType;
     List<Position> positions;
     int attempts = 0;
@@ -98,44 +98,63 @@ public class TaskService implements ITaskService {
         }
 
         for (Position pos : positions) {
-            if (!positionIsUsed(pos, assignedPositions) && !positionIsUsed(pos, allAssignedPositions)) {
-                // Update assignedPositions and allAssignedPositions with the chosen position
+            if (!positionIsUsed(pos, assignedPositions)) {
+                // If the position is not used by any player, use it
                 assignedPositions.add(pos);
                 allAssignedPositions.add(pos);
-                return new Position(pos.getX(), pos.getY()); // Return a new instance to avoid modifying the
-                                                             // original position
+                return new Position(pos.getX(), pos.getY()); // Return a new instance to avoid modifying the original position
             }
         }
 
         // Reset positionsAvailable flag for the next task type
-        boolean positionsAvailable = true;
+        boolean positionsAvailable = false;
 
         // Check if there are available positions for other task types
         for (TaskType type : taskTypes) {
             if (type != currentType && !taskPositionsMap.getOrDefault(type, new ArrayList<>()).isEmpty()) {
+                currentType = type; // Change currentType to the type with available positions
                 positionsAvailable = true;
                 break;
             }
         }
 
         if (!positionsAvailable) {
-            // Fallback: return the position (0, 0) if all types are exhausted
-            Position fallbackPosition = new Position(0, 0);
-            // Update assignedPositions and allAssignedPositions with the fallback position
-            assignedPositions.add(fallbackPosition);
-            allAssignedPositions.add(fallbackPosition);
-            return fallbackPosition;
+            // If no unique positions are available, reuse positions while ensuring no player gets the same position twice
+            List<Position> availablePositions = new ArrayList<>(allAssignedPositions);
+            availablePositions.removeAll(assignedPositions);
+
+            if (!availablePositions.isEmpty()) {
+                // Get a random available position
+                Position randomPosition = availablePositions.get(random.nextInt(availablePositions.size()));
+                assignedPositions.add(randomPosition);
+
+                // Change the currentType to the type corresponding to the reused position
+                for (Map.Entry<TaskType, List<Position>> entry : taskPositionsMap.entrySet()) {
+                    if (entry.getValue().contains(randomPosition)) {
+                        currentType = entry.getKey();
+                        break;
+                    }
+                }
+
+                return new Position(randomPosition.getX(), randomPosition.getY());
+            } else {
+                // Fallback: return the position (0, 0) if all types are exhausted
+                Position fallbackPosition = new Position(0, 0);
+                // Update assignedPositions and allAssignedPositions with the fallback position
+                assignedPositions.add(fallbackPosition);
+                allAssignedPositions.add(fallbackPosition);
+                return fallbackPosition;
+            }
         }
 
         // Try the next task type
         attempts++;
-        currentType = taskTypes[attempts % taskTypes.length];
     }
 
-    // This part should not be reached under normal circumstances, as there should
-    // always be available positions for at least one task type
+    // This part should not be reached under normal circumstances, as there should always be available positions for at least one task type
     throw new IllegalStateException("Not enough Task Positions for all Players");
 }
+
 
 
     // Method to check if a position is already used
