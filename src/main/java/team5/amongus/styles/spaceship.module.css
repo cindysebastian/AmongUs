@@ -49,7 +49,7 @@
   }
 
   .killButton {
-    position: relative;
+    position: fixed;
     bottom: 20px;
     right: 20px;
     background: none;
@@ -57,9 +57,10 @@
     padding: 0;
     cursor: pointer;
     z-index: 100;
-  }
-  
-  .killButtonIcon {
+}
+
+.killButtonIcon {
     width: 150px;
     height: 150px;
-  }
+}
+

@@ -1,21 +1,16 @@
-// SpaceShip.tsx
-
 import React, { useEffect, useState } from 'react';
-import Stomp from 'stompjs'; // Import Stomp
-import Task from './Task'; // Import the Task component
-
-
+import Stomp from 'stompjs';
+import Task from './Task';
 import styles from '../styles/spaceship.module.css';
 import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import ProgressBar from './ProgressBar';
-import TaskType from "./interfaces/Interactible";
-import KillButton from './KillButton';
 import { killPlayer, subscribeToPlayerKilled, subscribeToImposter } from '../service (Frontend)/WebsocketService';
+import KillButton from './KillButton';
 
 interface Props {
-  stompClient: Stomp.Client | null; // Add stompClient to props
+  stompClient: Stomp.Client | null;
   players: Record<string, Player>;
   interactibles: Interactible[];
   currentPlayer: String;
@@ -26,7 +21,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const [isImposter, setIsImposter] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
 
-  // Subscribe to player killed events when the component mounts
   useEffect(() => {
     const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
     const unsubscribeImposter = subscribeToImposter(stompClient, (imposterName: string) => {
@@ -41,9 +35,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     };
   }, [stompClient, currentPlayer]);
 
-  // Handler for player killed event
   const handlePlayerKilled = (killedPlayer: Player) => {
-    // Check if the killed player is the current player
     if (killedPlayer.name === currentPlayer) {
       setShowKillGif(true);
       setTimeout(() => setShowKillGif(false), 2500);
@@ -55,28 +47,18 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     killPlayer(stompClient, currentPlayer);
   };
 
-  // Usage
   const completedTasks = interactibles.filter(interactible => interactible.completed).length;
-
-
   const totalTasks = interactibles.length;
-
   const progressPercentage = (completedTasks / totalTasks) * 100;
-
 
   return (
     <div className={styles.fillContainer}>
-
-
       <div className={styles.gifBackground}></div>
       <div className={styles.spaceShipBackground}>
-        {/* Progress bar */}
         <ProgressBar progress={progressPercentage} />
-        {/* Render players */}
         {Object.values(players).map(player => (
           !killedPlayers.includes(player.name) && (
             <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
-              {/* Render each player's sprite */}
               <PlayerSprite
                 player={player}
                 facing={player.facing !== undefined ? player.facing : 'RIGHT'}
@@ -85,25 +67,17 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
             </div>
           )
         ))}
-        {/* Render PNG image for killed players */}
         {killedPlayers.map(killedPlayerName => (
           <div key={killedPlayerName} style={{ position: 'relative', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x }}>
-            {/* Render the PNG image for the killed player */}
             <img src="src\main\resources\deadbodycrewmate.png" alt="Dead Player" style={{width: '80px', height: '90px', position: 'relative' }} />
           </div>
         ))}
-        <div>
-          <KillButton onKill={handleKill} />
-        </div>
+        <KillButton onKill={handleKill} />
         {showKillGif && (
           <div className={styles.killGifContainer}></div>
         )}
-        <div>
-          {/* Pass stompClient to Task component */}
-          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer}/>
-        </div>
+        <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} />
       </div>
-      
     </div>
   );
 };
