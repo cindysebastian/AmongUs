@@ -1,0 +1,76 @@
+.lobbyBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 1220px;
+    height: 992px;
+    background-image: url("../../../../resources/LobbyBG.png");
+    background-size: cover;
+    z-index: -1;
+    background-position: center;
+}
+  
+img{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 1220px;
+    height: 992px;
+    z-index: -1;
+    background-position: center;
+    opacity: 50%;
+}
+
+.startButtonIcon {
+    position: absolute;
+    top: 50%;
+    bottom: 30px;
+    right: calc(50% + 50px); /* Adjust the right offset to create space for the player count icon */
+    transform: translateY(-50%);
+    width: 100px;
+    height: auto;
+    cursor: pointer;
+    border-width: 23px 0 23px 100px;
+    border-color: transparent transparent transparent transparent;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.startButtonIcon.clicked {
+    opacity: 0.8 !important;
+}
+
+.playerCountContainer {
+    position: fixed;
+    bottom: 20px;
+    left: calc(50% + 50px);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+}
+  
+.playerCountIcon {
+    width: 30px;
+    height: auto;
+    margin-right: 8px;
+}
+  
+.playerCount {
+    background-color: rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 16px;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.collisionMask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 1220px;
+    height: 992px;
+    background-size: cover;
+    z-index: -1; /* Overlay it above the background but below other elements */
+    background-position: center;
+    opacity: 0.5; /* Make it semi-transparent */
+}

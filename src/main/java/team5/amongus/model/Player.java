@@ -9,11 +9,11 @@ public class Player implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Position position;
     private String colour;
-    private Integer step = 30;
+    private Integer step = 12;
     private Boolean isMoving = false;
     private String facing = "RIGHT";
-    private int width = 100;
-    private int height = 150;
+    private int width = 130;
+    private int height = 130;
     private boolean canInteract = false;
     private boolean isAlive = true;
     private boolean canKill = false;
@@ -24,6 +24,18 @@ public class Player implements Serializable {
         this.name = name;
         this.position = position;
         this.lastActivityTime = System.currentTimeMillis();
+    }
+
+    public int getWidth(){
+        return width;
+    }
+
+    public int getHeight(){
+        return height;
+    }
+
+    public int getStep(){
+        return step;
     }
 
     public String getSessionId() {
@@ -94,6 +106,14 @@ public class Player implements Serializable {
         this.canInteract = canInteract;
     }
 
+    public boolean getCanKill() {
+        return canKill;
+    }
+
+    public void setCanKill(boolean canKill) {
+        this.canKill = canKill;
+    }
+
     public boolean isAlive() {
         return isAlive;
     }
@@ -102,29 +122,14 @@ public class Player implements Serializable {
         this.isAlive = isAlive;
     }
 
-    public void handleMovementRequest(String direction) {
-        if (isAlive) { // so dead player cannot move, it should be dead body but idk how
-            switch (direction) {
-                case "UP":
-                    position.setY(position.getY() - step);
-                    System.out.println("Up");
-                    break;
-                case "DOWN":
-                    position.setY(position.getY() + step);
-                    System.out.println("Down");
-                    break;
-                case "LEFT":
-                    position.setX(position.getX() - step);
-                    setFacing("LEFT");
-                    break;
-                case "RIGHT":
-                    position.setX(position.getX() + step);
-                    setFacing("RIGHT");
-                    break;
-                default:
-                    break;
-            }
+    public void handleMovementRequest(Position.Direction direction) {
+        Position newPosition = position.getNextPosition(direction, step);
+        if (newPosition.getX() < position.getX()) {
+            setFacing("LEFT");
+        } else if(newPosition.getX() > position.getX()){
+            setFacing("RIGHT");
         }
+        this.position = newPosition;
     }
 
     public boolean collidesWith(Player otherPlayer) {
@@ -133,7 +138,9 @@ public class Player implements Serializable {
 
     // Method to check collision with an Interactable thing
     public boolean collidesWith(Interactible thing) {
-        return this.getBounds().intersects(thing.getBounds());
+        Boolean collidesWith = this.getBounds().intersects(thing.getBounds());
+        System.out.println(collidesWith);
+        return collidesWith;
     }
 
     // Method to get bounding box of the player

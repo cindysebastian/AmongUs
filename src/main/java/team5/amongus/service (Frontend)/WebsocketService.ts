@@ -2,10 +2,19 @@
 
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
+import { handleReceivedInteractibles } from './InteractionService';
+
+// Disable Stomp.js logging
+
+
 
 export const connectWebSocket = (setStompClient) => {
+  // Disable Stomp.js logging
+ 
+
   const socket = new SockJS('http://localhost:8080/ws');
   const stomp = Stomp.over(socket);
+  stomp.debug = function (){};//do nothing
 
   stomp.connect({}, () => {
     console.log('Connected to WebSocket');
@@ -14,7 +23,7 @@ export const connectWebSocket = (setStompClient) => {
 
   return () => {
     if (stomp) {
-      stomp.disconnect(() => {}); // Provide an empty function as disconnectCallback
+      stomp.disconnect(() => { }); // Provide an empty function as disconnectCallback
       console.log('Disconnected from WebSocket');
     }
   };
@@ -27,8 +36,12 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
     const updatedPlayers = JSON.parse(message.body);
     setPlayers(updatedPlayers);
     const currentPlayer = updatedPlayers[playerName];
+  });
 
-    // Your logic related to player updates can go here
+  stompClient.subscribe('/topic/inGamePlayers', (message) => {
+    const updatedinGamePlayers = JSON.parse(message.body);
+    setInGamePlayers(updatedinGamePlayers);
+    const currentPlayer = updatedinGamePlayers[playerName];
   });
 
   stompClient.subscribe('/topic/inGamePlayers', (message) => {
@@ -51,10 +64,41 @@ export const subscribeToMessages = (stompClient, setMessages) => {
   };
 };
 
+export const markTaskAsCompleted = (stompClient, interactibleId: number) => {
+  if (!stompClient) return;
+
+  // Construct the message body
+  const messageBody = {
+      interactibleId: interactibleId
+  };
+
+  // Send a STOMP message to your backend to mark the task as completed
+
+  stompClient.send('/app/completeTask', {}, JSON.stringify(messageBody));
+};
+
+
+
+
+export const subscribetoInteractions = (stompClient, setInteractibles) => {
+  if (!stompClient) return;
+
+  
+  stompClient.subscribe('/topic/interactions', (message) => {
+    const updatedInteractibles = JSON.parse(message.body);
+    setInteractibles(updatedInteractibles);
+    handleReceivedInteractibles(updatedInteractibles, setInteractibles);
+
+  });
+
+ 
+};
+
 export const sendInteraction = (stompClient, playerName) => {
   if (!stompClient || !playerName) return;
 
-  stompClient.send('/app/interaction', {}, JSON.stringify({ playerName: playerName }));
+
+  stompClient.send('/app/interact', {},playerName);
 };
 
 export const sendChatMessage = (stompClient, playerName, messageContent) => {
@@ -73,7 +117,7 @@ export const setPlayer = (stompClient, playerName) => {
 
   const initialPlayer = {
     name: playerName.trim(),
-    position: { x: 200, y: 200 }, // Initial spawn position
+    position: { x: 400, y: 400 }, // Initial spawn position
   };
 
   stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
@@ -111,3 +155,17 @@ export const subscribeToImposter = (stompClient, setIsImposter) => {
   };
 };
 
+export const fetchCollisionMask = async () => {
+  try {
+    const response = await fetch('/app/collisionmask'); // Adjust the endpoint as per your backend
+    if (response.ok) {
+      const maskData = await response.json();
+      return maskData;
+    } else {
+      throw new Error('Failed to fetch collision mask');
+    }
+  } catch (error) {
+    console.error('Error fetching collision mask:', error);
+    return null;
+  }
+};

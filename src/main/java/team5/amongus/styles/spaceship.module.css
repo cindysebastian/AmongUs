@@ -1,0 +1,65 @@
+.scrollContainer {
+    position: relative;
+    width: 100vw; /* Full viewport width */
+    height: 100vh; /* Full viewport height */
+    overflow: scroll; /* Enable scrollbars */
+}
+
+.spaceShipBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 4000px;
+    height: 2316px;
+    background-image: url("../../../../resources/spaceShipBG.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 2;
+}
+
+.gifBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("../../../../resources/space.gif");
+    background-size: cover;
+    background-color: black;
+    z-index: 1;
+}
+
+.smallPlayer {
+    width: 50px;
+    height: 50px;
+}  
+
+.killGifContainer {
+    position: fixed; /* Use fixed positioning to cover the screen */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    background-image: url("../../../resources/killanimationforcrewmate.gif");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .killButton {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    z-index: 100;
+  }
+  
+  .killButtonIcon {
+    width: 150px;
+    height: 150px;
+  }

@@ -1,6 +1,7 @@
 package team5.amongus.websocket;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -8,16 +9,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.context.event.EventListener;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import team5.amongus.model.GameManager;
-import team5.amongus.model.Imposter;
-import team5.amongus.model.Message;
-import team5.amongus.model.Player;
-import team5.amongus.model.Position;
+import team5.amongus.model.*;
 import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
 import team5.amongus.service.ITaskService;
+import team5.amongus.service.ICollisionMaskService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,22 +26,27 @@ import java.util.Map;
 public class WebSocketController {
 
     private final Map<String, Player> playersMap = new HashMap<>();
+    private ArrayList<Interactible> interactibles = new ArrayList<>();
+    private final Task testTask = new Task(TaskType.SCAN, 500, 500, "dwarf");
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
     private final IChatService chatService;
     private final List<Message> chatMessages = new ArrayList<>();
     private final IPlayerService playerService;
     private final ITaskService taskService;
-    private final GameManager gameManager;
+    private GameManager gameManager;
+    private final ICollisionMaskService collisionMaskService;
+    private CollisionMask collisionMask;
     private boolean gameStarted = false;
 
-    public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
-            ITaskService taskService, IChatService chatService, GameManager gameManager) {
+    public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService, ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService, GameManager gameManager) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
         this.gameManager = gameManager;
+        this.collisionMaskService = collisionMaskService;
+        this.collisionMask = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
     }
 
     public void removePlayer(String playerName) {
@@ -69,7 +70,6 @@ public class WebSocketController {
     public Map<String, Player> setPlayer(Player player, SimpMessageHeaderAccessor accessor) {
         String playerName = player.getName().trim();
 
-        // Check if player name is not empty and not "player"
         if (playerName.isEmpty() || playerName.equalsIgnoreCase("player")) {
             return inGamePlayersMap; // Do not add invalid player
         }
@@ -86,16 +86,40 @@ public class WebSocketController {
     }
 
     @MessageMapping("/interact")
-    @SendTo("/topic/game")
-    public void handleInteract() throws IOException {
+    @SendTo("/topic/interactions")
+    public ArrayList<Interactible> handleInteract(String playerName) throws IOException {
+
+        Player player = playersMap.get(playerName);
+
+        Interactible interactableObject = playerService.getPlayerInteractableObject(interactibles, player);
+
+        if (interactableObject != null) {
+            // Handle interaction based on the type of interactable object
+            if (interactableObject instanceof Task) {
+                // If the interactable object is a Task, call the TaskService to update task
+                ArrayList<Interactible> updatedInteractables = taskService.updateTaskInteractions(playersMap,
+                        interactibles, player, (Task) interactableObject);
+                // Broadcast updated task list to all clients
+                
+                interactibles = updatedInteractables;
+
+            } /*
+               * else if (interactableObject instanceof deadBody) {
+               * // If the interactable object is something else, handle it accordingly
+               * otherService.handleInteraction(player, (OtherInteractableObject)
+               * interactableObject);
+               * }
+               */
+        }
+        broadcastInteractiblesUpdate();
+        return interactibles;
 
     }
 
     @MessageMapping("/move")
     @SendTo("/topic/players")
     public Map<String, Player> move(String payload) {
-        Map<String, Player> updatedPlayersMap = playerService.movePlayer(playersMap, payload);
-        taskService.updateTaskInteractions(updatedPlayersMap);
+        Map<String, Player> updatedPlayersMap = playerService.movePlayer(playersMap, payload, collisionMask);
         broadcastPlayerUpdate();
         return updatedPlayersMap;
     }
@@ -103,8 +127,7 @@ public class WebSocketController {
     @MessageMapping("/move/inGamePlayers")
     @SendTo("/topic/inGamePlayers")
     public Map<String, Player> moveInGamePlayers(String payload) {
-        Map<String, Player> updatedinGamePlayersMap = playerService.movePlayer(inGamePlayersMap, payload);
-        taskService.updateTaskInteractions(updatedinGamePlayersMap);
+        Map<String, Player> updatedinGamePlayersMap = playerService.movePlayer(inGamePlayersMap, payload, collisionMask);
         broadcastPlayerUpdate();
         return updatedinGamePlayersMap;
     }
@@ -112,6 +135,10 @@ public class WebSocketController {
     private void broadcastPlayerUpdate() {
         messagingTemplate.convertAndSend("/topic/players", playersMap);
         messagingTemplate.convertAndSend("/topic/inGamePlayers", inGamePlayersMap);
+    }
+
+    private void broadcastInteractiblesUpdate() {
+        messagingTemplate.convertAndSend("/topic/interactions", interactibles);
     }
 
     @MessageMapping("/sendMessage")
@@ -145,6 +172,16 @@ public class WebSocketController {
         broadcastPlayerUpdate(); // Broadcast the updated player state to clients
         return updatedPlayersMap;
     }
+    @MessageMapping("/completeTask")
+    @SendTo("/topic/interactions")
+    public List<Interactible> completeTask(String payload) {
+        // Complete the task using the taskService
+        ArrayList<Interactible> updatedInteractables = taskService.completeTask(payload, interactibles);
+        interactibles = updatedInteractables;
+        // Broadcast the updated interactibles to all clients
+        broadcastInteractiblesUpdate();
+        return interactibles;
+    }    
 
     @MessageMapping("/startGame")
     @SendTo("/topic/gameStart")
@@ -154,6 +191,7 @@ public class WebSocketController {
 
         // Move players from lobby to spaceship
         for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
+            entry.getValue().setPosition(new Position(2300, 170));
             playersMap.put(entry.getKey(), entry.getValue());
         }
 
@@ -165,21 +203,28 @@ public class WebSocketController {
         // Trigger the logic to choose imposters in the GameManager
         gameManager.chooseImposter();
         
-
         // Clear the players from the lobby
         inGamePlayersMap.clear();
+        
+        collisionMask = collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
 
         // Logging to check spaceShipPlayersMap contents
         System.out.println("Space ship players count: " + playersMap.size());
         for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
-            System.out.println("Player: " + entry.getKey() + ", Position: " + entry.getValue().getPosition());
+            System.out.println("Player: " + entry.getKey());
         }
+
+        // Create a Task list based on set players
+
+        interactibles = taskService.createTasks(playersMap);
+
+        broadcastInteractiblesUpdate();
 
         return "Game has started";
     }
 
     @EventListener
-    public void handleSessionDisconnect(SessionDisconnectEvent event) {
+    public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         String sessionId = event.getSessionId();
 
         boolean isFirstPlayer = false;
@@ -212,13 +257,18 @@ public class WebSocketController {
         // Iterate over playersMap to find the disconnected player in the spaceship
         for (Iterator<Map.Entry<String, Player>> iterator = playersMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String, Player> entry = iterator.next();
-            Player player = entry.getValue();
-            if (player.getSessionId() != null && player.getSessionId().equals(sessionId)) {
-                // Remove the disconnected player from playersMap
-                iterator.remove(); // Remove from playersMap
-                broadcastPlayerUpdate(); // Broadcast updated player list
+            if (entry.getValue().getSessionId().equals(sessionId)) {
+                iterator.remove();
                 break;
             }
         }
+        for (Iterator<Map.Entry<String, Player>> iterator = inGamePlayersMap.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry<String, Player> entry = iterator.next();
+            if (entry.getValue().getSessionId().equals(sessionId)) {
+                iterator.remove();
+                break;
+            }
+        }
+        broadcastPlayerUpdate();
     }
 }
