@@ -6,7 +6,7 @@ public class Player implements Serializable {
     private String name;
     private Position position;
     private String colour;
-    private Integer step = 30;
+    private Integer step = 12;
     private Boolean isMoving = false;
     private String facing = "RIGHT";
     private int width = 100;

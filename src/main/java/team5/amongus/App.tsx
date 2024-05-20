@@ -8,11 +8,9 @@ import SpaceShip from './components/SpaceShip';
 import bgImage from '../../../resources/LoginBG.png';
 import styles from './styles/index.module.css';
 import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions } from './service (Frontend)/WebsocketService';
-import { movePlayer } from '././service (Frontend)/PlayerMovementService';
-import { startGame } from '././service (Frontend)/GameStartingService'
+import { movePlayer } from './service (Frontend)/PlayerMovementService';
+import { startGame } from './service (Frontend)/GameStartingService';
 import { handleInteraction } from './service (Frontend)/InteractionService';
-import { useInputBlock } from './service (Frontend)/InputBlockContext'; // Import useInputBlock hook
-
 
 const directionMap = {
   'w': 'UP',
@@ -30,6 +28,7 @@ const App = ({ history }) => {
   const [chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
   const [interactibles, setInteractibles] = useState([]);
+  const [interactionInProgress, setInteractionInProgress] = useState(false); // New state for interaction in progress
   const keysPressed = useRef({
     w: false,
     a: false,
@@ -40,17 +39,17 @@ const App = ({ history }) => {
   const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); // Add state to control redirection to SpaceShip
   const [gameStarted, setGameStarted] = useState(false);
   const [inGamePlayers, setInGamePlayers] = useState({});
-  const { isInputBlocked } = useInputBlock(); // Get isInputBlocked from context
 
   useEffect(() => {
     const heartbeatInterval = setInterval(() => {
       if (stompClient && playerName) {
+        
         stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName }));
+
       }
     }, 1000); // Send heartbeat every second (adjust as needed)
     return () => clearInterval(heartbeatInterval);
   }, [stompClient, playerName]);
-
 
   useEffect(() => {
     const unsubscribeWebSocket = connectWebSocket(setStompClient);
@@ -70,59 +69,44 @@ const App = ({ history }) => {
   }, [stompClient]);
 
   useEffect(() => {
+    let subscription;
+    
     if (stompClient) {
-      return subscribetoInteractions(stompClient, setInteractibles);
+        subscription = subscribetoInteractions(stompClient, (interactibles) => {
+            setInteractibles(interactibles);
+        });
     }
-  }, [stompClient]);
-
-  const movementTimeout = useRef(null);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (isInputBlocked) return;
-
-      const direction = directionMap[e.key];
-      if (direction && !keysPressed.current[direction]) {
-        keysPressed.current[direction] = true;
-        movePlayerWithDebounce(stompClient, playerName, keysPressed);
-      }
-    };
-
-    const handleKeyUp = (e) => {
-      if (isInputBlocked) return;
-
-      const direction = directionMap[e.key];
-      if (direction) {
-        keysPressed.current[direction] = false;
-        clearTimeout(movementTimeout.current);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+        // Unsubscribe when the component unmounts or when stompClient changes
+        if (subscription) {
+            subscription.unsubscribe();
+        }
     };
-  }, [stompClient, playerName, isInputBlocked]);
+}, [stompClient]);
 
-  const movePlayerWithDebounce = (client, name, keys) => {
-    clearTimeout(movementTimeout.current);
-    movementTimeout.current = setTimeout(() => {
-      movePlayer(client, name, keys);
-    }, 100); // Adjust delay as needed
-  };
-  
-  
-  
+useEffect(() => {
+    if (interactibles && playerName) {
+        let playerInteracting = interactibles.some(interactible =>
+            interactible.inProgress && interactible.assignedPlayer === playerName
+        );
+        setInteractionInProgress(playerInteracting);
+    }
+}, [interactibles, playerName]);
+
+
+  useEffect(() => {
+    if (stompClient && playerSpawned) {
+      return movePlayer(stompClient, playerName, keysPressed, interactionInProgress); // Pass interactionInProgress to movePlayer
+    }
+  }, [stompClient, playerName, playerSpawned, interactionInProgress]);
+
   const sendMessage = (messageContent) => {
-    if (!isInputBlocked && stompClient) { // Check if input is not blocked
+    if (stompClient) {
       sendChatMessage(stompClient, playerName, messageContent);
     }
   };
 
-    
   useEffect(() => {
     if (playerSpawned) {
       window.addEventListener('keydown', handleInteractionKeyPress);
@@ -133,20 +117,20 @@ const App = ({ history }) => {
   }, [playerSpawned]);
 
   const handleInteractionKeyPress = (e) => {
-    if (!isInputBlocked && e.key === 'e') {
-      handleInteraction(stompClient, playerName.trim()); 
+    if (e.key === 'e' && !interactionInProgress) {
+      handleInteraction(stompClient, playerName);
     }
   };
 
   const handleSpawnPlayer = () => {
-    if (!isInputBlocked && Object.values(players as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
+    if (Object.values(players as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
       alert('Player name already exists in the game. Please choose a different name.');
       return;
     }
-    if (!isInputBlocked && !firstPlayerName) {
+    if (!firstPlayerName) {
       setFirstPlayerName(playerName.trim());
     }
-    if (!isInputBlocked && stompClient && playerName.trim()) {
+    if (stompClient && playerName) {
       setPlayer(stompClient, playerName);
       setPlayerSpawned(true);
       history.push('/game');
@@ -155,7 +139,7 @@ const App = ({ history }) => {
 
   const handleStartButtonClick = () => {
     setIsStartButtonClicked(true); // Set the start button clicked state to true
-    if (!isInputBlocked && stompClient) {
+    if (stompClient) {
       stompClient.send('/app/startGame'); // Send message to start the game
     }
   };
@@ -167,7 +151,7 @@ const App = ({ history }) => {
   }, [redirectToSpaceShip, gameStarted, history]);
 
   useEffect(() => {
-    startGame(stompClient, setRedirectToSpaceShip)
+    startGame(stompClient, setRedirectToSpaceShip);
 
     const handleGameStart = () => {
       // When the game starts, redirect all players to the spaceship
@@ -190,7 +174,6 @@ const App = ({ history }) => {
     <div style={{ padding: '20px' }}>
       {!playerSpawned && (
         <div className={styles.gifBackground}></div>
-
       )}
       {!playerSpawned && (
         <div className={styles.loginbackground}>
@@ -231,6 +214,4 @@ const App = ({ history }) => {
   );
 };
 
-
 export default App;
-

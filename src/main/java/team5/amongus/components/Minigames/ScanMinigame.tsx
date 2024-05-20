@@ -3,7 +3,7 @@ import { completeMiniGame } from "../../service (Frontend)/TaskService";
 import Stomp from "stompjs";
 import styles from './MiniGame.module.css'; // Import CSS module
 import Task from "../interfaces/Interactible";
-import { useInputBlock } from '../../service (Frontend)/InputBlockContext'; // Import the hook
+
 
 interface Props {
     stompClient: Stomp.Client | null;
@@ -16,14 +16,6 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
     const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
     const [isSoundPlaying, setIsSoundPlaying] = useState(false);
     const [sound, setSound] = useState<HTMLAudioElement | null>(null);
-    const { toggleInputBlocking } = useInputBlock(); // Use the hook
-
-    useEffect(() => {
-        toggleInputBlocking(); // Call toggleInputBlocking once when component mounts
-        return () => {
-            toggleInputBlocking(); // Call toggleInputBlocking again when component unmounts to revert the state
-        };
-    }, []);
 
     useEffect(() => {
         if (isSoundPlaying && !isCompleted) {
@@ -51,7 +43,7 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
                     if (stompClient) {
                         completeMiniGame(stompClient, interactible.id);
                         setIsCompleted(true);
-                        toggleInputBlocking(); // Toggle input blocking when the task is completed
+                      
                     }
                     setIsSoundPlaying(false); // Stop continuous sound when task completed
                     playSound(); // Play sound when completion reached
