@@ -11,6 +11,7 @@ import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteract
 import { movePlayer } from './service (Frontend)/PlayerMovementService';
 import { startGame } from './service (Frontend)/GameStartingService';
 import { handleInteraction } from './service (Frontend)/InteractionService';
+import KillButton from './components/KillButton';
 
 const directionMap = {
   'w': 'UP',
@@ -27,6 +28,7 @@ const App = ({ history }) => {
   const [messages, setMessages] = useState([]);
   const [chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
+  const [selectedVictim, setSelectedVictim] = useState('');
   const [interactibles, setInteractibles] = useState([]);
   const [interactionInProgress, setInteractionInProgress] = useState(false); 
   const keysPressed = useRef({
@@ -191,7 +193,7 @@ const App = ({ history }) => {
   }, [stompClient]);
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ position: 'relative', padding: '20px' }}>
       {!playerSpawned && (
         <div className={styles.gifBackground}></div>
       )}

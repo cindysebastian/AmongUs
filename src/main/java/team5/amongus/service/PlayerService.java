@@ -2,21 +2,23 @@ package team5.amongus.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import team5.amongus.model.Interactible;
-import team5.amongus.model.Player;
-import team5.amongus.model.PlayerMoveRequest;
-import team5.amongus.model.Position;
-import team5.amongus.model.CollisionMask;
-import team5.amongus.model.Task;
+import team5.amongus.model.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PlayerService implements IPlayerService {
+
+    private final GameManager gameManager;
+
+    public PlayerService(GameManager gameManager) {
+        this.gameManager = gameManager;
+    }
 
     @Override
     public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask) {
@@ -43,7 +45,6 @@ public class PlayerService implements IPlayerService {
                 for (String directionStr : directions) {
                     Position.Direction direction = Position.Direction.valueOf(directionStr.toUpperCase());
                     if (!collidesWithMask(existingPlayer, direction, collisionMask)) {
-                        System.out.println("[PlayerService] doesn't collide with mask");
                         existingPlayer.handleMovementRequest(direction);
                         existingPlayer.setIsMoving(true);
                     }
@@ -57,10 +58,9 @@ public class PlayerService implements IPlayerService {
                 for (Player otherPlayer : playersMap.values()) {
                     if (!player.getName().equals(otherPlayer.getName())) {
                         if (player.collidesWith(otherPlayer)) {
-                            player.setCanKill(true);
-                            break;
-                        } else {
-                            player.setCanKill(false);
+                            if (player instanceof Imposter) {
+                                // TODO: make kill button visible
+                            }
                             break;
                         }
                     }
@@ -79,8 +79,8 @@ public class PlayerService implements IPlayerService {
     private boolean collidesWithMask(Player player, Position.Direction direction, CollisionMask collisionMask) {
         Position nextPosition = player.getPosition().getNextPosition(direction, player.getStep());
 
-        if (collisionMask.collidesWith(nextPosition.getX(), nextPosition.getY(), player.getWidth(), player.getHeight())) {
-            System.out.println("[PlayerService] nextPosition: " + nextPosition.getX() + ", " + nextPosition.getY());
+        if (collisionMask.collidesWith(nextPosition.getX(), nextPosition.getY(), player.getWidth(),
+                player.getHeight())) {
             return true;
         }
 
@@ -101,5 +101,38 @@ public class PlayerService implements IPlayerService {
         }
         return null;
     }
-}
 
+    public Map<String, Player> handleKill(Imposter imposter, Map<String, Player> playersMap) {
+        System.out.println("Trying to kill...");
+        if (imposter != null && playersMap != null) {
+            Player collidingPlayer = null;
+            // Iterate through other players to find the closest one
+            for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+                String name = entry.getKey();
+                Player player = entry.getValue();
+                if (!name.equals(imposter.getName()) && !(player instanceof Imposter)) { // Exclude the player
+                                                                                         // initiating
+                    if (imposter.collidesWith(player) && player.isAlive()) {
+                        collidingPlayer = player;
+                        break;
+                    }
+                }
+            }
+
+            if (collidingPlayer != null && collidingPlayer.isAlive()) {
+                System.out.println("Killing " + collidingPlayer.getName());
+                imposter.kill(collidingPlayer);
+                Position newPosition = new Position(collidingPlayer.getPosition().getX(),
+                        collidingPlayer.getPosition().getY());
+                imposter.setPosition(newPosition);
+                gameManager.notifyPlayerKilled(collidingPlayer);
+            } else {
+                System.out.println("No colliding non-imposter player found.");
+            }
+        } else {
+            System.out.println("Only imposters can initiate a kill or player not found.");
+            // You can optionally log a message or handle this situation accordingly
+        }
+        return playersMap; // Return the updated players map
+    }
+}

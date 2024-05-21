@@ -2,8 +2,11 @@ package team5.amongus.model;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public class Player implements Serializable {
     private String name;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Position position;
     private String colour;
     private Integer step = 12;
@@ -12,7 +15,8 @@ public class Player implements Serializable {
     private int width = 130;
     private int height = 130;
     private boolean canInteract = false;
-    private boolean canKill = false;
+    private boolean isAlive = true;
+    
     private long lastActivityTime;
     private String sessionId;
 
@@ -22,15 +26,15 @@ public class Player implements Serializable {
         this.lastActivityTime = System.currentTimeMillis();
     }
 
-    public int getWidth(){
+    public int getWidth() {
         return width;
     }
 
-    public int getHeight(){
+    public int getHeight() {
         return height;
     }
 
-    public int getStep(){
+    public int getStep() {
         return step;
     }
 
@@ -48,6 +52,10 @@ public class Player implements Serializable {
 
     public long getLastActivityTime() {
         return lastActivityTime;
+    }
+
+    public Player(String name) {
+        this.name = name;
     }
 
     public String getName() {
@@ -98,22 +106,24 @@ public class Player implements Serializable {
         this.canInteract = canInteract;
     }
 
-    public boolean getCanKill() {
-        return canKill;
+    public boolean isAlive() {
+        return isAlive;
     }
 
-    public void setCanKill(boolean canKill) {
-        this.canKill = canKill;
+    public void setAlive(boolean isAlive) {
+        this.isAlive = isAlive;
     }
 
     public void handleMovementRequest(Position.Direction direction) {
         Position newPosition = position.getNextPosition(direction, step);
-        if (newPosition.getX() < position.getX()) {
-            setFacing("LEFT");
-        } else if(newPosition.getX() > position.getX()){
-            setFacing("RIGHT");
+        if (isAlive) {
+            if (newPosition.getX() < position.getX()) {
+                setFacing("LEFT");
+            } else if (newPosition.getX() > position.getX()) {
+                setFacing("RIGHT");
+            }
+            this.position = newPosition;
         }
-        this.position = newPosition;
     }
 
     public boolean collidesWith(Player otherPlayer) {
@@ -123,7 +133,6 @@ public class Player implements Serializable {
     // Method to check collision with an Interactable thing
     public boolean collidesWith(Interactible thing) {
         Boolean collidesWith = this.getBounds().intersects(thing.getBounds());
-        System.out.println(collidesWith);
         return collidesWith;
     }
 
