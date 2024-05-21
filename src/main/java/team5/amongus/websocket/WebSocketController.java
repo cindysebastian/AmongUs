@@ -1,6 +1,7 @@
 package team5.amongus.websocket;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -26,6 +27,7 @@ public class WebSocketController {
 
     private final Map<String, Player> playersMap = new HashMap<>();
     private ArrayList<Interactible> interactibles = new ArrayList<>();
+    private final Task testTask = new Task(TaskType.SCAN, 500, 500, "dwarf");
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
     private final IChatService chatService;

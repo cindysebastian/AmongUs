@@ -60,7 +60,7 @@ const App = ({ history }) => {
 
   useEffect(() => {
     if (stompClient && playerName) {
-      return subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers, setImposter);
+      return subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers);
     }
   }, [stompClient, playerName]);
 
