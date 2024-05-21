@@ -4,7 +4,6 @@ import { subscribeToImposter } from './../service (Frontend)/WebsocketService';
 
 
 const KillButton = ({ onKill }) => {
-  const [isImposter, setIsImposter] = useState(false);
   
   const handleKill = () => {
     // You can add confirmation logic or any other functionality here
