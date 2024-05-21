@@ -37,7 +37,6 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
     const playersWithImposterFlag = addImposterFlag(updatedPlayers);
     setPlayers(playersWithImposterFlag);
     const currentPlayer = playersWithImposterFlag[playerName];
-    console.log(updatedPlayers);
   });
 
   stompClient.subscribe('/topic/inGamePlayers', (message) => {
