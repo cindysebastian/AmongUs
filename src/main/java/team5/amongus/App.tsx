@@ -7,7 +7,7 @@ import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
 import bgImage from '../../../resources/LoginBG.png';
 import styles from './styles/index.module.css';
-import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions, fetchCollisionMask } from './service (Frontend)/WebsocketService';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions } from './service (Frontend)/WebsocketService';
 import { movePlayer } from './service (Frontend)/PlayerMovementService';
 import { startGame } from './service (Frontend)/GameStartingService';
 import { handleInteraction } from './service (Frontend)/InteractionService';
@@ -101,15 +101,6 @@ const App = ({ history }) => {
   useEffect(() => {
     startGame(stompClient, setRedirectToSpaceShip);
   }, [stompClient]);
-
-  useEffect(() => {
-    const fetchMask = async () => {
-      const maskData = await fetchCollisionMask();
-      setCollisionMask(maskData);
-    };
-
-    fetchMask();
-  }, []);
 
   useEffect(() => {
     if (stompClient && playerSpawned) {
