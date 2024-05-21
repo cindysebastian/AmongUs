@@ -212,10 +212,21 @@ public class WebSocketController {
         System.out.println("Game started!"); // Add logging
         gameStarted = true; // Set gameStarted flag to true
 
+        List<Position> positions = new ArrayList<Position>();
+        positions.add(new Position(2175, 350));
+        positions.add(new Position(2175, 650));
+        positions.add(new Position(2000, 500));
+        positions.add(new Position(2400, 500));
+
+        int index = 0;
         // Move players from lobby to spaceship
         for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
-            entry.getValue().setPosition(new Position(2300, 170));
+            entry.getValue().setPosition(positions.get(index));
             playersMap.put(entry.getKey(), entry.getValue());
+            index++;
+            if (index > 3) {
+                index = 0;
+            }
         }
 
         // Trigger the logic to choose imposters in the GameManager

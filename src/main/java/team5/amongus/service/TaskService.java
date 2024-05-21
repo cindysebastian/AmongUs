@@ -181,9 +181,9 @@ public class TaskService implements ITaskService {
     private void populateMinePositions(List<Position> positions) {
         // Add your predetermined mine positions to the positions list
         // Example:
-        positions.add(new Position(100, 100));
-        positions.add(new Position(200, 200));
-        positions.add(new Position(300, 300));
+        positions.add(new Position(2000, 100));
+        positions.add(new Position(2175, 100));
+        positions.add(new Position(2400, 100));
         // Add more positions as needed
     }
 
@@ -191,9 +191,9 @@ public class TaskService implements ITaskService {
     private void populateScanPositions(List<Position> positions) {
         // Add your predetermined scan positions to the positions list
         // Example:
-        positions.add(new Position(400, 400));
-        positions.add(new Position(500, 500));
-        positions.add(new Position(600, 600));
+        positions.add(new Position(2000, 800));
+        positions.add(new Position(2175, 800));
+        positions.add(new Position(2400, 800));
         // Add more positions as needed
     }
 
@@ -201,9 +201,9 @@ public class TaskService implements ITaskService {
     private void populateSwipePositions(List<Position> positions) {
         // Add your predetermined swipe positions to the positions list
         // Example:
-        positions.add(new Position(700, 700));
-        positions.add(new Position(800, 800));
-        positions.add(new Position(900, 900));
+        positions.add(new Position(2000, 450));
+        positions.add(new Position(2175, 450));
+        positions.add(new Position(2400, 450));
         // Add more positions as needed
     }
 
