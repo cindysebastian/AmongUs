@@ -34,22 +34,48 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
 
   stompClient.subscribe('/topic/players', (message) => {
     const updatedPlayers = JSON.parse(message.body);
-    setPlayers(updatedPlayers);
-    const currentPlayer = updatedPlayers[playerName];
+    const playersWithImposterFlag = addImposterFlag(updatedPlayers);
+    setPlayers(playersWithImposterFlag);
+    const currentPlayer = playersWithImposterFlag[playerName];
+    console.log(updatedPlayers);
   });
 
   stompClient.subscribe('/topic/inGamePlayers', (message) => {
-    const updatedinGamePlayers = JSON.parse(message.body);
-    setInGamePlayers(updatedinGamePlayers);
-    const currentPlayer = updatedinGamePlayers[playerName];
-  });
-
-  stompClient.subscribe('/topic/inGamePlayers', (message) => {
-    const updatedinGamePlayers = JSON.parse(message.body);
-    setInGamePlayers(updatedinGamePlayers);
-    const currentPlayer = updatedinGamePlayers[playerName];
+    const updatedInGamePlayers = JSON.parse(message.body);
+    const inGamePlayersWithImposterFlag = addImposterFlag(updatedInGamePlayers);
+    setInGamePlayers(inGamePlayersWithImposterFlag);
+    const currentPlayer = inGamePlayersWithImposterFlag[playerName];
   });
 };
+
+const addImposterFlag = (playersMap) => {
+  return Object.keys(playersMap).reduce((acc, key) => {
+    const player = playersMap[key];
+    
+    // Example condition to identify imposters
+    if (player.canKill != null) {
+      player.isImposter = true;
+    } else {
+      player.isImposter = false;
+    }
+
+    acc[key] = player;
+    return acc;
+  }, {});
+};
+
+// Player interface
+export default interface Player {
+  name: string;
+  position: {
+    x: number;
+    y: number;
+  };
+  facing?: 'LEFT' | 'RIGHT';
+  isMoving?: boolean;
+  isImposter?: boolean;
+}
+
 
 export const subscribeToMessages = (stompClient, setMessages) => {
   if (!stompClient) return;

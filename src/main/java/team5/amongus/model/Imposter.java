@@ -2,6 +2,11 @@ package team5.amongus.model;
 
 public class Imposter extends Player {
 
+    
+    private boolean canKill = false;
+
+    
+
     public Imposter(String name, Position position) {
         super(name, position);
     }
@@ -18,4 +23,13 @@ public class Imposter extends Player {
             System.out.println("Unable to kill. Victim is already dead or does not exist.");
         }
     }
+
+    public boolean getCanKill(){
+        return canKill;
+    }
+
+    public void setCanKill(boolean canKill) {
+        this.canKill = canKill;
+    }
+    
 }

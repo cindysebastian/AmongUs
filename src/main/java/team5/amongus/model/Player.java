@@ -16,7 +16,7 @@ public class Player implements Serializable {
     private int height = 130;
     private boolean canInteract = false;
     private boolean isAlive = true;
-    private boolean canKill = false;
+    
     private long lastActivityTime;
     private String sessionId;
 
@@ -104,14 +104,6 @@ public class Player implements Serializable {
 
     public void setCanInteract(boolean canInteract) {
         this.canInteract = canInteract;
-    }
-
-    public boolean getCanKill() {
-        return canKill;
-    }
-
-    public void setCanKill(boolean canKill) {
-        this.canKill = canKill;
     }
 
     public boolean isAlive() {

@@ -29,7 +29,6 @@ const App = ({ history }) => {
   const [chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
   const [selectedVictim, setSelectedVictim] = useState('');
-  const [imposter, setImposter] = useState(false);
   const [interactibles, setInteractibles] = useState([]);
   const [interactionInProgress, setInteractionInProgress] = useState(false); 
   const keysPressed = useRef({
