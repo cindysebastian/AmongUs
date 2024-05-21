@@ -39,7 +39,9 @@ public class WebSocketController {
     private CollisionMask collisionMask;
     private boolean gameStarted = false;
 
-    public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService, ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService, GameManager gameManager) {
+    public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
+            ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService,
+            GameManager gameManager) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.messagingTemplate = messagingTemplate;
@@ -100,7 +102,7 @@ public class WebSocketController {
                 ArrayList<Interactible> updatedInteractables = taskService.updateTaskInteractions(playersMap,
                         interactibles, player, (Task) interactableObject);
                 // Broadcast updated task list to all clients
-                
+
                 interactibles = updatedInteractables;
 
             } /*
@@ -127,7 +129,8 @@ public class WebSocketController {
     @MessageMapping("/move/inGamePlayers")
     @SendTo("/topic/inGamePlayers")
     public Map<String, Player> moveInGamePlayers(String payload) {
-        Map<String, Player> updatedinGamePlayersMap = playerService.movePlayer(inGamePlayersMap, payload, collisionMask);
+        Map<String, Player> updatedinGamePlayersMap = playerService.movePlayer(inGamePlayersMap, payload,
+                collisionMask);
         broadcastPlayerUpdate();
         return updatedinGamePlayersMap;
     }
@@ -151,27 +154,47 @@ public class WebSocketController {
     @MessageMapping("/killPlayer")
     @SendTo("/topic/players")
     public Map<String, Player> handleKill(String playerName) {
-        // Proceed with handling the kill
-        Player player = playersMap.get(playerName);
-        System.out.println(playerName);
-        System.out.println(player);
-
-        System.out.println("Get playername...");
-
         // If playerName is still null, return the current player map
         if (playerName == null || playerName.trim().isEmpty()) {
             System.out.println("PlayerName null");
             return playersMap;
         }
 
+        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+            String key = entry.getKey();
+            Player value = entry.getValue();
+            System.out.println("Key: " + key + ", Value: " + value);
+        }
+
+        Imposter imposter = null;
+        for (Player pl : playersMap.values()) {
+            if (pl instanceof Imposter) {
+                imposter = (Imposter) pl;
+                break;
+            }
+        }
+
+        System.out.println(imposter.getName());
         System.out.println(playerName);
+        System.out.println("Fetched Player " + playersMap.get(playerName).getName());
+        System.out.println(playersMap.get(playerName) instanceof Imposter);
+        if (imposter.getName().equals(playerName)) {
+            imposter = (Imposter) playersMap.get(playerName);
+        } else {
+            System.err.println("fuck you");
+            return playersMap;
+        }
 
         // Proceed with handling the kill
         System.out.println("handlekill aufruf");
-        Map<String, Player> updatedPlayersMap = playerService.handleKill(player, playersMap);
+
+        Map<String, Player> updatedPlayersMap = playerService.handleKill(imposter, playersMap);
+
         broadcastPlayerUpdate(); // Broadcast the updated player state to clients
         return updatedPlayersMap;
+
     }
+
     @MessageMapping("/completeTask")
     @SendTo("/topic/interactions")
     public List<Interactible> completeTask(String payload) {
@@ -181,7 +204,7 @@ public class WebSocketController {
         // Broadcast the updated interactibles to all clients
         broadcastInteractiblesUpdate();
         return interactibles;
-    }    
+    }
 
     @MessageMapping("/startGame")
     @SendTo("/topic/gameStart")
@@ -195,17 +218,12 @@ public class WebSocketController {
             playersMap.put(entry.getKey(), entry.getValue());
         }
 
-        List<Player> playerList = new ArrayList<Player>(playersMap.values());
-        for (Player player : playerList) {
-            gameManager.addPlayer(player);
-        }
-
         // Trigger the logic to choose imposters in the GameManager
-        gameManager.chooseImposter();
-        
+        gameManager.chooseImposter(playersMap);
+
         // Clear the players from the lobby
         inGamePlayersMap.clear();
-        
+
         collisionMask = collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
 
         // Logging to check spaceShipPlayersMap contents
@@ -262,7 +280,8 @@ public class WebSocketController {
                 break;
             }
         }
-        for (Iterator<Map.Entry<String, Player>> iterator = inGamePlayersMap.entrySet().iterator(); iterator.hasNext();) {
+        for (Iterator<Map.Entry<String, Player>> iterator = inGamePlayersMap.entrySet().iterator(); iterator
+                .hasNext();) {
             Map.Entry<String, Player> entry = iterator.next();
             if (entry.getValue().getSessionId().equals(sessionId)) {
                 iterator.remove();

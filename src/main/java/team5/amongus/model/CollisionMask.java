@@ -22,21 +22,18 @@ public class CollisionMask {
     }
 
     public boolean collidesWith(int playerX, int playerY, int playerWidth, int playerHeight) {
-        int startX = playerX + (int)Math.round(playerWidth * 0.3);
-        int endX = playerX + playerWidth - (int)Math.round(playerWidth * 0.3);;
-        int startY = playerY + (int)Math.round(playerHeight * 0.90);
-        int endY = playerY + (int)Math.round(playerHeight * 0.95);
+        int startX = playerX + (int) Math.round(playerWidth * 0.3);
+        int endX = playerX + playerWidth - (int) Math.round(playerWidth * 0.3);
+        int startY = playerY + (int) Math.round(playerHeight * 0.90);
+        int endY = playerY + (int) Math.round(playerHeight * 0.95);
 
         for (int row = startY; row < endY; row++) {
             for (int col = startX; col < endX; col++) {
                 if (mask[row][col]) {
-                    System.out.println("[CollisionMask] collision detected: row: " + row + " col: " + col + " " + mask[row][col]);
                     return true; // Collision detected
                 }
             }
         }
-
-        System.out.println("[CollisionMask] NO collision detected");
         return false; // No collision detected
     }
 

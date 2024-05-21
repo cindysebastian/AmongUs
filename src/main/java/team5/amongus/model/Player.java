@@ -26,15 +26,15 @@ public class Player implements Serializable {
         this.lastActivityTime = System.currentTimeMillis();
     }
 
-    public int getWidth(){
+    public int getWidth() {
         return width;
     }
 
-    public int getHeight(){
+    public int getHeight() {
         return height;
     }
 
-    public int getStep(){
+    public int getStep() {
         return step;
     }
 
@@ -127,11 +127,11 @@ public class Player implements Serializable {
         if (isAlive) {
             if (newPosition.getX() < position.getX()) {
                 setFacing("LEFT");
-            } else if(newPosition.getX() > position.getX()){
+            } else if (newPosition.getX() > position.getX()) {
                 setFacing("RIGHT");
             }
             this.position = newPosition;
-        }        
+        }
     }
 
     public boolean collidesWith(Player otherPlayer) {
@@ -141,7 +141,6 @@ public class Player implements Serializable {
     // Method to check collision with an Interactable thing
     public boolean collidesWith(Interactible thing) {
         Boolean collidesWith = this.getBounds().intersects(thing.getBounds());
-        System.out.println(collidesWith);
         return collidesWith;
     }
 
