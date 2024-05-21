@@ -13,7 +13,7 @@ interface Props {
   stompClient: Stomp.Client | null;
   players: Record<string, Player>;
   interactibles: Interactible[];
-  currentPlayer: String;
+  currentPlayer: string;  // Change to 'string' instead of 'String'
 }
 
 const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, currentPlayer }) => {
@@ -24,16 +24,21 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   useEffect(() => {
     const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
     const unsubscribeImposter = subscribeToImposter(stompClient, (imposterName: string) => {
-      if (imposterName === currentPlayer) {
-        setIsImposter(true);
-      }
+      // Add logic if needed for imposter subscription
     });
 
     return () => {
       unsubscribeKilled();
       unsubscribeImposter();
     };
-  }, [stompClient, currentPlayer]);
+  }, [stompClient]);
+
+  useEffect(() => {
+    if (currentPlayer && players[currentPlayer]) {
+      const currentPlayerObj = players[currentPlayer] as Player;
+      setIsImposter(currentPlayerObj.isImposter === true);
+    }
+  }, [players, currentPlayer]);
 
   const handlePlayerKilled = (killedPlayer: Player) => {
     if (killedPlayer.name === currentPlayer) {
@@ -69,10 +74,10 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
         ))}
         {killedPlayers.map(killedPlayerName => (
           <div key={killedPlayerName} style={{ position: 'relative', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x }}>
-            <img src="src\main\resources\deadbodycrewmate.png" alt="Dead Player" style={{width: '80px', height: '90px', position: 'relative' }} />
+            <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '80px', height: '90px', position: 'relative' }} />
           </div>
         ))}
-        <KillButton onKill={handleKill} />
+        {isImposter && <KillButton onKill={handleKill} />}
         {showKillGif && (
           <div className={styles.killGifContainer}></div>
         )}
