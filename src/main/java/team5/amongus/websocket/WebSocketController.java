@@ -286,8 +286,10 @@ public class WebSocketController {
         // Iterate over playersMap to find the disconnected player in the spaceship
         for (Iterator<Map.Entry<String, Player>> iterator = playersMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String, Player> entry = iterator.next();
-            if (entry.getValue().getSessionId().equals(sessionId)) {
+            Player player = entry.getValue();
+            if (player.getSessionId() != null && player.getSessionId().equals(sessionId)) {
                 iterator.remove();
+                broadcastPlayerUpdate();
                 break;
             }
         }
