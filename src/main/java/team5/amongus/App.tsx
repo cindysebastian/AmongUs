@@ -5,6 +5,8 @@ import ChatRoom from './components/ChatRoom';
 import MessageInput from './components/MessageInput';
 import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
+import Host from './components/Host';
+import Private from './components/Private';
 import bgImage from '../../../resources/LoginBG.png';
 import styles from './styles/index.module.css';
 import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions } from './service (Frontend)/WebsocketService';
@@ -37,11 +39,12 @@ const App = ({ history }) => {
     s: false,
     d: false,
   });
-  const [collisionMask, setCollisionMask] = useState(null);
-  const [isStartButtonClicked, setIsStartButtonClicked] = useState(false); 
-  const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); 
+  const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
+  const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [inGamePlayers, setInGamePlayers] = useState({});
+  const [host, setHost] = useState(false);
+  const [privateRoom, setPrivate] = useState(false);
 
   useEffect(() => {
     const heartbeatInterval = setInterval(() => {
@@ -162,6 +165,17 @@ const App = ({ history }) => {
     }
   };
 
+  const handleHost = () => {
+    setHost(true);
+    history.push('/host')
+  }
+
+  const handlePrivate = () => {
+    setPrivate(true);
+    history.push('/private');
+  }
+  
+  
   const handleStartButtonClick = () => {
     setIsStartButtonClicked(true);
     if (stompClient) {
@@ -199,15 +213,9 @@ const App = ({ history }) => {
       )}
       {!playerSpawned && (
         <div className={styles.loginbackground}>
-          <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
-            <input
-              type="text"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              placeholder="Enter your name"
-              className={styles.input}
-            />
-            <button onClick={handleSpawnPlayer} className={styles.button}>Spawn Player</button>
+          <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '7%', bottom: '0px', left: '50%', right: '50%' }}>
+            <button onClick={handleHost} className={styles.button}>HOST</button>
+            <button onClick={handlePrivate} className={styles.button}>PRIVATE</button>
           </div>
         </div>
       )}
@@ -231,6 +239,12 @@ const App = ({ history }) => {
       )}
       {redirectToSpaceShip && (
         <SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} />
+      )}
+      {host && (
+        <Host history={undefined} />
+      )}
+      {privateRoom && (
+        <Private history={undefined} />
       )}
     </div>
   );

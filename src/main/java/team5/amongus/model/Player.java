@@ -19,6 +19,8 @@ public class Player implements Serializable {
     
     private long lastActivityTime;
     private String sessionId;
+    private boolean isHost;
+   
 
     public Player(String name, Position position) {
         this.name = name;
@@ -36,6 +38,14 @@ public class Player implements Serializable {
 
     public int getStep() {
         return step;
+    }
+
+    public boolean isHost() {
+        return isHost;
+    }
+
+    public void setHost(boolean host) {
+        isHost = host;
     }
 
     public String getSessionId() {
