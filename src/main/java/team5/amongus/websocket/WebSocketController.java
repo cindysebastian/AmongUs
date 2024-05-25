@@ -39,6 +39,7 @@ public class WebSocketController {
     private final IGameWinningService gameWinningService;
     private CollisionMask collisionMask;
     private boolean gameStarted = false;
+    String lastResult= null; 
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
             ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService,
@@ -51,6 +52,7 @@ public class WebSocketController {
         this.collisionMaskService = collisionMaskService;
         this.gameWinningService = gameWinningService;
         this.collisionMask = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
+
     }
 
     public void removePlayer(String playerName) {
@@ -147,7 +149,6 @@ public class WebSocketController {
         finishGame();
         messagingTemplate.convertAndSend("/topic/interactions", interactibles);
     }
-
 
     @MessageMapping("/sendMessage")
     @SendTo("/topic/messages")
@@ -260,17 +261,21 @@ public class WebSocketController {
     @SendTo("/topic/finishGame")
     public String finishGame() {
         String result;
+        
         if (gameWinningService.allTasksCompleted(interactibles)) {
-            result = "Crewmates win";
-        } else if (gameWinningService.enoughCrewmatesDead(inGamePlayersMap)) {
+            result = "Crewmates win bc of Tasks";
+        } else if (gameWinningService.enoughCrewmatesDead(playersMap)) {
             result = "Imposter wins";
-        } else if (gameWinningService.imposterDead(inGamePlayersMap)) {
-            result = "Crewmates win";
+        } else if (gameWinningService.imposterDead(playersMap)) {
+            result = "Crewmates win bc of Death";
         } else {
             result = "Game running";
         }
-        System.out.println("finishGame called, result: " + result);
-        messagingTemplate.convertAndSend("/topic/finishGame", result);
+        // Broadcast only if the result has changed
+        if (!result.equals(lastResult)) {
+            messagingTemplate.convertAndSend("/topic/finishGame", result);
+            lastResult = result;
+        }
         return result;
     }
 
