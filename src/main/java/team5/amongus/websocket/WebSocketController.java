@@ -1,7 +1,6 @@
 package team5.amongus.websocket;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -14,6 +13,7 @@ import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
 import team5.amongus.service.ITaskService;
 import team5.amongus.service.ICollisionMaskService;
+import team5.amongus.service.IGameWinningService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,18 +36,20 @@ public class WebSocketController {
     private final ITaskService taskService;
     private GameManager gameManager;
     private final ICollisionMaskService collisionMaskService;
+    private final IGameWinningService gameWinningService;
     private CollisionMask collisionMask;
     private boolean gameStarted = false;
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
             ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService,
-            GameManager gameManager) {
+            GameManager gameManager, IGameWinningService gameWinningService) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
         this.gameManager = gameManager;
         this.collisionMaskService = collisionMaskService;
+        this.gameWinningService = gameWinningService;
         this.collisionMask = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
     }
 
@@ -136,13 +138,16 @@ public class WebSocketController {
     }
 
     private void broadcastPlayerUpdate() {
+        finishGame();
         messagingTemplate.convertAndSend("/topic/players", playersMap);
         messagingTemplate.convertAndSend("/topic/inGamePlayers", inGamePlayersMap);
     }
 
     private void broadcastInteractiblesUpdate() {
+        finishGame();
         messagingTemplate.convertAndSend("/topic/interactions", interactibles);
     }
+
 
     @MessageMapping("/sendMessage")
     @SendTo("/topic/messages")
@@ -252,6 +257,23 @@ public class WebSocketController {
         return "Game has started";
     }
 
+    @SendTo("/topic/finishGame")
+    public String finishGame() {
+        String result;
+        if (gameWinningService.allTasksCompleted(interactibles)) {
+            result = "Crewmates win";
+        } else if (gameWinningService.enoughCrewmatesDead(inGamePlayersMap)) {
+            result = "Imposter wins";
+        } else if (gameWinningService.imposterDead(inGamePlayersMap)) {
+            result = "Crewmates win";
+        } else {
+            result = "Game running";
+        }
+        System.out.println("finishGame called, result: " + result);
+        messagingTemplate.convertAndSend("/topic/finishGame", result);
+        return result;
+    }
+
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         String sessionId = event.getSessionId();
@@ -303,4 +325,5 @@ public class WebSocketController {
         }
         broadcastPlayerUpdate();
     }
+
 }

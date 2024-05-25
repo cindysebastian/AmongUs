@@ -7,7 +7,7 @@ import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
 import bgImage from '../../../resources/LoginBG.png';
 import styles from './styles/index.module.css';
-import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions } from './service (Frontend)/WebsocketService';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions, subscribetoGameFinishing } from './service (Frontend)/WebsocketService';
 import { movePlayer } from './service (Frontend)/PlayerMovementService';
 import { startGame } from './service (Frontend)/GameStartingService';
 import { handleInteraction } from './service (Frontend)/InteractionService';
@@ -30,7 +30,7 @@ const App = ({ history }) => {
   const [playerSpawned, setPlayerSpawned] = useState(false);
   const [selectedVictim, setSelectedVictim] = useState('');
   const [interactibles, setInteractibles] = useState([]);
-  const [interactionInProgress, setInteractionInProgress] = useState(false); 
+  const [interactionInProgress, setInteractionInProgress] = useState(false);
   const keysPressed = useRef({
     w: false,
     a: false,
@@ -38,10 +38,11 @@ const App = ({ history }) => {
     d: false,
   });
   const [collisionMask, setCollisionMask] = useState(null);
-  const [isStartButtonClicked, setIsStartButtonClicked] = useState(false); 
-  const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); 
+  const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
+  const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [inGamePlayers, setInGamePlayers] = useState({});
+  const [gameWonState, setGameWonState] = useState('');
 
   useEffect(() => {
     const heartbeatInterval = setInterval(() => {
@@ -68,6 +69,13 @@ const App = ({ history }) => {
       return subscribeToMessages(stompClient, setMessages);
     }
   }, [stompClient]);
+
+  useEffect(() => {
+    if (stompClient) {
+      return subscribetoGameFinishing(stompClient, setGameWonState);
+    }
+  }, [stompClient]);
+
 
   useEffect(() => {
     let subscription;
@@ -194,6 +202,7 @@ const App = ({ history }) => {
 
   return (
     <div style={{ position: 'relative', padding: '20px' }}>
+       <p>{gameWonState}</p>
       {!playerSpawned && (
         <div className={styles.gifBackground}></div>
       )}

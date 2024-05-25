@@ -89,6 +89,20 @@ export const subscribeToMessages = (stompClient, setMessages) => {
   };
 };
 
+export const subscribetoGameFinishing = (stompClient, setGameWonState) => {
+  if (!stompClient) return;
+
+  const subscription = stompClient.subscribe('/topic/finishGame', (message) => {
+    console.log('Received message:', message.body); // Log the message body
+    const gameWonStateMessage = message.body;
+    setGameWonState(gameWonStateMessage);
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
+};
+
 export const markTaskAsCompleted = (stompClient, interactibleId: number) => {
   if (!stompClient) return;
 
