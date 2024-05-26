@@ -1,0 +1,57 @@
+.splash-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    position: relative;
+    opacity: 0;
+    animation: fadeIn 1s forwards;
+    z-index: 999;
+    background-color: black;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.win-text {
+    color: green;
+    z-index: 999;
+}
+
+.loss-text {
+    color: red;
+    z-index: 999;
+}
+
+.center-image {
+    max-width: 80%;
+    max-height: 50%;
+    margin: 20px 0;
+    z-index: 999;
+}
+
+.action-button {
+    position: absolute;
+    bottom: 20px;
+    background-color: #4caf50; /* Green for primary button */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    z-index: 999;
+}
+
+.action-button:hover {
+    background-color: #45a049; /* Darker shade of green on hover */
+    z-index: 999;
+}

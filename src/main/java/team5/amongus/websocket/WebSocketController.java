@@ -263,11 +263,11 @@ public class WebSocketController {
         String result;
         
         if (gameWinningService.allTasksCompleted(interactibles)) {
-            result = "Crewmates win bc of Tasks";
+            result = "Crewmates win";
         } else if (gameWinningService.enoughCrewmatesDead(playersMap)) {
             result = "Imposter wins";
         } else if (gameWinningService.imposterDead(playersMap)) {
-            result = "Crewmates win bc of Death";
+            result = "Crewmates win";
         } else {
             result = "Game running";
         }

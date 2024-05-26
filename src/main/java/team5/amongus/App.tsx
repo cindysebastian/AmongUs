@@ -12,6 +12,7 @@ import { movePlayer } from './service (Frontend)/PlayerMovementService';
 import { startGame } from './service (Frontend)/GameStartingService';
 import { handleInteraction } from './service (Frontend)/InteractionService';
 import KillButton from './components/KillButton';
+import GameEndHandler from './components/GameEnd/GameEndHandler';
 
 const directionMap = {
   'w': 'UP',
@@ -241,6 +242,7 @@ const App = ({ history }) => {
       {redirectToSpaceShip && (
         <SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} />
       )}
+      <GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} interactionInProgress={interactionInProgress} gameStatus={gameWonState}/>
     </div>
   );
 };

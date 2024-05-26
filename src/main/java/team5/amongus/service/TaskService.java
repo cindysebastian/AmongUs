@@ -192,7 +192,7 @@ public class TaskService implements ITaskService {
         // Add your predetermined scan positions to the positions list
         // Example:
         positions.add(new Position(2000, 800));
-        positions.add(new Position(2175, 800));
+        positions.add(new Position(2175, 750));
         positions.add(new Position(2400, 800));
         // Add more positions as needed
     }
@@ -202,7 +202,7 @@ public class TaskService implements ITaskService {
         // Add your predetermined swipe positions to the positions list
         // Example:
         positions.add(new Position(2000, 450));
-        positions.add(new Position(2175, 450));
+        positions.add(new Position(2175, 350));
         positions.add(new Position(2400, 450));
         // Add more positions as needed
     }
