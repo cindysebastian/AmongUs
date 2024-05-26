@@ -242,7 +242,7 @@ const App = ({ history }) => {
       {redirectToSpaceShip && (
         <SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} />
       )}
-      <GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} interactionInProgress={interactionInProgress} gameStatus={gameWonState}/>
+      <GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameWonState}/>
     </div>
   );
 };

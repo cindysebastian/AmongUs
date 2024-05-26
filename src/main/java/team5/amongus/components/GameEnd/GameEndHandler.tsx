@@ -11,7 +11,7 @@ interface Player {
 
 interface GameEndHandlerProps {
     stompClient: any;
-    interactionInProgress: boolean;
+    setInteractionInProgress: React.Dispatch<React.SetStateAction<boolean>>;
     currentPlayer: string;
     players: { [key: string]: Player };
     gameStatus: string;
@@ -19,7 +19,7 @@ interface GameEndHandlerProps {
 
 const GameEndHandler: React.FC<GameEndHandlerProps> = ({
     stompClient,
-    interactionInProgress,
+    setInteractionInProgress,
     currentPlayer,
     players,
     gameStatus
@@ -36,6 +36,7 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
             console.log("Updating game state");
             switch (gameStatus) {
                 case 'Imposter wins':
+                    setInteractionInProgress(true);
                     if (currentPlayerObj.isImposter) {
                         setSplashScreen(<ImposterWinSplash />);
                     } else {
@@ -43,6 +44,7 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
                     }
                     break;
                 case 'Crewmates win':
+                    setInteractionInProgress(true);
                     if (currentPlayerObj.isImposter) {
                         setSplashScreen(<ImposterLossSplash />);
                     } else {
