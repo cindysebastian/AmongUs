@@ -6,6 +6,7 @@ import CrewmateLossSplash from './CrewmateLossSplash';
 
 interface Player {
     isImposter: boolean;
+    name: string,
     // Add other player properties here
 }
 
@@ -31,6 +32,20 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
         setCurrentPlayerObj(players[currentPlayer]);
     }, [currentPlayer, players]);
 
+    let imposterName = '';
+
+    // Iterate through the list of players to find the imposter
+
+    Object.keys(players).forEach((key) => {
+        const player = players[key];
+
+        // Example condition to identify imposters
+        if (player.isImposter) {
+            imposterName = player.name;
+        }
+    });
+
+
     useEffect(() => {
         if (currentPlayerObj) {
             console.log("Updating game state");
@@ -38,17 +53,17 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
                 case 'Imposter wins':
                     setInteractionInProgress(true);
                     if (currentPlayerObj.isImposter) {
-                        setSplashScreen(<ImposterWinSplash />);
+                        setSplashScreen(<ImposterWinSplash imposterName={imposterName} />);
                     } else {
-                        setSplashScreen(<CrewmateLossSplash />);
+                        setSplashScreen(<CrewmateLossSplash imposterName={imposterName} />);
                     }
                     break;
                 case 'Crewmates win':
                     setInteractionInProgress(true);
                     if (currentPlayerObj.isImposter) {
-                        setSplashScreen(<ImposterLossSplash />);
+                        setSplashScreen(<ImposterLossSplash imposterName={imposterName}/>);
                     } else {
-                        setSplashScreen(<CrewmateWinSplash />);
+                        setSplashScreen(<CrewmateWinSplash imposterName={imposterName}/>);
                     }
                     break;
                 default:

@@ -1,13 +1,17 @@
 import React from 'react';
 import './SplashScreen.css'; // Import CSS for styling
+import PlayerSprite from '../PlayerSprite';
 
-const CrewmateWinSplash = () => (
+const CrewmateWinSplash = ({ imposterName }) => (
     <div className="splash-screen crewmate-win">
         <h1 className="win-text">Victory!</h1>
-        <p className="win-text">The Crewmates have won!</p>
-        <p className="win-text">Well done on your teamwork and deduction skills!</p>
-        <img src="/path/to/your/image.png" alt="Victory" className="center-image" />
-        <button className="action-button">Continue</button>
+        <p className="win-text">The dwarfs have emerged victorious!</p>
+        <p className="win-text">The not-dwarf has been defeated! All hail the team work of the dwarven folk!</p>
+        <p className="win-text">The not-dwarf was:</p><br /><br />
+        <div className="player-sprite-wrapper">
+            <PlayerSprite player={{ name: imposterName, position: { x: 0, y: 0 } }} facing="RIGHT" isMoving={false} /> {/* Render PlayerSprite */}
+        </div>
+        <button className="action-button">Huzzah!</button>
     </div>
 );
 
