@@ -6,32 +6,38 @@ import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import ProgressBar from './ProgressBar';
-import { killPlayer, subscribeToPlayerKilled, subscribeToImposter } from '../service (Frontend)/WebsocketService';
+import { killPlayer, subscribeToPlayerKilled, subscribeToImposter, subscribeToEmergencyMeeting, sendEmergencyMeeting } from '../service (Frontend)/WebsocketService';
 import KillButton from './KillButton';
+import EmergencyButton from './EmergencyMeetingButton';
+import EmergencyMeetingOverlay from './EmergencyMeetingOverlay';
 
 interface Props {
   stompClient: Stomp.Client | null;
   players: Record<string, Player>;
   interactibles: Interactible[];
-  currentPlayer: string;  // Change to 'string' instead of 'String'
+  currentPlayer: string;
 }
 
 const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, currentPlayer }) => {
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
+  const [showEmergencyMeeting, setShowEmergencyMeeting] = useState(false); // State to manage emergency meeting overlay
 
   useEffect(() => {
     const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
     const unsubscribeImposter = subscribeToImposter(stompClient, (imposterName: string) => {
-      // Add logic if needed for imposter subscription
+      // Handle setting the imposter name or flag
     });
+    const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, handleEmergencyMeeting);
 
     return () => {
       unsubscribeKilled();
       unsubscribeImposter();
+      unsubscribeEmergencyMeeting();
     };
-  }, [stompClient]);
+  }, [stompClient, currentPlayer]);
+
 
   useEffect(() => {
     if (currentPlayer && players[currentPlayer]) {
@@ -56,8 +62,26 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const totalTasks = interactibles.length;
   const progressPercentage = (completedTasks / totalTasks) * 100;
 
+  const handleEmergencyMeeting = () => {
+    setShowEmergencyMeeting(true); // Set state to show emergency meeting overlay
+    
+    // Automatically close the overlay after 30 seconds
+    setTimeout(() => {
+      setShowEmergencyMeeting(false);
+    }, 10000); // 30 seconds in milliseconds
+  };
+
+  const playerNames = Object.values(players).map(player => player.name);
+
   return (
     <div className={styles.fillContainer}>
+      {showEmergencyMeeting && (
+        <EmergencyMeetingOverlay
+          //chatVisible={showChat}
+          //toggleChat={() => setShowChat(!showChat)}
+          playerNames={playerNames}
+        />
+      )}
       <div className={styles.gifBackground}></div>
       <div className={styles.spaceShipBackground}>
         <ProgressBar progress={progressPercentage} />
@@ -66,15 +90,15 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
             <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
               <PlayerSprite
                 player={player}
-                facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-                isMoving={player.isMoving !== undefined ? player.isMoving : false}
+                facing={player.facing ?? 'RIGHT'}
+                isMoving={player.isMoving ?? false}
               />
             </div>
           )
         ))}
         {killedPlayers.map(killedPlayerName => (
           <div key={killedPlayerName} style={{ position: 'relative', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x }}>
-            <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '80px', height: '90px', position: 'relative' }} />
+            <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" className={styles.deadPlayer} />
           </div>
         ))}
         {isImposter && <KillButton onKill={handleKill} />}
@@ -82,9 +106,11 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
           <div className={styles.killGifContainer}></div>
         )}
         <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} />
+        <EmergencyButton stompClient={stompClient} playerName={currentPlayer} onEmergencyMeeting={() => sendEmergencyMeeting(stompClient, currentPlayer)} />
       </div>
     </div>
   );
+
 };
 
 export default SpaceShip;

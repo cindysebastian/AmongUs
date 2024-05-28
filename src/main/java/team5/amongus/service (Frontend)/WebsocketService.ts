@@ -7,7 +7,6 @@ import { handleReceivedInteractibles } from './InteractionService';
 // Disable Stomp.js logging
 
 
-
 export const connectWebSocket = (setStompClient) => {
   // Disable Stomp.js logging
  
@@ -75,7 +74,6 @@ export default interface Player {
   isImposter?: boolean;
 }
 
-
 export const subscribeToMessages = (stompClient, setMessages) => {
   if (!stompClient) return;
 
@@ -104,7 +102,6 @@ export const markTaskAsCompleted = (stompClient, interactibleId: number) => {
 
 
 
-
 export const subscribetoInteractions = (stompClient, setInteractibles) => {
   if (!stompClient) return;
 
@@ -121,7 +118,6 @@ export const subscribetoInteractions = (stompClient, setInteractibles) => {
 
 export const sendInteraction = (stompClient, playerName) => {
   if (!stompClient || !playerName) return;
-
 
   stompClient.send('/app/interact', {},playerName);
 };
@@ -180,4 +176,20 @@ export const subscribeToImposter = (stompClient, setIsImposter) => {
   };
 };
 
+export const sendEmergencyMeeting = (stompClient, playerName) => {
+  if (!stompClient || !playerName) return;
 
+  stompClient.send('/app/emergencyMeeting', {}, playerName);
+};
+
+export const subscribeToEmergencyMeeting = (stompClient, handleEmergencyMeeting) => {
+  if (!stompClient) return;
+
+  const subscription = stompClient.subscribe('/topic/emergencyMeeting', () => {
+    handleEmergencyMeeting();
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
+};

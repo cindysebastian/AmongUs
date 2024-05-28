@@ -52,4 +52,8 @@ public class GameManager {
         messagingTemplate.convertAndSend("/topic/isImposter", imposter);
     }
 
+    public void handleEmergencyMeeting(Player playerName) {
+        messagingTemplate.convertAndSend("/topic/emergencyMeeting", playerName);
+    }
+
 }

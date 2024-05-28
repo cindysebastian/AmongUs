@@ -10,6 +10,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.context.event.EventListener;
 
 import team5.amongus.model.*;
+import team5.amongus.service.EmergencyMeetingService;
 import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
 import team5.amongus.service.ITaskService;
@@ -38,10 +39,11 @@ public class WebSocketController {
     private final ICollisionMaskService collisionMaskService;
     private CollisionMask collisionMask;
     private boolean gameStarted = false;
+    private EmergencyMeetingService emergencyMeetingService;
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
             ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService,
-            GameManager gameManager) {
+            GameManager gameManager, EmergencyMeetingService emergencyMeetingService) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.messagingTemplate = messagingTemplate;
@@ -49,6 +51,7 @@ public class WebSocketController {
         this.gameManager = gameManager;
         this.collisionMaskService = collisionMaskService;
         this.collisionMask = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
+        this.emergencyMeetingService = emergencyMeetingService;
     }
 
     public void removePlayer(String playerName) {
@@ -303,4 +306,15 @@ public class WebSocketController {
         }
         broadcastPlayerUpdate();
     }
+
+    @MessageMapping("/emergencyMeeting")
+    public void emergencyMeeting(String playerName) {
+        // Broadcast the emergency meeting to all clients
+        messagingTemplate.convertAndSend("/topic/emergencyMeeting", playerName);
+        // Add any additional logic you might want to handle for emergency meetings
+    }
+
+
+
+
 }
