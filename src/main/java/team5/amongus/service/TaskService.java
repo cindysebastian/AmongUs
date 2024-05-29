@@ -1,5 +1,6 @@
 package team5.amongus.service;
 
+import team5.amongus.model.Imposter;
 import team5.amongus.model.Interactible;
 import team5.amongus.model.Player;
 import team5.amongus.model.Position;
@@ -44,118 +45,122 @@ public class TaskService implements ITaskService {
         Set<Position> allAssignedPositions = new HashSet<>(); // Set to track all assigned positions
 
         for (Player player : playersMap.values()) {
-            playerPositionsMap.put(player, new HashSet<>());
+            if (!(player instanceof Imposter)) {
+                playerPositionsMap.put(player, new HashSet<>());
 
-            for (int i = 0; i < 5; i++) { // Create five tasks for each player
-                // Generate a random index to get a random type of Task
-                TaskType type = taskTypes[random.nextInt(taskTypes.length)];
+                for (int i = 0; i < 5; i++) { // Create five tasks for each player
+                    // Generate a random index to get a random type of Task
+                    TaskType type = taskTypes[random.nextInt(taskTypes.length)];
 
-                // Generate Positions based on Task Type
-                Position position = generateUniquePosition(type, playerPositionsMap.get(player), allAssignedPositions,
-                        taskTypes, random);
+                    // Generate Positions based on Task Type
+                    Position position = generateUniquePosition(type, playerPositionsMap.get(player),
+                            allAssignedPositions,
+                            taskTypes, random);
 
-                // Set the Task with a unique ID
-                Task task = new Task(type, position.getX(), position.getY(), player.getName());
-                task.setId(taskIdCounter++); // Assign a unique ID
-                interactibles.add(task);
+                    // Set the Task with a unique ID
+                    Task task = new Task(type, position.getX(), position.getY(), player.getName());
+                    task.setId(taskIdCounter++); // Assign a unique ID
+                    interactibles.add(task);
 
-                // Track the position assigned to this player and globally
-                playerPositionsMap.get(player).add(position);
-                allAssignedPositions.add(position);
+                    // Track the position assigned to this player and globally
+                    playerPositionsMap.get(player).add(position);
+                    allAssignedPositions.add(position);
+                }
             }
         }
         return interactibles;
     }
 
     private Position generateUniquePosition(TaskType initialType, Set<Position> assignedPositions,
-                                        Set<Position> allAssignedPositions, TaskType[] taskTypes, Random random) {
-    TaskType currentType = initialType;
-    List<Position> positions;
-    int attempts = 0;
+            Set<Position> allAssignedPositions, TaskType[] taskTypes, Random random) {
+        TaskType currentType = initialType;
+        List<Position> positions;
+        int attempts = 0;
 
-    while (attempts < taskTypes.length) {
-        positions = taskPositionsMap.getOrDefault(currentType, new ArrayList<>());
-        if (positions.isEmpty()) {
-            // Populate the list with predetermined coordinates for the task type
-            switch (currentType) {
-                case MINE:
-                    populateMinePositions(positions);
-                    break;
-                case SCAN:
-                    populateScanPositions(positions);
-                    break;
-                case SWIPE:
-                    populateSwipePositions(positions);
-                    break;
-                default:
-                    // Handle other task types if needed
-            }
-        }
-
-        // Shuffle the positions to randomize their selection
-        if (positions.size() > 1) {
-            shufflePositions(positions, random);
-        }
-
-        for (Position pos : positions) {
-            if (!positionIsUsed(pos, assignedPositions)) {
-                // If the position is not used by any player, use it
-                assignedPositions.add(pos);
-                allAssignedPositions.add(pos);
-                return new Position(pos.getX(), pos.getY()); // Return a new instance to avoid modifying the original position
-            }
-        }
-
-        // Reset positionsAvailable flag for the next task type
-        boolean positionsAvailable = false;
-
-        // Check if there are available positions for other task types
-        for (TaskType type : taskTypes) {
-            if (type != currentType && !taskPositionsMap.getOrDefault(type, new ArrayList<>()).isEmpty()) {
-                currentType = type; // Change currentType to the type with available positions
-                positionsAvailable = true;
-                break;
-            }
-        }
-
-        if (!positionsAvailable) {
-            // If no unique positions are available, reuse positions while ensuring no player gets the same position twice
-            List<Position> availablePositions = new ArrayList<>(allAssignedPositions);
-            availablePositions.removeAll(assignedPositions);
-
-            if (!availablePositions.isEmpty()) {
-                // Get a random available position
-                Position randomPosition = availablePositions.get(random.nextInt(availablePositions.size()));
-                assignedPositions.add(randomPosition);
-
-                // Change the currentType to the type corresponding to the reused position
-                for (Map.Entry<TaskType, List<Position>> entry : taskPositionsMap.entrySet()) {
-                    if (entry.getValue().contains(randomPosition)) {
-                        currentType = entry.getKey();
+        while (attempts < taskTypes.length) {
+            positions = taskPositionsMap.getOrDefault(currentType, new ArrayList<>());
+            if (positions.isEmpty()) {
+                // Populate the list with predetermined coordinates for the task type
+                switch (currentType) {
+                    case MINE:
+                        populateMinePositions(positions);
                         break;
-                    }
+                    case SCAN:
+                        populateScanPositions(positions);
+                        break;
+                    case SWIPE:
+                        populateSwipePositions(positions);
+                        break;
+                    default:
+                        // Handle other task types if needed
                 }
-
-                return new Position(randomPosition.getX(), randomPosition.getY());
-            } else {
-                // Fallback: return the position (0, 0) if all types are exhausted
-                Position fallbackPosition = new Position(0, 0);
-                // Update assignedPositions and allAssignedPositions with the fallback position
-                assignedPositions.add(fallbackPosition);
-                allAssignedPositions.add(fallbackPosition);
-                return fallbackPosition;
             }
+
+            // Shuffle the positions to randomize their selection
+            if (positions.size() > 1) {
+                shufflePositions(positions, random);
+            }
+
+            for (Position pos : positions) {
+                if (!positionIsUsed(pos, assignedPositions)) {
+                    // If the position is not used by any player, use it
+                    assignedPositions.add(pos);
+                    allAssignedPositions.add(pos);
+                    return new Position(pos.getX(), pos.getY()); // Return a new instance to avoid modifying the
+                                                                 // original position
+                }
+            }
+
+            // Reset positionsAvailable flag for the next task type
+            boolean positionsAvailable = false;
+
+            // Check if there are available positions for other task types
+            for (TaskType type : taskTypes) {
+                if (type != currentType && !taskPositionsMap.getOrDefault(type, new ArrayList<>()).isEmpty()) {
+                    currentType = type; // Change currentType to the type with available positions
+                    positionsAvailable = true;
+                    break;
+                }
+            }
+
+            if (!positionsAvailable) {
+                // If no unique positions are available, reuse positions while ensuring no
+                // player gets the same position twice
+                List<Position> availablePositions = new ArrayList<>(allAssignedPositions);
+                availablePositions.removeAll(assignedPositions);
+
+                if (!availablePositions.isEmpty()) {
+                    // Get a random available position
+                    Position randomPosition = availablePositions.get(random.nextInt(availablePositions.size()));
+                    assignedPositions.add(randomPosition);
+
+                    // Change the currentType to the type corresponding to the reused position
+                    for (Map.Entry<TaskType, List<Position>> entry : taskPositionsMap.entrySet()) {
+                        if (entry.getValue().contains(randomPosition)) {
+                            currentType = entry.getKey();
+                            break;
+                        }
+                    }
+
+                    return new Position(randomPosition.getX(), randomPosition.getY());
+                } else {
+                    // Fallback: return the position (0, 0) if all types are exhausted
+                    Position fallbackPosition = new Position(0, 0);
+                    // Update assignedPositions and allAssignedPositions with the fallback position
+                    assignedPositions.add(fallbackPosition);
+                    allAssignedPositions.add(fallbackPosition);
+                    return fallbackPosition;
+                }
+            }
+
+            // Try the next task type
+            attempts++;
         }
 
-        // Try the next task type
-        attempts++;
+        // This part should not be reached under normal circumstances, as there should
+        // always be available positions for at least one task type
+        throw new IllegalStateException("Not enough Task Positions for all Players");
     }
-
-    // This part should not be reached under normal circumstances, as there should always be available positions for at least one task type
-    throw new IllegalStateException("Not enough Task Positions for all Players");
-}
-
-
 
     // Method to check if a position is already used
     private boolean positionIsUsed(Position pos, Set<Position> positions) {
@@ -234,14 +239,13 @@ public class TaskService implements ITaskService {
                 }
             }
 
-            
         }
         return interactibles;
     }
 
     public ArrayList<Interactible> completeTask(String payload, ArrayList<Interactible> interactibles) {
         try {
-            
+
             JsonNode jsonNode = objectMapper.readTree(payload);
             int interactibleId = jsonNode.get("interactibleId").asInt();
 
