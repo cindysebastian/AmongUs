@@ -56,8 +56,17 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const totalTasks = interactibles.length;
   const progressPercentage = (completedTasks / totalTasks) * 100;
 
+  const mapWidth = 4000;
+  const mapHeight = 2316;
+
+  const cameraStyle = {
+    transform: `translate(-${Math.max(0, Math.min(players[currentPlayer].position.x - window.innerWidth / 2, mapWidth - window.innerWidth))}px, -${Math.max(0, Math.min(players[currentPlayer].position.y - window.innerHeight / 2, mapHeight - window.innerHeight))}px)`
+  };
+  
+
+
   return (
-    <div className={styles.fillContainer}>
+    <div className={styles.fillContainer} style={cameraStyle}> {/* Apply cameraStyle here */}
       <div className={styles.gifBackground}></div>
       <div className={styles.spaceShipBackground}>
         <ProgressBar progress={progressPercentage} />
@@ -85,6 +94,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
       </div>
     </div>
   );
+  
 };
 
 export default SpaceShip;
