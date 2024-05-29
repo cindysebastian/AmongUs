@@ -8,9 +8,10 @@ import styles from '../styles/lobby.module.css';
 interface Props {
   inGamePlayers: Record<string, Player>;
   onStartButtonClick: (playersData: Record<string, Player>) => void;
+  isHost: boolean;
 }
 
-const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick }) => {
+const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, isHost}) => {
   const [playerCount, setPlayerCount] = useState(Object.keys(inGamePlayers).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
   const [impostersChosen, setImpostersChosen] = useState(false);
@@ -21,7 +22,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick }) => {
   }, [inGamePlayers]);
 
   const handleStartButtonClick = () => {
-    if (!impostersChosen) {
+    if (!impostersChosen && isHost) {
       setIsStartButtonClicked(true);
       setImpostersChosen(true);
       onStartButtonClick(inGamePlayers); // Pass players' data to the onStartButtonClick function
@@ -38,10 +39,11 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick }) => {
       <div className={styles.playerCountContainer}>
         <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
         <div className={styles.playerCount}>{playerCount}</div>
-        <div className={styles.startButtonContainer} onClick={handleStartButtonClick}>
-            <img src="src/main/resources/startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
-            />
+        {isHost && (
+          <div className={styles.startButtonContainer} onClick={handleStartButtonClick}>
+            <img src="src/main/resources/startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`} />
           </div>
+        )}
       </div>
       {Object.values(inGamePlayers).map(player => {
         const isMoving = player.isMoving !== undefined ? player.isMoving : false;

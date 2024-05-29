@@ -20,9 +20,7 @@ public class Player implements Serializable {
     
     private long lastActivityTime;
     private String sessionId;
-    private boolean isHost = false;
-    private String roomCode;
-   
+    private boolean isHost = false;   
 
     public Player(String name, Position position) {
         this.name = name;
@@ -48,31 +46,6 @@ public class Player implements Serializable {
 
     public void setHost(boolean host) {
         isHost = host;
-    }
-
-        public String getRoomCode() {
-        return roomCode;
-    }
-
-    public void setRoomCode(String roomCode) {
-        this.roomCode = roomCode;
-    }
-
-    public String generateRoomCode() {
-        int length = 6;
-        StringBuilder code = new StringBuilder();
-        Random random = new Random();
-
-        for (int i = 0; i < length; i++) {
-            code.append(random.nextInt(10));
-        }
-
-        return code.toString();
-    }
-
-    public void hostGame() {
-        this.isHost = true;
-        this.roomCode = generateRoomCode();
     }
 
     public String getSessionId() {
