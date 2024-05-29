@@ -137,12 +137,13 @@ export const sendChatMessage = (stompClient, playerName, messageContent) => {
   stompClient.send('/topic/messages', {}, JSON.stringify(newMessage));
 };
 
-export const setPlayer = (stompClient, playerName) => {
+export const setPlayer = (stompClient, playerName, roomCode) => {
   if (!stompClient || !playerName.trim()) return;
 
   const initialPlayer = {
     name: playerName.trim(),
     position: { x: 400, y: 400 }, // Initial spawn position
+    roomCode: roomCode // Add roomCode to the initial player object
   };
 
   stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));

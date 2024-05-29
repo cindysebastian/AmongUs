@@ -5,8 +5,6 @@ import ChatRoom from './components/ChatRoom';
 import MessageInput from './components/MessageInput';
 import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
-import Host from './components/Host';
-import Private from './components/Private';
 import bgImage from '../../../resources/LoginBG.png';
 import styles from './styles/index.module.css';
 import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions } from './service (Frontend)/WebsocketService';
@@ -25,7 +23,6 @@ const directionMap = {
 const App = ({ history }) => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
-  const [firstPlayerName, setFirstPlayerName] = useState('');
   const [players, setPlayers] = useState({});
   const [messages, setMessages] = useState([]);
   const [chatVisible, setChatVisible] = useState(false);
@@ -45,6 +42,7 @@ const App = ({ history }) => {
   const [inGamePlayers, setInGamePlayers] = useState({});
   const [host, setHost] = useState(false);
   const [privateRoom, setPrivate] = useState(false);
+  const [roomCode, setRoomCode] = useState('');
 
   useEffect(() => {
     const heartbeatInterval = setInterval(() => {
@@ -151,31 +149,44 @@ const App = ({ history }) => {
       alert('Player name already exists in the game. Please choose a different name.');
       return;
     }
-    if (!firstPlayerName) {
-      setFirstPlayerName(playerName.trim());
-    }
     if (stompClient && playerName.trim()) {
       if (Object.keys(players).length > 0) {
         alert("The game has already started. You cannot join at this time.");
         return;
       }
-      setPlayer(stompClient, playerName);
+      const code = privateRoom ? roomCode : generateRoomCode();
+      setPlayer(stompClient, playerName, code);
       setPlayerSpawned(true);
-      history.push('/game');
+      history.push(`/game?roomCode=${code}`);
     }
+  };
+
+  const generateRoomCode = () => {
+    return Math.floor(100000 + Math.random() * 900000);
   };
 
   const handleHost = () => {
     setHost(true);
-    history.push('/host')
-  }
+  };
 
   const handlePrivate = () => {
     setPrivate(true);
-    history.push('/private');
   }
   
-  
+  const handleJoinPrivateRoom = () => {
+    if (!roomCode || !playerName.trim()) {
+      alert("Please enter your name and room code.");
+      return;
+    }
+    if (privateRoom && !roomCode) {
+      alert("Please enter the room code.");
+      return;
+    }
+    setPlayer(stompClient, playerName, roomCode);
+    setPlayerSpawned(true);
+    history.push(`/game?roomCode=${roomCode}`);
+  };
+
   const handleStartButtonClick = () => {
     setIsStartButtonClicked(true);
     if (stompClient) {
@@ -219,10 +230,46 @@ const App = ({ history }) => {
           </div>
         </div>
       )}
+      {host && !playerSpawned && (
+        <div className={styles.loginbackground}>
+          <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
+            <input
+              type="text"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="Enter your name"
+              className={styles.input}
+            />
+            <button onClick={handleSpawnPlayer} className={styles.button}>Host Game</button>
+          </div>
+        </div>
+      )}
+      {privateRoom && !playerSpawned && (
+        <div className={styles.loginbackground}>
+          <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
+            <input
+              type="text"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="Enter your name"
+              className={styles.input}
+            />
+            <input
+              type="text"
+              value={roomCode}
+              onChange={(e) => setRoomCode(e.target.value)}
+              placeholder="Enter room code"
+              className={styles.input}
+              style={{ marginLeft: '10px' }}
+            />
+            <button onClick={handleJoinPrivateRoom} className={styles.button}>Join Room</button>
+          </div>
+        </div>
+      )}
       {playerSpawned && !redirectToSpaceShip && (
         <div>
           {/* Pass firstPlayerName as a prop to the Lobby component */}
-          <Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} />
+          <Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} />
 
           <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
           {chatVisible && (
@@ -239,12 +286,6 @@ const App = ({ history }) => {
       )}
       {redirectToSpaceShip && (
         <SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} />
-      )}
-      {host && (
-        <Host history={undefined} />
-      )}
-      {privateRoom && (
-        <Private history={undefined} />
       )}
     </div>
   );
