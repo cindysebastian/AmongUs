@@ -148,21 +148,33 @@ const App = ({ history }) => {
 
   const handleSpawnPlayer = () => {
     const code = generateRoomCode();
+
+    if (!playerName.trim()) {
+      alert('Please enter your name.');
+      return;
+    }
+
     if (Object.values(inGamePlayers as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
       alert('Player name already exists in the game. Please choose a different name.');
       return;
     }
+
     if (stompClient && playerName.trim()) {
       if (Object.keys(players).length > 0) {
         alert("The game has already started. You cannot join at this time.");
         return;
       }
+
       if (hostingGame) {
         addRoomCode(code);
         setRoomCode(code);
-      } else {
-        handleJoinPrivateRoom();
       }
+
+      if (!hostingGame && !roomCode) {
+        alert('Please enter the room code.');
+        return;
+      }
+      
       setPlayer(stompClient, playerName, code, true);
       setPlayerSpawned(true);
       history.push(`/game?roomCode=${code}`);
@@ -200,11 +212,13 @@ const App = ({ history }) => {
       alert("Please enter your name and room code.");
       return;
     }
-    if (privateRoom && !roomCode) {
-      alert("Please enter the room code.");
+
+    if (!rooms.includes(parseInt(roomCode))) {
+      alert('Invalid room code. Please enter a valid room code.');
       return;
     }
-    setPlayer(stompClient, playerName, roomCode, false);
+  
+    setPlayer(stompClient, playerName.trim(), roomCode, false);
     setPlayerSpawned(true);
     history.push(`/game?roomCode=${roomCode}`);
   };
