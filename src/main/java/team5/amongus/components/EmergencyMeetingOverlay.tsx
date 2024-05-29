@@ -1,23 +1,34 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from '../styles/EmergencyMeetingOverlay.module.css';
 import ChatRoom from '../components/ChatRoom';
 import MessageInput from '../components/MessageInput';
 import { sendChatMessage, subscribeToMessages } from '../service (Frontend)/WebsocketService';
+import Stomp from 'stompjs';
 
 interface EmergencyMeetingOverlayProps {
-  //toggleChat: () => void;
-  //chatVisible: boolean;
   playerNames: string[];
+  stompClient: Stomp.Client | null;
+  playerName: string;
 }
 
-const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({playerNames }) => {
+const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playerNames, stompClient, playerName }) => {
   const [messages, setMessages] = useState([]);
   const [isChatVisible, setIsChatVisible] = useState(false);
 
-  // Function to handle toggling chat visibility
+  useEffect(() => {
+    if (stompClient) {
+      return subscribeToMessages(stompClient, setMessages);
+    }
+  }, [stompClient]);
+
+  const sendMessage = (messageContent: string) => {
+    if (stompClient) {
+      sendChatMessage(stompClient, playerName, messageContent);
+    }
+  };
+
   const handleToggleChat = () => {
     setIsChatVisible(!isChatVisible);
-    //toggleChat(); // Call toggleChat function to handle other logic if needed
   };
 
   return (
@@ -30,14 +41,19 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({player
           ))}
         </ul>
       </div>
-      {isChatVisible && (
-        <div className={styles.chatContainer}>
-          <ChatRoom messages={messages} />
-        </div>
-      )}
       <button onClick={handleToggleChat} className={styles.chatButton}>
         {isChatVisible ? 'Close Chat' : 'Open Chat'}
       </button>
+      {isChatVisible && (
+        <div className={styles.chatContainer}>
+          <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+            <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
+          </div>
+          <button className={styles.closeChatButton} onClick={handleToggleChat}>Exit</button>
+          <MessageInput sendMessage={sendMessage} chatVisible={isChatVisible} />
+          <ChatRoom messages={messages} />
+        </div>
+      )}
     </div>
   );
 };

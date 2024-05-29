@@ -68,7 +68,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     // Automatically close the overlay after 30 seconds
     setTimeout(() => {
       setShowEmergencyMeeting(false);
-    }, 10000); // 30 seconds in milliseconds
+    }, 30000); // 30 seconds in milliseconds
   };
 
   const playerNames = Object.values(players).map(player => player.name);
@@ -77,10 +77,10 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     <div className={styles.fillContainer}>
       {showEmergencyMeeting && (
         <EmergencyMeetingOverlay
-          //chatVisible={showChat}
-          //toggleChat={() => setShowChat(!showChat)}
-          playerNames={playerNames}
-        />
+        playerNames={playerNames}
+        stompClient={stompClient}
+        playerName={currentPlayer}
+      />
       )}
       <div className={styles.gifBackground}></div>
       <div className={styles.spaceShipBackground}>
