@@ -8,10 +8,11 @@ import styles from '../styles/lobby.module.css';
 interface Props {
   inGamePlayers: Record<string, Player>;
   firstPlayerName: string;
+  currentPlayer: string;
   onStartButtonClick: (playersData: Record<string, Player>) => void;
 }
 
-const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick }) => {
+const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, currentPlayer, onStartButtonClick }) => {
   const [playerCount, setPlayerCount] = useState(Object.keys(inGamePlayers).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
   const [impostersChosen, setImpostersChosen] = useState(false);
@@ -30,22 +31,33 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
     }
   };
 
-  return (
-    <div style={{ position: 'relative' }}>
-      <div className={styles.lobbyBackground}></div>
-      <Space />
+// Camera logic
+/*const lobbyCenterX = 1220 / 2;
+const lobbyCenterY = 992 / 2;
+const cameraTranslateX = Math.max(0, lobbyCenterX - window.innerWidth / 2);
+const cameraTranslateY = Math.max(0, lobbyCenterY - window.innerHeight / 2);
+const cameraStyle = {
+  transform: `translate(-${cameraTranslateX}px, -${cameraTranslateY}px)`
+};*/
 
-      <div className={styles.playerCountContainer}>
-        <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
-        <div className={styles.playerCount}>{playerCount}</div>
-        {isFirstPlayer && (
-          <div className={styles.startButtonContainer} onClick={handleStartButtonClick}>
-            <img src="src\main\resources\startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
-            />
-          </div>
-        )}
-      </div>
+return (
+  <div style={{ position: 'relative' }}>
+    <div className={styles.lobbyBackground}></div>
+    <Space />
 
+    <div className={styles.playerCountContainer}>
+      <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
+      <div className={styles.playerCount}>{playerCount}</div>
+      {isFirstPlayer && (
+        <div className={styles.startButtonContainer} onClick={handleStartButtonClick}>
+          <img src="src\main\resources\startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
+          />
+        </div>
+      )}
+    </div>
+
+    {/* Apply cameraStyle to adjust players' positions */}
+    <div /*style={cameraStyle}*/>
       {Object.values(inGamePlayers).map(player => {
         const isMoving = player.isMoving !== undefined ? player.isMoving : false;
 
@@ -60,7 +72,8 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
         );
       })}
     </div>
-  );
+  </div>
+);
 };
 
 export default Lobby;

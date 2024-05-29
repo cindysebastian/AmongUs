@@ -214,7 +214,7 @@ const App = ({ history }) => {
       {playerSpawned && !redirectToSpaceShip && (
         <div>
           {/* Pass firstPlayerName as a prop to the Lobby component */}
-          <Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} />
+          <Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} currentPlayer={playerName} onStartButtonClick={handleStartButtonClick} />
 
           <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
           {chatVisible && (

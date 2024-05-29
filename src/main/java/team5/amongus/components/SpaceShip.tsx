@@ -62,8 +62,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const cameraStyle = {
     transform: `translate(-${Math.max(0, Math.min(players[currentPlayer].position.x - window.innerWidth / 2, mapWidth - window.innerWidth))}px, -${Math.max(0, Math.min(players[currentPlayer].position.y - window.innerHeight / 2, mapHeight - window.innerHeight))}px)`
   };
-  
-
 
   return (
     <div className={styles.fillContainer} style={cameraStyle}> {/* Apply cameraStyle here */}
