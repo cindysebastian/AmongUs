@@ -4,8 +4,6 @@ import Task from './interfaces/Interactible'
 import PlayerSprite from './PlayerSprite';
 import Space from './Space';
 import styles from '../styles/lobby.module.css';
-import { Canvas } from '@react-three/fiber';
-import { OrthographicCamera } from '@react-three/drei';
 
 interface Props {
   inGamePlayers: Record<string, Player>;
@@ -53,21 +51,6 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
 
         return (
           <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
-            
-            <Canvas>
-            <OrthographicCamera 
-              makeDefault
-              zoom={200}
-              top={player.position.y - 200}
-              bottom={player.position.y + 200}
-              left={player.position.x -100}
-              right={player.position.x + 100}
-              near={1}
-              far={2000}
-              position={[0, 0, 200]}/>
-            <ambientLight/>
-            <pointLight position={[10, 10, 10]}/>
-            </Canvas>
             <PlayerSprite
               player={player}
               facing={player.facing !== undefined ? player.facing : 'RIGHT'}
