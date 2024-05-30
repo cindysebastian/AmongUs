@@ -1,8 +1,9 @@
 package team5.amongus.model;
 
 import java.io.Serializable;
+import java.util.Objects;
 
-public class Position implements Serializable {
+public class Position implements Serializable, Cloneable {
     private int x;
     private int y;
 
@@ -56,7 +57,13 @@ public class Position implements Serializable {
         return new Position(newX, newY);
     }
 
-    public String toString(){
+    public String toString() {
         return "Position: X " + getX() + " Y " + getY();
+    }
+
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }
