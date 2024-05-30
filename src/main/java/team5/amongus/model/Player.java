@@ -1,11 +1,12 @@
 package team5.amongus.model;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Random;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-public class Player implements Serializable {
+public class Player implements Serializable, Cloneable {
     private String name;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Position position;
@@ -17,7 +18,7 @@ public class Player implements Serializable {
     private int height = 130;
     private boolean canInteract = false;
     private boolean isAlive = true;
-    
+
     private long lastActivityTime;
     private String sessionId;
     private boolean isHost = false;   
@@ -116,7 +117,7 @@ public class Player implements Serializable {
         this.canInteract = canInteract;
     }
 
-    public boolean isAlive() {
+    public boolean getisAlive() {
         return isAlive;
     }
 
@@ -149,6 +150,18 @@ public class Player implements Serializable {
     // Method to get bounding box of the player
     public CollisionBox getBounds() {
         return new CollisionBox(position.getX(), position.getY(), width, height);
+    }
+
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Player clonedPlayer = (Player) super.clone();
+        // For custom classes like Position, ensure they are also cloneable and clone
+        // them here
+        if (this.position != null) {
+            clonedPlayer.position = (Position) this.position.clone();
+        }
+        return (Player) clonedPlayer;
     }
 
 }

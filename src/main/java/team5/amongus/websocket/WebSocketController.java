@@ -21,12 +21,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Controller
 public class WebSocketController {
 
     private final Map<String, Player> playersMap = new HashMap<>();
+    private final Map<String, Player> previousPlayersMap = new HashMap<>();
+    private final Map<String, Player> previousinGamePlayersMap = new HashMap<>();
     private ArrayList<Interactible> interactibles = new ArrayList<>();
+    private ArrayList<Interactible> previousInteractibles = new ArrayList<>();
     private final Task testTask = new Task(TaskType.SCAN, 500, 500, "dwarf");
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
@@ -101,47 +105,131 @@ public class WebSocketController {
                 // If the interactable object is a Task, call the TaskService to update task
                 ArrayList<Interactible> updatedInteractables = taskService.updateTaskInteractions(playersMap,
                         interactibles, player, (Task) interactableObject);
-                // Broadcast updated task list to all clients
 
                 interactibles = updatedInteractables;
-
-            } /*
-               * else if (interactableObject instanceof deadBody) {
-               * // If the interactable object is something else, handle it accordingly
-               * otherService.handleInteraction(player, (OtherInteractableObject)
-               * interactableObject);
-               * }
-               */
+            }
         }
         broadcastInteractiblesUpdate();
         return interactibles;
-
     }
 
     @MessageMapping("/move")
-    @SendTo("/topic/players")
-    public Map<String, Player> move(String payload) {
-        Map<String, Player> updatedPlayersMap = playerService.movePlayer(playersMap, payload, collisionMask);
+    public void move(String payload) {
+        playerService.movePlayer(playersMap, payload, collisionMask);
         broadcastPlayerUpdate();
-        return updatedPlayersMap;
     }
 
     @MessageMapping("/move/inGamePlayers")
-    @SendTo("/topic/inGamePlayers")
-    public Map<String, Player> moveInGamePlayers(String payload) {
-        Map<String, Player> updatedinGamePlayersMap = playerService.movePlayer(inGamePlayersMap, payload,
+    public void moveInGamePlayers(String payload) {
+        playerService.movePlayer(inGamePlayersMap, payload,
                 collisionMask);
         broadcastPlayerUpdate();
-        return updatedinGamePlayersMap;
     }
 
+    private final long broadcastInterval = 25; // Limit to 30 broadcasts per second
+    private long lastBroadcastTime = 0;
+
     private void broadcastPlayerUpdate() {
-        messagingTemplate.convertAndSend("/topic/players", playersMap);
-        messagingTemplate.convertAndSend("/topic/inGamePlayers", inGamePlayersMap);
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastBroadcastTime < broadcastInterval) {
+            // Too soon to broadcast again, ignore this request
+            return;
+        }
+
+        // Update the last broadcast time
+        lastBroadcastTime = currentTime;
+
+        // Check if there are any changes in the playersMap or inGamePlayersMap
+        boolean playerMapChanged = !isMapEqual(playersMap, previousPlayersMap);
+        boolean inGamePlayerMapChanged = !isMapEqual(inGamePlayersMap, previousinGamePlayersMap);
+
+        // Only broadcast updates if there are changes
+        if (playerMapChanged) {
+            previousPlayersMap.clear();
+            Map<String, Player> clonedPlayersMap = new HashMap<>();
+            for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+                String key = entry.getKey();
+                Player player = entry.getValue();
+                try {
+                    clonedPlayersMap.put(key, (Player) player.clone());
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace(); // Handle the exception according to your needs
+                }
+            }
+            previousPlayersMap.putAll(clonedPlayersMap);
+
+
+            messagingTemplate.convertAndSend("/topic/players", playersMap);
+
+        }
+
+        if (inGamePlayerMapChanged) {
+            previousinGamePlayersMap.clear();
+            Map<String, Player> clonedInGamePlayersMap = new HashMap<>();
+            for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
+                String key = entry.getKey();
+                Player player = entry.getValue();
+                try {
+                    clonedInGamePlayersMap.put(key, (Player) player.clone());
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace(); // Handle the exception according to your needs
+                }
+            }
+            previousinGamePlayersMap.putAll(clonedInGamePlayersMap);
+
+            
+            messagingTemplate.convertAndSend("/topic/inGamePlayers", inGamePlayersMap);
+
+        }
+
+    }
+
+    private boolean isMapEqual(Map<String, Player> map1, Map<String, Player> map2) {
+
+        if (map1.size() != map2.size()) {
+            return false;
+        }
+
+        for (Map.Entry<String, Player> entry : map1.entrySet()) {
+            String key = entry.getKey();
+            Player player1 = entry.getValue();
+            Player player2 = map2.get(key);
+            if (!arePlayersEqual(player1, player2)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean arePlayersEqual(Player player1, Player player2) {
+
+        if (player1.getPosition().getX() != player2.getPosition().getX()) {
+            
+            return false;
+        }
+        if (player1.getPosition().getY() != player2.getPosition().getY()) {
+            
+            return false;
+        }
+        if (player1.getisAlive() != player2.getisAlive()) {
+            
+            return false;
+        }
+        if (player1.getIsMoving() != player2.getIsMoving()) {
+        
+            return false;
+        }
+
+        return true;
     }
 
     private void broadcastInteractiblesUpdate() {
-        messagingTemplate.convertAndSend("/topic/interactions", interactibles);
+        if (!Objects.equals(interactibles, previousInteractibles)) {
+            messagingTemplate.convertAndSend("/topic/interactions", interactibles);
+            previousInteractibles.clear();
+            previousInteractibles.addAll(interactibles);
+        }
     }
 
     @MessageMapping("/sendMessage")
@@ -152,18 +240,10 @@ public class WebSocketController {
     }
 
     @MessageMapping("/killPlayer")
-    @SendTo("/topic/players")
-    public Map<String, Player> handleKill(String playerName) {
-        // If playerName is still null, return the current player map
+    public void handleKill(String playerName) {
         if (playerName == null || playerName.trim().isEmpty()) {
             System.out.println("PlayerName null");
-            return playersMap;
-        }
 
-        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
-            String key = entry.getKey();
-            Player value = entry.getValue();
-            System.out.println("Key: " + key + ", Value: " + value);
         }
 
         Imposter imposter = null;
@@ -174,34 +254,21 @@ public class WebSocketController {
             }
         }
 
-        System.out.println(imposter.getName());
-        System.out.println(playerName);
-        System.out.println("Fetched Player " + playersMap.get(playerName).getName());
-        System.out.println(playersMap.get(playerName) instanceof Imposter);
-        if (imposter.getName().equals(playerName)) {
-            imposter = (Imposter) playersMap.get(playerName);
-        } else {
-            System.err.println("fuck you");
-            return playersMap;
+        if (imposter == null || !imposter.getName().equals(playerName)) {
+            System.err.println("Imposter not found or mismatch");
+
         }
 
-        // Proceed with handling the kill
-        System.out.println("handlekill aufruf");
-
-        Map<String, Player> updatedPlayersMap = playerService.handleKill(imposter, playersMap);
-
-        broadcastPlayerUpdate(); // Broadcast the updated player state to clients
-        return updatedPlayersMap;
+        playerService.handleKill(imposter, playersMap);
+        broadcastPlayerUpdate();
 
     }
 
     @MessageMapping("/completeTask")
     @SendTo("/topic/interactions")
     public List<Interactible> completeTask(String payload) {
-        // Complete the task using the taskService
         ArrayList<Interactible> updatedInteractables = taskService.completeTask(payload, interactibles);
         interactibles = updatedInteractables;
-        // Broadcast the updated interactibles to all clients
         broadcastInteractiblesUpdate();
         return interactibles;
     }
@@ -209,17 +276,16 @@ public class WebSocketController {
     @MessageMapping("/startGame")
     @SendTo("/topic/gameStart")
     public String startGame() {
-        System.out.println("Game started!"); // Add logging
-        gameStarted = true; // Set gameStarted flag to true
+        System.out.println("Game started!");
+        gameStarted = true;
 
-        List<Position> positions = new ArrayList<Position>();
+        List<Position> positions = new ArrayList<>();
         positions.add(new Position(2175, 350));
         positions.add(new Position(2175, 650));
         positions.add(new Position(2000, 500));
         positions.add(new Position(2400, 500));
 
         int index = 0;
-        // Move players from lobby to spaceship
         for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
             entry.getValue().setPosition(positions.get(index));
             playersMap.put(entry.getKey(), entry.getValue());
@@ -229,26 +295,13 @@ public class WebSocketController {
             }
         }
 
-        // Trigger the logic to choose imposters in the GameManager
         gameManager.chooseImposter(playersMap);
-
-        // Clear the players from the lobby
         inGamePlayersMap.clear();
 
         collisionMask = collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
-
-        // Logging to check spaceShipPlayersMap contents
-        System.out.println("Space ship players count: " + playersMap.size());
-        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
-            System.out.println("Player: " + entry.getKey());
-        }
-
-        // Create a Task list based on set players
-
         interactibles = taskService.createTasks(playersMap);
 
         broadcastInteractiblesUpdate();
-
         return "Game has started";
     }
 
@@ -269,21 +322,18 @@ public class WebSocketController {
             Map.Entry<String, Player> entry = iterator.next();
             Player player = entry.getValue();
             if (player.getSessionId() != null && player.getSessionId().equals(sessionId)) {
-                // Remove the disconnected player from both maps
-                iterator.remove(); // Remove from inGamePlayersMap
-                playersMap.remove(entry.getKey()); // Remove from playersMap
-                broadcastPlayerUpdate(); // Broadcast updated player list
+                iterator.remove();
+                playersMap.remove(entry.getKey());
+                broadcastPlayerUpdate();
                 break;
             }
         }
 
         if (isFirstPlayer && !inGamePlayersMap.isEmpty()) {
             String nextPlayerName = inGamePlayersMap.keySet().iterator().next();
-            // Broadcast to the lobby that the next player should have the start game button
             messagingTemplate.convertAndSend("/topic/nextPlayerStartButton", nextPlayerName);
         }
 
-        // Iterate over playersMap to find the disconnected player in the spaceship
         for (Iterator<Map.Entry<String, Player>> iterator = playersMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String, Player> entry = iterator.next();
             Player player = entry.getValue();
@@ -293,14 +343,5 @@ public class WebSocketController {
                 break;
             }
         }
-        for (Iterator<Map.Entry<String, Player>> iterator = inGamePlayersMap.entrySet().iterator(); iterator
-                .hasNext();) {
-            Map.Entry<String, Player> entry = iterator.next();
-            if (entry.getValue().getSessionId().equals(sessionId)) {
-                iterator.remove();
-                break;
-            }
-        }
-        broadcastPlayerUpdate();
     }
 }

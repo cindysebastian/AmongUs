@@ -4,9 +4,6 @@ import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { handleReceivedInteractibles } from './InteractionService';
 
-// Disable Stomp.js logging
-
-
 
 export const connectWebSocket = (setStompClient) => {
   // Disable Stomp.js logging
@@ -14,7 +11,7 @@ export const connectWebSocket = (setStompClient) => {
 
   const socket = new SockJS('http://localhost:8080/ws');
   const stomp = Stomp.over(socket);
-  stomp.debug = function (){};//do nothing
+  
 
   stomp.connect({}, () => {
     console.log('Connected to WebSocket');

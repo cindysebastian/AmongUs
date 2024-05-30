@@ -46,7 +46,7 @@ export const movePlayer = (stompClient, playerName, keysPressed, interactionInPr
     }
   };
 
-  const movementInterval = setInterval(handleMovement, 15);
+  const movementInterval = setInterval(handleMovement, 30);
 
   return () => {
     window.removeEventListener('keydown', handleKeyPress);
