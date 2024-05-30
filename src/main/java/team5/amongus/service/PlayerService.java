@@ -112,14 +112,14 @@ public class PlayerService implements IPlayerService {
                 Player player = entry.getValue();
                 if (!name.equals(imposter.getName()) && !(player instanceof Imposter)) { // Exclude the player
                                                                                          // initiating
-                    if (imposter.collidesWith(player) && player.isAlive()) {
+                    if (imposter.collidesWith(player) && player.getisAlive()) {
                         collidingPlayer = player;
                         break;
                     }
                 }
             }
 
-            if (collidingPlayer != null && collidingPlayer.isAlive()) {
+            if (collidingPlayer != null && collidingPlayer.getisAlive()) {
                 System.out.println("Killing " + collidingPlayer.getName());
                 imposter.kill(collidingPlayer);
                 Position newPosition = new Position(collidingPlayer.getPosition().getX(),
