@@ -12,7 +12,8 @@ interface Interactible {
 enum TaskType {
   SWIPE = "SWIPE",
   MINE = "MINE",
-  SCAN = "SCAN"
+  SCAN = "SCAN",
+
 }
 
 

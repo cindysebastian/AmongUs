@@ -22,12 +22,11 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
-  const [showEmergencyMeeting, setShowEmergencyMeeting] = useState(false); // State to manage emergency meeting overlay
+  const [showEmergencyMeeting, setShowEmergencyMeeting] = useState(false);
 
   useEffect(() => {
     const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
     const unsubscribeImposter = subscribeToImposter(stompClient, (imposterName: string) => {
-      // Handle setting the imposter name or flag
     });
     const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, handleEmergencyMeeting);
 
@@ -75,9 +74,10 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
 
   return (
     <div className={styles.fillContainer}>
-      {showEmergencyMeeting && (
+      {showEmergencyMeeting &&  (
         <EmergencyMeetingOverlay
         playerNames={playerNames}
+        killedPlayers={killedPlayers}
         stompClient={stompClient}
         playerName={currentPlayer}
       />
@@ -97,7 +97,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
           )
         ))}
         {killedPlayers.map(killedPlayerName => (
-          <div key={killedPlayerName} style={{ position: 'relative', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x }}>
+          <div key={killedPlayerName} style={{ position: 'relative', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x, transform: 'scale(0.4)' }}>
             <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" className={styles.deadPlayer} />
           </div>
         ))}
