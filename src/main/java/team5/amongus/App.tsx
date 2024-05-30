@@ -146,37 +146,35 @@ const App = ({ history }) => {
   };
 
   const handleSpawnPlayer = () => {
+    const trimmedName = inputName.trim(); // Trim the input name
     const code = generateRoomCode();
 
-    if (!playerName.trim()) {
-      alert('Please enter your name.');
-      return;
-    }
-
-    if (Object.values(inGamePlayers as Record<string, { name: string }>).some(player => player.name === playerName.trim())) {
-      alert('Player name already exists in the game. Please choose a different name.');
-      return;
-    }
-
-    if (stompClient && playerName.trim()) {
-      if (Object.keys(players).length > 0) {
-        alert("The game has already started. You cannot join at this time.");
+    // Ensure playerName is updated only when the trimmedName is not empty
+    if (trimmedName) {
+      setPlayerName(trimmedName); // Set the playerName state
+      if (Object.values(inGamePlayers as Record<string, { name: string }>).some(player => player.name === trimmedName)) {
+        alert('Player name already exists in the game. Please choose a different name.');
         return;
       }
 
-      if (hostingGame) {
-        addRoomCode(code);
-        setRoomCode(code);
-      }
+      if (stompClient) {
+        if (Object.keys(players).length > 0) {
+          alert("The game has already started. You cannot join at this time.");
+          return;
+        }
 
-      if (!hostingGame && !roomCode) {
-        alert('Please enter the room code.');
-        return;
+        if (hostingGame) {
+          addRoomCode(code);
+          setRoomCode(code);
+        } else {
+          handleJoinPrivateRoom();
+        }
+
+        setPlayer(stompClient, trimmedName, roomCode, true);
+        setPlayerSpawned(true);
+        setInputName('');
+        history.push(`/game?roomCode=${code}`);
       }
-      
-      setPlayer(stompClient, playerName, code, true);
-      setPlayerSpawned(true);
-      history.push(`/game?roomCode=${code}`);
     }
   };
 
@@ -215,42 +213,27 @@ const App = ({ history }) => {
   }
   
   const handleJoinPrivateRoom = () => {
-    if (!roomCode || !playerName.trim()) {
-      alert("Please enter your name and room code.");
-      return;
-    }
+    const trimmedName = inputName.trim();
 
-    if (!getStoredRoomCodes().includes(parseInt(roomCode))) {
-      alert('Invalid room code. Please enter a valid room code.');
-      return;
-    }
-  
-    setPlayer(stompClient, playerName.trim(), roomCode, false);
-    setPlayerSpawned(true);
-    history.push(`/game?roomCode=${roomCode}`);
-    const trimmedName = inputName.trim(); // Trim the input name
-  
-    // Ensure playerName is updated only when the trimmedName is not empty
     if (trimmedName) {
-      setPlayerName(trimmedName); // Set the playerName state
-      if (Object.values(inGamePlayers as Record<string, { name: string }>).some(player => player.name === trimmedName)) {
-        alert('Player name already exists in the game. Please choose a different name.');
+      setPlayerName(trimmedName);
+
+      if (!roomCode || !trimmedName) {
+        alert("Please enter your name and room code.");
         return;
       }
-      if (stompClient) {
-        if (Object.keys(players).length > 0) {
-          alert("The game has already started. You cannot join at this time.");
-          return;
-        }
-        setPlayer(stompClient, trimmedName, roomCode, false);
-        setPlayerSpawned(true);
-        setInputName('');
-        history.push('/game');
+
+      if (!getStoredRoomCodes().includes(parseInt(roomCode))) {
+        alert('Invalid room code. Please enter a valid room code.');
+        return;
       }
+
+      setPlayer(stompClient, trimmedName, roomCode, false);
+      setPlayerSpawned(true);
+      setInputName('');
+      history.push(`/game?roomCode=${roomCode}`);
     }
   };
-  
-  
 
   const handleInputChange = (event) => {
     setInputName(event.target.value); // Update local state with input value
@@ -296,8 +279,8 @@ const App = ({ history }) => {
           <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
             <input
               type="text"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
+              value={inputName}
+              onChange={handleInputChange}
               placeholder="Enter your name"
               className={styles.input}
             />
