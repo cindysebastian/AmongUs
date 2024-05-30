@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Player from './interfaces/Player';
-import Task from './interfaces/Interactible'
 import PlayerSprite from './PlayerSprite';
 import Space from './Space';
 import styles from '../styles/lobby.module.css';
@@ -31,49 +30,53 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, currentPlayer,
     }
   };
 
-// Camera logic
-/*const lobbyCenterX = 1220 / 2;
-const lobbyCenterY = 992 / 2;
-const cameraTranslateX = Math.max(0, lobbyCenterX - window.innerWidth / 2);
-const cameraTranslateY = Math.max(0, lobbyCenterY - window.innerHeight / 2);
-const cameraStyle = {
-  transform: `translate(-${cameraTranslateX}px, -${cameraTranslateY}px)`
-};*/
+  // Camera logic
+  const mapWidth = 1920;
+  const mapHeight = 1080;
+  const playerWidth = 130; 
+  const playerHeight = 130;
+  const currentPlayerData = inGamePlayers[currentPlayer];
 
-return (
-  <div style={{ position: 'relative' }}>
-    <div className={styles.lobbyBackground}></div>
-    <Space />
+  // Ensure currentPlayerData is defined before accessing its properties
+  const cameraStyle = currentPlayerData ? {
+    transform: `translate(-${Math.max(0, Math.min(currentPlayerData.position.x + playerWidth / 2 - window.innerWidth / 2, mapWidth - window.innerWidth))}px, -${Math.max(0, Math.min(currentPlayerData.position.y + playerHeight / 2 - window.innerHeight / 2, mapHeight - window.innerHeight))}px)`
+  } : {};
 
-    <div className={styles.playerCountContainer}>
-      <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
-      <div className={styles.playerCount}>{playerCount}</div>
+  return (
+    <div style={{ position: 'relative' }}>  
+      <Space />
+      <div style={cameraStyle}>
+      <div className={styles.lobbyBackground}></div>
+        <div>
+          {Object.values(inGamePlayers).map(player => {
+            const isMoving = player.isMoving !== undefined ? player.isMoving : false;
+
+            return (
+              <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
+                <PlayerSprite
+                  player={player}
+                  facing={player.facing !== undefined ? player.facing : 'RIGHT'}
+                  isMoving={isMoving}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className={styles.playerCountContainer}>
+        <div className={styles.playerCount}>
+          <img src="src/main/resources/playerCountIcon.png" alt="Player Count Icon" className={styles.playerCountIcon} />
+          {playerCount}
+        </div>
+      </div>
       {isFirstPlayer && (
         <div className={styles.startButtonContainer} onClick={handleStartButtonClick}>
-          <img src="src\main\resources\startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
-          />
+          <img src="src/main/resources/startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`} />
         </div>
       )}
     </div>
-
-    {/* Apply cameraStyle to adjust players' positions */}
-    <div /*style={cameraStyle}*/>
-      {Object.values(inGamePlayers).map(player => {
-        const isMoving = player.isMoving !== undefined ? player.isMoving : false;
-
-        return (
-          <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
-            <PlayerSprite
-              player={player}
-              facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-              isMoving={isMoving}
-            />
-          </div>
-        );
-      })}
-    </div>
-  </div>
-);
+  );
 };
 
 export default Lobby;

@@ -142,7 +142,7 @@ export const setPlayer = (stompClient, playerName) => {
 
   const initialPlayer = {
     name: playerName.trim(),
-    position: { x: 400, y: 400 }, // Initial spawn position
+    position: { x: 1920/2, y: 1080/2 }, // Initial spawn position
   };
 
   stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
