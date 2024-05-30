@@ -1,6 +1,7 @@
 package team5.amongus.model;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Position implements Serializable {
     private int x;
@@ -56,7 +57,24 @@ public class Position implements Serializable {
         return new Position(newX, newY);
     }
 
-    public String toString(){
+    public String toString() {
         return "Position: X " + getX() + " Y " + getY();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Position position = (Position) obj;
+        return x == position.x && y == position.y;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
     }
 }

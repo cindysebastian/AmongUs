@@ -1,6 +1,7 @@
 package team5.amongus.model;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -16,7 +17,7 @@ public class Player implements Serializable {
     private int height = 130;
     private boolean canInteract = false;
     private boolean isAlive = true;
-    
+
     private long lastActivityTime;
     private String sessionId;
 
@@ -139,6 +140,21 @@ public class Player implements Serializable {
     // Method to get bounding box of the player
     public CollisionBox getBounds() {
         return new CollisionBox(position.getX(), position.getY(), width, height);
+    }
+
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Player player = (Player) o;
+        return Objects.equals(name, player.name) &&
+                Objects.equals(position, player.position) && isAlive == player.isAlive;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(position, isAlive);
     }
 
 }
