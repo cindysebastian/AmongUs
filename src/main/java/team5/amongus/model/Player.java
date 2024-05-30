@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-public class Player implements Serializable {
+public class Player implements Serializable, Cloneable {
     private String name;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Position position;
@@ -107,7 +107,7 @@ public class Player implements Serializable {
         this.canInteract = canInteract;
     }
 
-    public boolean isAlive() {
+    public boolean getisAlive() {
         return isAlive;
     }
 
@@ -142,19 +142,16 @@ public class Player implements Serializable {
         return new CollisionBox(position.getX(), position.getY(), width, height);
     }
 
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        Player player = (Player) o;
-        return Objects.equals(name, player.name) &&
-                Objects.equals(position, player.position) && isAlive == player.isAlive;
-    }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(position, isAlive);
+    public Object clone() throws CloneNotSupportedException {
+        Player clonedPlayer = (Player) super.clone();
+        // For custom classes like Position, ensure they are also cloneable and clone
+        // them here
+        if (this.position != null) {
+            clonedPlayer.position = (Position) this.position.clone();
+        }
+        return (Player) clonedPlayer;
     }
 
 }

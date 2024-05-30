@@ -126,7 +126,7 @@ public class WebSocketController {
         broadcastPlayerUpdate();
     }
 
-    private final long broadcastInterval = 33; // Limit to 1 broadcast per second
+    private final long broadcastInterval = 25; // Limit to 30 broadcasts per second
     private long lastBroadcastTime = 0;
 
     private void broadcastPlayerUpdate() {
@@ -140,43 +140,89 @@ public class WebSocketController {
         lastBroadcastTime = currentTime;
 
         // Check if there are any changes in the playersMap or inGamePlayersMap
-        boolean playerMapChanged = !mapsDiffer(playersMap, previousPlayersMap);
-        boolean inGamePlayerMapChanged = !mapsDiffer(inGamePlayersMap, previousinGamePlayersMap);
+        boolean playerMapChanged = !isMapEqual(playersMap, previousPlayersMap);
+        boolean inGamePlayerMapChanged = !isMapEqual(inGamePlayersMap, previousinGamePlayersMap);
 
         // Only broadcast updates if there are changes
         if (playerMapChanged) {
             previousPlayersMap.clear();
-            previousPlayersMap.putAll(playersMap);
+            Map<String, Player> clonedPlayersMap = new HashMap<>();
+            for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+                String key = entry.getKey();
+                Player player = entry.getValue();
+                try {
+                    clonedPlayersMap.put(key, (Player) player.clone());
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace(); // Handle the exception according to your needs
+                }
+            }
+            previousPlayersMap.putAll(clonedPlayersMap);
+
+
             messagingTemplate.convertAndSend("/topic/players", playersMap);
 
         }
 
         if (inGamePlayerMapChanged) {
             previousinGamePlayersMap.clear();
-            previousinGamePlayersMap.putAll(inGamePlayersMap);
+            Map<String, Player> clonedInGamePlayersMap = new HashMap<>();
+            for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
+                String key = entry.getKey();
+                Player player = entry.getValue();
+                try {
+                    clonedInGamePlayersMap.put(key, (Player) player.clone());
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace(); // Handle the exception according to your needs
+                }
+            }
+            previousinGamePlayersMap.putAll(clonedInGamePlayersMap);
+
+            
             messagingTemplate.convertAndSend("/topic/inGamePlayers", inGamePlayersMap);
+
         }
+
     }
 
-    static boolean mapsDiffer(Map<String, Player> map1, Map<String, Player> map2) {
+    private boolean isMapEqual(Map<String, Player> map1, Map<String, Player> map2) {
+
         if (map1.size() != map2.size()) {
-            return true; // Different sizes, maps are different
+            return false;
         }
-    
+
         for (Map.Entry<String, Player> entry : map1.entrySet()) {
             String key = entry.getKey();
             Player player1 = entry.getValue();
             Player player2 = map2.get(key);
-    
-            if (player2 == null || !player1.equals(player2)) {
-                return true; // Player object is different or missing, maps are different
+            if (!arePlayersEqual(player1, player2)) {
+                return false;
             }
         }
-    
-        return false; // Maps are identical
+
+        return true;
     }
-    
-    
+
+    private boolean arePlayersEqual(Player player1, Player player2) {
+
+        if (player1.getPosition().getX() != player2.getPosition().getX()) {
+            
+            return false;
+        }
+        if (player1.getPosition().getY() != player2.getPosition().getY()) {
+            
+            return false;
+        }
+        if (player1.getisAlive() != player2.getisAlive()) {
+            
+            return false;
+        }
+        if (player1.getIsMoving() != player2.getIsMoving()) {
+        
+            return false;
+        }
+
+        return true;
+    }
 
     private void broadcastInteractiblesUpdate() {
         if (!Objects.equals(interactibles, previousInteractibles)) {
