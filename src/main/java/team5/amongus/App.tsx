@@ -44,7 +44,6 @@ const App = ({ history }) => {
   const [privateRoom, setPrivate] = useState(false);
   const [roomCode, setRoomCode] = useState('');
   const [hostingGame, setHostingGame] = useState(false);
-  const [rooms, setRooms] = useState([]);
 
   useEffect(() => {
     const heartbeatInterval = setInterval(() => {
@@ -115,7 +114,6 @@ const App = ({ history }) => {
 
   useEffect(() => {
     const handleBlur = () => {
-      // When window loses focus, reset all keys to false
       keysPressed.current = {
         w: false,
         a: false,
@@ -185,12 +183,19 @@ const App = ({ history }) => {
     let code;
     do {
       code = Math.floor(100000 + Math.random() * 900000);
-    } while (rooms.includes(code));
+    } while (getStoredRoomCodes().includes(code));
     return code;
   };
 
   const addRoomCode = (code) => {
-    setRooms([...rooms, code]);
+    const roomCodes = getStoredRoomCodes();
+    roomCodes.push(code);
+    localStorage.setItem('rooms', JSON.stringify(roomCodes));
+  };
+
+  const getStoredRoomCodes = () => {
+    const roomCodes = localStorage.getItem('rooms');
+    return roomCodes ? JSON.parse(roomCodes) : [];
   };
 
   const handleHost = () => {
@@ -199,6 +204,7 @@ const App = ({ history }) => {
     if (stompClient && playerName) {
       const roomCode = generateRoomCode();
       setPlayer(stompClient, playerName, roomCode, true);
+      setRoomCode(roomCode);
     }
   };
   
@@ -213,7 +219,7 @@ const App = ({ history }) => {
       return;
     }
 
-    if (!rooms.includes(parseInt(roomCode))) {
+    if (!getStoredRoomCodes().includes(parseInt(roomCode))) {
       alert('Invalid room code. Please enter a valid room code.');
       return;
     }
