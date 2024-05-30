@@ -20,38 +20,13 @@ img{
     background-position: center;
 }
 
-.startButtonIcon {
-    position: absolute;
-    top: 50%;
-    bottom: 30px;
-    right: calc(50% + 50px); /* Adjust the right offset to create space for the player count icon */
-    transform: translateY(-50%);
-    width: 100px;
-    height: auto;
-    cursor: pointer;
-    border-width: 23px 0 23px 100px;
-    border-color: transparent transparent transparent transparent;
-    background-color: transparent;
-    cursor: pointer;
-}
-
-.startButtonIcon.clicked {
-    opacity: 0.8 !important;
-}
-
-.playerCountContainer {
-    position: fixed;
-    bottom: 20px;
-    left: calc(50% + 50px);
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-}
-  
 .playerCountIcon {
     width: 30px;
     height: auto;
-    margin-right: 8px;
+    top: 10%;
+    margin-bottom: 2px;
+    margin-left: 15px;
+    left: calc(15% + 10px);
 }
   
 .playerCount {
@@ -60,8 +35,45 @@ img{
     font-size: 16px;
     padding: 8px 12px;
     border-radius: 4px;
+    left: calc(15% + 15px);
 }
 
+.startButtonIcon {
+    position: absolute;
+    top: 50%;
+    bottom: 30px;
+    right: calc(70% + 120px);
+    transform: translateY(-50%);
+    width: 100px;
+    height: auto;
+    cursor: pointer;
+    border-width: 23px 0 23px 100px;
+    border-color: transparent transparent transparent transparent;
+    background-color: transparent;
+}
+
+.startButtonIcon.clicked {
+    opacity: 0.8 !important;
+}
+
+.gameInfo {
+    position: fixed;
+    bottom: 20px;
+    left: calc(50% + 50px);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+}
+
+.gameCode {
+    font-size: 1.2em;
+    font-family: monospace;
+    cursor: pointer;
+    position: relative;
+    left: calc(50% + 50px);
+    color: white;
+}
+  
 .collisionMask {
     position: fixed;
     top: 0;
