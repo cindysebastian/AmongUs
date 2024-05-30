@@ -38,7 +38,7 @@ public class GameWinningService implements IGameWinningService {
             Player player = entry.getValue();
 
             // Check if the player is an imposter and if they are dead
-            if (player instanceof Imposter && !player.isAlive()) {
+            if (player instanceof Imposter && !player.getisAlive()) {
                 return true;
             }
         }
@@ -54,9 +54,9 @@ public class GameWinningService implements IGameWinningService {
 
         for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
             Player player = entry.getValue();
-            if (player instanceof Imposter && player.isAlive()) {
+            if (player instanceof Imposter && player.getisAlive()) {
                 imposterCount++;
-            }else if(player.isAlive()){
+            }else if(player.getisAlive()){
                 playercount++;
             }
         }
