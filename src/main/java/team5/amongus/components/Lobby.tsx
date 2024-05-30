@@ -46,7 +46,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, currentPlayer,
     <div style={{ position: 'relative' }}>  
       <Space />
       <div style={cameraStyle}>
-      <div className={styles.lobbyBackground}></div>
+        <div className={styles.lobbyBackground}></div>
         <div>
           {Object.values(inGamePlayers).map(player => {
             const isMoving = player.isMoving !== undefined ? player.isMoving : false;

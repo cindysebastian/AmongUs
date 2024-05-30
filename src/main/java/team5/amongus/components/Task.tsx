@@ -30,6 +30,7 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer}) => 
                         left: interactible.position.x,
                         width: '150px', // Adjust the width as needed
                         height: '150px', // Adjust the height as needed
+                        zIndex: 6,
                     }}
                 />
             ))}

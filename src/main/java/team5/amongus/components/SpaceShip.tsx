@@ -8,6 +8,7 @@ import PlayerSprite from './PlayerSprite';
 import ProgressBar from './ProgressBar';
 import { killPlayer, subscribeToPlayerKilled, subscribeToImposter } from '../service (Frontend)/WebsocketService';
 import KillButton from './KillButton';
+import Space from './Space';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -64,35 +65,39 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   };
 
   return (
-    <div className={styles.fillContainer} style={cameraStyle}> {/* Apply cameraStyle here */}
-      <div className={styles.gifBackground}></div>
-      <div className={styles.spaceShipBackground}>
-        <ProgressBar progress={progressPercentage} />
-        {Object.values(players).map(player => (
-          !killedPlayers.includes(player.name) && (
-            <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
-              <PlayerSprite
-                player={player}
-                facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-                isMoving={player.isMoving !== undefined ? player.isMoving : false}
-              />
+    <div className={styles.fillContainer}>
+      <Space />
+      <div style={cameraStyle}>
+        <div className={styles.gifBackground}></div>
+        <div className={styles.spaceShipBackground}>
+          {Object.values(players).map(player => (
+            !killedPlayers.includes(player.name) && (
+              <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
+                <PlayerSprite
+                  player={player}
+                  facing={player.facing !== undefined ? player.facing : 'RIGHT'}
+                  isMoving={player.isMoving !== undefined ? player.isMoving : false}
+                />
+              </div>
+            )
+          ))}
+          {killedPlayers.map(killedPlayerName => (
+            <div key={killedPlayerName} style={{ position: 'absolute', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x }}>
+              <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '80px', height: '90px', position: 'relative' }} />
             </div>
-          )
-        ))}
-        {killedPlayers.map(killedPlayerName => (
-          <div key={killedPlayerName} style={{ position: 'relative', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x }}>
-            <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '80px', height: '90px', position: 'relative' }} />
-          </div>
-        ))}
-        {isImposter && <KillButton onKill={handleKill} />}
-        {showKillGif && (
-          <div className={styles.killGifContainer}></div>
-        )}
-        <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} />
+          ))}
+        </div>
+      <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} />
       </div>
+
+      <ProgressBar progress={progressPercentage} />
+      {showKillGif && (
+        <div className={styles.killGifContainer}></div>
+      )}
+      {isImposter && <KillButton onKill={handleKill} />}
+      
     </div>
   );
-  
 };
 
 export default SpaceShip;

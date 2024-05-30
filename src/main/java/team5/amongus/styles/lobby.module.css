@@ -35,13 +35,13 @@ img {
 
 .playerCountContainer {
     position: fixed;
-    bottom: 30px; /* Adjust this value as needed for spacing from the bottom */
+    bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10; /* Ensure it's above the background */
+    z-index: 10;
 }
 
 .playerCountIcon {
@@ -63,9 +63,9 @@ img {
 .startButtonContainer {
     display: flex;
     align-items: center;
-    margin-left: 10px; /* Adjust this value as needed for spacing between player count and start button */
+    margin-left: 10px;
     position: fixed;
-    bottom: 75px; /* Same as playerCountContainer to align them at the bottom */
+    bottom: 75px;
     left: 51%;
     transform: translateX(-50%);
 }
