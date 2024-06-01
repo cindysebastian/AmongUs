@@ -14,10 +14,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class PlayerService implements IPlayerService {
 
-    private final GameManager gameManager;
+    private final Room room;
 
-    public PlayerService(GameManager gameManager) {
-        this.gameManager = gameManager;
+    public PlayerService(Room room) {
+        this.room = room;
     }
 
     @Override
@@ -125,7 +125,6 @@ public class PlayerService implements IPlayerService {
                 Position newPosition = new Position(collidingPlayer.getPosition().getX(),
                         collidingPlayer.getPosition().getY());
                 imposter.setPosition(newPosition);
-                gameManager.notifyPlayerKilled(collidingPlayer);
             } else {
                 System.out.println("No colliding non-imposter player found.");
             }

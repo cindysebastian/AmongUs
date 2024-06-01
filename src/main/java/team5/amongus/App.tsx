@@ -148,38 +148,32 @@ const App = () => {
     }
   };
 
-  const handleSpawnPlayer = () => {
-    const trimmedName = inputName.trim();
-
-    if (trimmedName) {
-      setPlayerName(trimmedName);
-      if (Object.values(inGamePlayers as Record<string, { name: string }>).some(player => player.name === trimmedName)) {
-        alert('Player name already exists in the game. Please choose a different name.');
-        return;
-      }
-      if (!firstPlayerName) {
-        setFirstPlayerName(trimmedName);
-      }
-      if (stompClient) {
-        if (Object.keys(players).length > 0) {
-          alert('The game has already started. You cannot join at this time.');
-          return;
-        }
-        setPlayer(stompClient, trimmedName);
-        setPlayerSpawned(true);
-        setInputName('');
-        navigate('/game');
-      }
-    }
-  };
-
   const handleInputChange = (event) => {
     setInputName(event.target.value);
   };
 
   const handleHost = () => {
-    setHost(true);
-    navigate('/host');
+    const trimmedName = inputName.trim();
+
+    if (trimmedName && stompClient) {
+      stompClient.send('/app/hostGame', {}, JSON.stringify({ playerName: trimmedName }));
+
+      stompClient.subscribe('/user/queue/hostResponse', (message) => {
+        const response = JSON.parse(message.body);
+
+        if (response.status === 'OK') {
+          setPlayerName(trimmedName);
+          setFirstPlayerName(trimmedName);
+          setRoomCode(response.roomCode); // assuming the backend sends a roomCode
+          setPlayer(stompClient, trimmedName);
+          setPlayerSpawned(true);
+          setInputName('');
+          navigate('/game');
+        } else {
+          alert('Failed to host game: ' + response.message);
+        }
+      });
+    }
   };
 
   const handlePrivate = () => {
@@ -229,7 +223,7 @@ const App = () => {
                   placeholder="Enter your name"
                   className={styles.input}
                 />
-                <button onClick={handleSpawnPlayer} className={styles.button}>Host Game</button>
+                <button onClick={handleHost} className={styles.button}>Host Game</button>
               </div>
             </div>
           )}
@@ -243,7 +237,7 @@ const App = () => {
                   placeholder="Enter your name"
                   className={styles.input}
                 />
-                <button onClick={handleSpawnPlayer} className={styles.button}>Join Private Room</button>
+                <button onClick={handleJoinPrivateRoom} className={styles.button}>Join Private Room</button>
               </div>
             </div>
           )}

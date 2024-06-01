@@ -1,10 +1,12 @@
 package team5.amongus.websocket;
 
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.context.event.EventListener;
@@ -16,238 +18,159 @@ import team5.amongus.service.ITaskService;
 import team5.amongus.service.ICollisionMaskService;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 public class WebSocketController {
 
-    private final Map<String, Player> playersMap = new HashMap<>();
-    private final Map<String, Player> previousPlayersMap = new HashMap<>();
-    private final Map<String, Player> previousinGamePlayersMap = new HashMap<>();
-    private ArrayList<Interactible> interactibles = new ArrayList<>();
-    private ArrayList<Interactible> previousInteractibles = new ArrayList<>();
-    private final Task testTask = new Task(TaskType.SCAN, 500, 500, "dwarf");
-    private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
-    private final IChatService chatService;
-    private final List<Message> chatMessages = new ArrayList<>();
+    private final Map<String, Room> activeRooms = new HashMap<>();
     private final IPlayerService playerService;
     private final ITaskService taskService;
-    private GameManager gameManager;
     private final ICollisionMaskService collisionMaskService;
     private CollisionMask collisionMask;
-    private boolean gameStarted = false;
+    private final IChatService chatService;
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
-            ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService,
-            GameManager gameManager) {
+            ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
-        this.gameManager = gameManager;
         this.collisionMaskService = collisionMaskService;
         this.collisionMask = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
     }
 
-    public void removePlayer(String playerName) {
-        playersMap.remove(playerName);
-        inGamePlayersMap.remove(playerName);
-        broadcastPlayerUpdate();
+    @MessageMapping("/hostGame")
+    @SendToUser("/queue/hostResponse")
+    public Map<String, Object> hostGame(@Payload String playerName, Principal principal) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Create a new Room
+        Room room = new Room();
+        room.addPlayer(new Player(playerName));
+        String roomCode = room.getRoomCode();
+        activeRooms.put(roomCode, room);
+
+        // Add response parameters
+        response.put("status", "OK");
+        response.put("roomCode", roomCode);
+
+        return response;
+    }
+
+    @MessageMapping("/joinGame")
+    @SendToUser("/queue/joinResponse")
+    public Map<String, Object> joinGame(@Payload String playerName, @DestinationVariable String roomCode) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if(activeRooms.get(roomCode)!= null){
+            Room room = activeRooms.get(roomCode);
+            room.addPlayer(new Player(playerName));
+            room.broadcastPlayerUpdate();
+        }
+
+        // Add response parameters
+        response.put("status", "OK");
+        response.put("roomCode", roomCode);
+
+        return response;
+    }
+
+    public void removePlayer(String playerName, Room room) {
+        room.getInGamePlayersMap().remove(playerName);
+        room.getPlayersMap().remove(playerName);
+        room.broadcastPlayerUpdate();
     }
 
     @MessageMapping("/heartbeat")
-    public void handleHeartbeat(String playerName) {
-        Player inGameplayer = inGamePlayersMap.get(playerName);
-        Player player = playersMap.get(playerName);
+    public void handleHeartbeat(String playerName, @DestinationVariable String roomCode) {
+
+        Room room = activeRooms.get(roomCode);
+        Player inGameplayer = room.getInGamePlayersMap().get(playerName);
+        Player player = room.getPlayersMap().get(playerName);
         if (player != null && inGameplayer != null) {
             player.updateLastActivityTime();
             inGameplayer.updateLastActivityTime();
         }
     }
 
-    @MessageMapping("/setPlayer")
-    @SendTo("/topic/inGamePlayers")
-    public Map<String, Player> setPlayer(Player player, SimpMessageHeaderAccessor accessor) {
-        String playerName = player.getName().trim();
-
-        if (playerName.isEmpty() || playerName.equalsIgnoreCase("player")) {
-            return inGamePlayersMap; // Do not add invalid player
+    @MessageMapping("/{roomCode}/interact")
+    @SendTo("/topic/interactions")
+    public ArrayList<Interactible> handleInteract(@Payload String playerName, @DestinationVariable String roomCode)
+            throws IOException {
+        Room room = activeRooms.get(roomCode);
+        if (room == null) {
+            // Handle case where the room doesn't exist
+            return new ArrayList<>(); // Return an empty list or handle as appropriate
         }
 
-        String sessionId = accessor.getSessionId();
-        player.setSessionId(sessionId);
+        Player player = room.getPlayersMap().get(playerName);
+        if (player == null) {
+            // Handle case where player doesn't exist in the room
+            return new ArrayList<>(); // Return an empty list or handle as appropriate
+        }
 
-        inGamePlayersMap.put(playerName, player);
-
-        // Broadcast updated player list to all clients
-        broadcastPlayerUpdate();
-
-        return inGamePlayersMap;
-    }
-
-    @MessageMapping("/interact")
-    @SendTo("/topic/interactions")
-    public ArrayList<Interactible> handleInteract(String playerName) throws IOException {
-
-        Player player = playersMap.get(playerName);
-
-        Interactible interactableObject = playerService.getPlayerInteractableObject(interactibles, player);
+        Interactible interactableObject = playerService.getPlayerInteractableObject(room.getInteractibles(), player);
 
         if (interactableObject != null) {
             // Handle interaction based on the type of interactable object
             if (interactableObject instanceof Task) {
                 // If the interactable object is a Task, call the TaskService to update task
-                ArrayList<Interactible> updatedInteractables = taskService.updateTaskInteractions(playersMap,
-                        interactibles, player, (Task) interactableObject);
+                ArrayList<Interactible> updatedInteractables = taskService.updateTaskInteractions(room.getPlayersMap(),
+                        room.getInteractibles(), player, (Task) interactableObject);
 
-                interactibles = updatedInteractables;
+                room.setInteractibles(updatedInteractables);
             }
         }
-        broadcastInteractiblesUpdate();
-        return interactibles;
+        room.broadcastInteractiblesUpdate();
+        return room.getInteractibles();
     }
 
-    @MessageMapping("/move")
-    public void move(String payload) {
-        playerService.movePlayer(playersMap, payload, collisionMask);
-        broadcastPlayerUpdate();
-    }
+    @MessageMapping("/{roomCode}/move")
+    public void move(String payload, @DestinationVariable String roomCode) {
 
-    @MessageMapping("/move/inGamePlayers")
-    public void moveInGamePlayers(String payload) {
-        playerService.movePlayer(inGamePlayersMap, payload,
-                collisionMask);
-        broadcastPlayerUpdate();
-    }
-
-    private final long broadcastInterval = 25; // Limit to 30 broadcasts per second
-    private long lastBroadcastTime = 0;
-
-    private void broadcastPlayerUpdate() {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastBroadcastTime < broadcastInterval) {
-            // Too soon to broadcast again, ignore this request
+        Room room = activeRooms.get(roomCode);
+        if (room == null) {
+            // Handle case where the room doesn't exist
             return;
         }
-
-        // Update the last broadcast time
-        lastBroadcastTime = currentTime;
-
-        // Check if there are any changes in the playersMap or inGamePlayersMap
-        boolean playerMapChanged = !isMapEqual(playersMap, previousPlayersMap);
-        boolean inGamePlayerMapChanged = !isMapEqual(inGamePlayersMap, previousinGamePlayersMap);
-
-        // Only broadcast updates if there are changes
-        if (playerMapChanged) {
-            previousPlayersMap.clear();
-            Map<String, Player> clonedPlayersMap = new HashMap<>();
-            for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
-                String key = entry.getKey();
-                Player player = entry.getValue();
-                try {
-                    clonedPlayersMap.put(key, (Player) player.clone());
-                } catch (CloneNotSupportedException e) {
-                    e.printStackTrace(); // Handle the exception according to your needs
-                }
-            }
-            previousPlayersMap.putAll(clonedPlayersMap);
-
-
-            messagingTemplate.convertAndSend("/topic/players", playersMap);
-
+        if (room.getGameStarted()) {
+            playerService.movePlayer(room.getPlayersMap(), payload, collisionMask);
+        } else {
+            playerService.movePlayer(room.getInGamePlayersMap(), payload, collisionMask);
         }
-
-        if (inGamePlayerMapChanged) {
-            previousinGamePlayersMap.clear();
-            Map<String, Player> clonedInGamePlayersMap = new HashMap<>();
-            for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
-                String key = entry.getKey();
-                Player player = entry.getValue();
-                try {
-                    clonedInGamePlayersMap.put(key, (Player) player.clone());
-                } catch (CloneNotSupportedException e) {
-                    e.printStackTrace(); // Handle the exception according to your needs
-                }
-            }
-            previousinGamePlayersMap.putAll(clonedInGamePlayersMap);
-
-            
-            messagingTemplate.convertAndSend("/topic/inGamePlayers", inGamePlayersMap);
-
-        }
-
+        room.broadcastPlayerUpdate();
     }
 
-    private boolean isMapEqual(Map<String, Player> map1, Map<String, Player> map2) {
-
-        if (map1.size() != map2.size()) {
-            return false;
-        }
-
-        for (Map.Entry<String, Player> entry : map1.entrySet()) {
-            String key = entry.getKey();
-            Player player1 = entry.getValue();
-            Player player2 = map2.get(key);
-            if (!arePlayersEqual(player1, player2)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private boolean arePlayersEqual(Player player1, Player player2) {
-
-        if (player1.getPosition().getX() != player2.getPosition().getX()) {
-            
-            return false;
-        }
-        if (player1.getPosition().getY() != player2.getPosition().getY()) {
-            
-            return false;
-        }
-        if (player1.getisAlive() != player2.getisAlive()) {
-            
-            return false;
-        }
-        if (player1.getIsMoving() != player2.getIsMoving()) {
-        
-            return false;
-        }
-
-        return true;
-    }
-
-    private void broadcastInteractiblesUpdate() {
-        if (!Objects.equals(interactibles, previousInteractibles)) {
-            messagingTemplate.convertAndSend("/topic/interactions", interactibles);
-            previousInteractibles.clear();
-            previousInteractibles.addAll(interactibles);
-        }
-    }
-
-    @MessageMapping("/sendMessage")
-    @SendTo("/topic/messages")
-    public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor) {
-        List<Message> updatedChatMessages = chatService.processMessage(chatMessages, message);
+    @MessageMapping("/{roomcode}/sendMessage")
+    @SendTo("/{roomcode}/topic/messages")
+    public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor, @DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
+        List<Message> updatedChatMessages = chatService.processMessage(room.getChatMessages(), message);
+        room.setMessages(updatedChatMessages);
         return updatedChatMessages;
     }
 
-    @MessageMapping("/killPlayer")
-    public void handleKill(String playerName) {
+    @MessageMapping("/{roomcode}/killPlayer")
+    public void handleKill(String playerName, @DestinationVariable String roomCode) {
         if (playerName == null || playerName.trim().isEmpty()) {
             System.out.println("PlayerName null");
 
         }
 
+        Room room = activeRooms.get(roomCode);
+
         Imposter imposter = null;
-        for (Player pl : playersMap.values()) {
+        for (Player pl : room.getPlayersMap().values()) {
             if (pl instanceof Imposter) {
                 imposter = (Imposter) pl;
                 break;
@@ -256,28 +179,28 @@ public class WebSocketController {
 
         if (imposter == null || !imposter.getName().equals(playerName)) {
             System.err.println("Imposter not found or mismatch");
-
         }
 
-        playerService.handleKill(imposter, playersMap);
-        broadcastPlayerUpdate();
+        playerService.handleKill(imposter, room.getPlayersMap());
+        room.broadcastPlayerUpdate();
 
     }
 
-    @MessageMapping("/completeTask")
-    @SendTo("/topic/interactions")
-    public List<Interactible> completeTask(String payload) {
-        ArrayList<Interactible> updatedInteractables = taskService.completeTask(payload, interactibles);
-        interactibles = updatedInteractables;
-        broadcastInteractiblesUpdate();
-        return interactibles;
+    @MessageMapping("/{roomcode}/completeTask")
+    public void completeTask(String payload, @DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
+
+        ArrayList<Interactible> updatedInteractables = taskService.completeTask(payload, room.getInteractibles());
+        room.setInteractibles(updatedInteractables); 
+        room.broadcastInteractiblesUpdate();
     }
 
-    @MessageMapping("/startGame")
-    @SendTo("/topic/gameStart")
-    public String startGame() {
+    @MessageMapping("/{roomcode}/startGame")
+    @SendTo("/{roomcode}/topic/gameStart")
+    public String startGame(@DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
         System.out.println("Game started!");
-        gameStarted = true;
+        room.setGameStarted(true);
 
         List<Position> positions = new ArrayList<>();
         positions.add(new Position(2175, 350));
@@ -286,26 +209,27 @@ public class WebSocketController {
         positions.add(new Position(2400, 500));
 
         int index = 0;
-        for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
+        for (Map.Entry<String, Player> entry : room.getInGamePlayersMap().entrySet()) {
             entry.getValue().setPosition(positions.get(index));
-            playersMap.put(entry.getKey(), entry.getValue());
+            room.getPlayersMap().put(entry.getKey(), entry.getValue());
             index++;
             if (index > 3) {
                 index = 0;
             }
         }
 
-        gameManager.chooseImposter(playersMap);
-        inGamePlayersMap.clear();
+        room.chooseImposter();
+        room.getInGamePlayersMap().clear();
 
         collisionMask = collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
-        interactibles = taskService.createTasks(playersMap);
+        room.setInteractibles(taskService.createTasks(room.getPlayersMap()));
 
-        broadcastInteractiblesUpdate();
+        room.broadcastPlayerUpdate();
+        room.broadcastInteractiblesUpdate();
         return "Game has started";
     }
 
-    @EventListener
+    /*@EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         String sessionId = event.getSessionId();
 
@@ -343,5 +267,5 @@ public class WebSocketController {
                 break;
             }
         }
-    }
+    }*/
 }
