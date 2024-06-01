@@ -271,7 +271,7 @@ const App = () => {
             <button onClick={() => handleJoinGame(playerName, roomCode)} className={styles.button}>Join Private Room</button>
           </div></div>
       </div>} />
-      <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} />} />
+      <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} roomCode={roomCode}/>} />
       <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} roomCode={roomCode} />} />
       <Route path="/" element={<Navigate replace to="/login" />} />
     </Routes>

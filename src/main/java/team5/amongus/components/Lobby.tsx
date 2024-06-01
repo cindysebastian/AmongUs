@@ -10,20 +10,46 @@ interface Props {
   inGamePlayers: Record<string, Player>;
   firstPlayerName: string;
   onStartButtonClick: (playersData: Record<string, Player>) => void;
+  roomCode: string;
 }
 
-const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick }) => {
+const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick, roomCode}) => {
   const [playerCount, setPlayerCount] = useState(Object.keys(inGamePlayers).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
   const [impostersChosen, setImpostersChosen] = useState(false);
-  const location = useLocation();
-  const roomCode = new URLSearchParams(location.search).get('roomCode');
+
+
 
   useEffect(() => {
     setPlayerCount(Object.keys(inGamePlayers).length);
   }, [inGamePlayers]);
 
   const isFirstPlayer = firstPlayerName === Object.keys(inGamePlayers)[0];
+
+  function copyToClipboard(text: string, element: HTMLElement) {
+    navigator.clipboard.writeText(text).then(() => {
+      console.log(`Copied to clipboard: ${text}`);
+      showTooltip(element);
+    }, (err) => {
+      console.error('Could not copy text: ', err);
+    });
+  }
+
+  function showTooltip(element: HTMLElement) {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.textContent = 'Copied!';
+    element.appendChild(tooltip);
+    setTimeout(() => {
+      tooltip.classList.add('show-tooltip');
+      setTimeout(() => {
+        tooltip.classList.remove('show-tooltip');
+        setTimeout(() => {
+          element.removeChild(tooltip);
+        }, 300);
+      }, 2000);
+    }, 10);
+  }
 
   const handleStartButtonClick = () => {
     if (!impostersChosen) {
@@ -43,6 +69,8 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
       <div className={styles.playerCountContainer}>
         <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
         <div className={styles.playerCount}>{playerCount}</div>
+
+        <div className={styles.gameCode} onClick={(e) => copyToClipboard(roomCode, e.currentTarget)}>CODE: {roomCode}</div>
         {isFirstPlayer && (
           <div className={styles.startButtonContainer} onClick={handleStartButtonClick}>
             <img src="src/main/resources/startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}

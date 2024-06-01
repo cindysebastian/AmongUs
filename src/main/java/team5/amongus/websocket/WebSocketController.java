@@ -29,10 +29,12 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
@@ -45,6 +47,7 @@ public class WebSocketController {
     private final ICollisionMaskService collisionMaskService;
     private CollisionMask collisionMask;
     private final IChatService chatService;
+    private Set<String> usedRoomCodes = new HashSet<>();
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
             ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService) {
@@ -58,11 +61,21 @@ public class WebSocketController {
 
     @MessageMapping("/hostGame")
     public void hostGame(@Payload HostGameRequest request) {
-        Room room = new Room();
+        String roomCode;
+        Room room;
+
+        // Generate a unique room code
+        synchronized (usedRoomCodes) {
+            do {
+                room = new Room();
+                roomCode =room.getRoomCode();
+            } while (!usedRoomCodes.add(roomCode)); // Add the code to the set
+        }
+
         Position position = new Position(500, 500);
-        activeRooms.put(room.getRoomCode(), room);
+        activeRooms.put(roomCode, room);
         room.addPlayer(new Player(request.getPlayerName(), position));
-        HostGameResponse response = new HostGameResponse("OK", room.getRoomCode());
+        HostGameResponse response = new HostGameResponse("OK", roomCode);
         messagingTemplate.convertAndSend("/topic/hostResponse", response);
     }
 

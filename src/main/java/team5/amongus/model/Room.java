@@ -72,9 +72,27 @@ public class Room {
     }
 
     private String generateRoomCode() {
-        // Implement your room code generation logic here
-        return "12345"; // Placeholder
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+    
+        // Generate 6 characters
+        for (int i = 0; i < 6; i++) {
+            // Randomly choose between uppercase letters and digits
+            int choice = random.nextInt(2);
+            if (choice == 0) {
+                // Generate a random uppercase letter (A-Z)
+                char letter = (char) (random.nextInt(26) + 'A');
+                sb.append(letter);
+            } else {
+                // Generate a random digit (0-9)
+                int digit = random.nextInt(10);
+                sb.append(digit);
+            }
+        }
+    
+        return sb.toString();
     }
+    
 
     public Map<String, Player> chooseImposter() {
         Random random = new Random();
