@@ -179,7 +179,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    if (redirectToSpaceShip && gameStarted) {
+    if (redirectToSpaceShip) {
       navigate('/spaceship');
     }
   }, [redirectToSpaceShip, gameStarted, navigate]);

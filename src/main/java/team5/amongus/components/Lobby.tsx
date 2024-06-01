@@ -13,10 +13,11 @@ interface Props {
   roomCode: string;
 }
 
-const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick, roomCode}) => {
+const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick, roomCode }) => {
   const [playerCount, setPlayerCount] = useState(Object.keys(inGamePlayers).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
   const [impostersChosen, setImpostersChosen] = useState(false);
+  const [isFirstPlayer, setIsFirstPlayer] = useState(false);
 
 
 
@@ -24,7 +25,12 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
     setPlayerCount(Object.keys(inGamePlayers).length);
   }, [inGamePlayers]);
 
-  const isFirstPlayer = firstPlayerName === Object.keys(inGamePlayers)[0];
+  useEffect(() => {
+    if (firstPlayerName != null) {
+      setIsFirstPlayer(true);
+    } 
+  }, [firstPlayerName]);
+
 
   function copyToClipboard(text: string, element: HTMLElement) {
     navigator.clipboard.writeText(text).then(() => {

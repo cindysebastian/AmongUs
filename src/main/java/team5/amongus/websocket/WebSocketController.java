@@ -93,10 +93,6 @@ public class WebSocketController {
 
     @MessageMapping("/joinGame/{roomCode}")
     public void joinGame(@Payload JoinGameRequest request) {
-        System.out.println("Received join game request: " + request);
-        System.out.println("Player name: " + request.getPlayerName());
-        System.out.println("Room code: " + request.getRoomCode());
-
         Map<String, Object> response = new HashMap<>();
 
         if (activeRooms.get(request.getRoomCode()) != null) {
@@ -110,7 +106,7 @@ public class WebSocketController {
             response.put("status", "NO_SUCH_ROOM");
             response.put("roomCode", null);
         }
-
+        
         messagingTemplate.convertAndSend("/topic/joinResponse", response);
     }
 
@@ -180,7 +176,6 @@ public class WebSocketController {
         }
 
         room.broadcastPlayerUpdate(messagingTemplate);
-        System.out.println(room.getInGamePlayersMap());
     }
 
     @MessageMapping("/sendMessage/{roomCode}")
@@ -233,7 +228,7 @@ public class WebSocketController {
     public String startGame(@DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
         System.out.println("Game started!");
-        room.setGameStarted(true);
+        
 
         List<Position> positions = new ArrayList<>();
         positions.add(new Position(2175, 350));
@@ -256,7 +251,7 @@ public class WebSocketController {
 
         collisionMask = collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
         room.setInteractibles(taskService.createTasks(room.getPlayersMap()));
-
+        room.setGameStarted(true);
         room.broadcastPlayerUpdate(messagingTemplate);
         room.broadcastInteractiblesUpdate(messagingTemplate);
         return "Game has started";
