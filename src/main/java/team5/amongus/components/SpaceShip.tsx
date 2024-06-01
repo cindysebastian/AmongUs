@@ -9,6 +9,7 @@ import ProgressBar from './ProgressBar';
 import { killPlayer, subscribeToPlayerKilled, subscribeToImposter } from '../service (Frontend)/WebsocketService';
 import KillButton from './KillButton';
 import Space from './Space';
+import { CSSProperties } from 'react';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -60,12 +61,23 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const mapWidth = 4000;
   const mapHeight = 2316;
 
-  const cameraStyle = {
-    transform: `translate(-${Math.max(0, Math.min(players[currentPlayer].position.x - window.innerWidth / 2, mapWidth - window.innerWidth))}px, -${Math.max(0, Math.min(players[currentPlayer].position.y - window.innerHeight / 2, mapHeight - window.innerHeight))}px)`
+  const playerX = players[currentPlayer].position.x;
+  const playerY = players[currentPlayer].position.y;
+  const offsetX = Math.max(0, Math.min(playerX - window.innerWidth / 2, mapWidth - window.innerWidth));
+  const offsetY = Math.max(0, Math.min(playerY - window.innerHeight / 2, mapHeight - window.innerHeight));
+
+  const cameraStyle: CSSProperties = {
+    transform: `translate(-${offsetX}px, -${offsetY}px)`,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
   };
 
+
   return (
-    <div className={styles.fillContainer}>
+    <div>
       <Space />
       <div style={cameraStyle}>
         <div className={styles.gifBackground}></div>
@@ -86,14 +98,14 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
               <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '80px', height: '90px', position: 'relative' }} />
             </div>
           ))}
-          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} />
+          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} />
         </div>
       </div>
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
       )}
-      {isImposter && <KillButton onKill={handleKill} />}      
+      {isImposter && <KillButton onKill={handleKill} />}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 .overlay {
-    position: fixed;
+    position: absolute;
     left: 0;
+    top: 0;
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
@@ -8,10 +9,12 @@
     justify-content: center;
     align-items: center;
     z-index: 10;
+    transform: initial;
+
 }
 
 .popup {
-    position: absolute;
+    position: relative;
     background-color: grey;
     padding: 20px;
     border-radius: 5px;
@@ -21,6 +24,7 @@
     background-repeat: no-repeat;
     background-size: cover;
     z-index: 11;
+
 }
 
 .popupContent {
@@ -31,16 +35,18 @@
 }
 
 .imageWrapper {
-    position: absolute;
+    position: relative;
     top: 50%;
     left: 50%;
     width: 30%;
     transform: translate(-50%, -50%);
+    
 }
 
 .mineInteract {
     z-index: 12;
     width: 100%;
+    height: fit-content;
 }
 
 .dragging {
@@ -65,7 +71,7 @@
     background-size: 100% 100%;
     border-radius: 10px;
     cursor: pointer;
-    z-index: 4;
+    z-index: 10;
     transition: left 0.3s ease;
 }
 
@@ -124,7 +130,7 @@
     width: 80%;
     height: 80%;
     position: absolute;
-    z-index: 3;
+    z-index: 10;
 }
 
 .slider {

@@ -7,17 +7,33 @@ import Stomp from "stompjs";
 import SwipeMinigame from './Minigames/SwipeMinigame';
 import ScanMinigame from './Minigames/ScanMinigame';
 
+import { CSSProperties } from 'react';
+
 
 interface Props {
     stompClient: Stomp.Client | null; // Add stompClient to props
     interactibles: Interactible[];
     currentPlayer: String;
-
+    offsetX: number;
+    offsetY: number;
 }
 
-const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer}) => {
+
+const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offsetX, offsetY }) => {
+
+
+    const cameraStyle: CSSProperties = {
+        transform: `translate(${offsetX}px, ${offsetY}px)`,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 10 // Ensure the popup is on top
+    };
+
     return (
-        <div style={{position: 'fixed'}}>
+        <div style={{ position: 'fixed' }}>
             {/* Render images at the coordinates of interactibles */}
             {interactibles.map(interactible => (
                 <img
@@ -41,11 +57,11 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer}) => 
                 if (interactible.assignedPlayer == currentPlayer && interactible.inProgress) {
                     switch (interactible.type) {
                         case 'MINE':
-                            return <MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} />;
+                            return <div style={cameraStyle}><MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} /></div>;
                         case 'SCAN':
-                            return <ScanMinigame key={interactible.id} stompClient={stompClient} interactible={interactible}/>;
+                            return <div style={cameraStyle}><ScanMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} /></div>;
                         case 'SWIPE':
-                            return <SwipeMinigame key={interactible.id} stompClient={stompClient} interactible={interactible}/>;
+                            return <div style={cameraStyle}><SwipeMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} /></div>;
                         default:
                             return null;
                     }

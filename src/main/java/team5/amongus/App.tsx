@@ -199,7 +199,7 @@ const App = ({ history }) => {
   }, [stompClient]);
 
   return (
-    <div style={{ position: 'relative', padding: '20px' }}>
+    <div>
       {!playerSpawned && (
         <div className={styles.gifBackground}></div>
       )}
