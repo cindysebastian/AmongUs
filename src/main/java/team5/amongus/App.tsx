@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Route, Routes, useNavigate, Navigate } from 'react-router-dom';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import ChatRoom from './components/ChatRoom';
@@ -7,22 +8,20 @@ import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
 import Host from './components/Host';
 import Private from './components/Private';
-import bgImage from '../../../resources/LoginBG.png';
 import styles from './styles/index.module.css';
-import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions } from './service (Frontend)/WebsocketService';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendChatMessage, setPlayer, subscribetoInteractions } from './service (Frontend)/WebsocketService';
 import { movePlayer } from './service (Frontend)/PlayerMovementService';
 import { startGame } from './service (Frontend)/GameStartingService';
 import { handleInteraction } from './service (Frontend)/InteractionService';
-import KillButton from './components/KillButton';
 
 const directionMap = {
-  'w': 'UP',
-  'a': 'LEFT',
-  's': 'DOWN',
-  'd': 'RIGHT',
+  w: 'UP',
+  a: 'LEFT',
+  s: 'DOWN',
+  d: 'RIGHT',
 };
 
-const App = ({ history }) => {
+const App = () => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
   const [inputName, setInputName] = useState('');
@@ -33,7 +32,7 @@ const App = ({ history }) => {
   const [playerSpawned, setPlayerSpawned] = useState(false);
   const [selectedVictim, setSelectedVictim] = useState('');
   const [interactibles, setInteractibles] = useState([]);
-  const [interactionInProgress, setInteractionInProgress] = useState(false); 
+  const [interactionInProgress, setInteractionInProgress] = useState(false);
   const keysPressed = useRef({
     w: false,
     a: false,
@@ -46,6 +45,9 @@ const App = ({ history }) => {
   const [inGamePlayers, setInGamePlayers] = useState({});
   const [host, setHost] = useState(false);
   const [privateRoom, setPrivate] = useState(false);
+  const [roomCode, setRoomCode] = useState('');
+  const [hostingGame, setHostingGame] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const heartbeatInterval = setInterval(() => {
@@ -91,7 +93,7 @@ const App = ({ history }) => {
 
   useEffect(() => {
     if (interactibles && playerName) {
-      let playerInteracting = interactibles.some(interactible =>
+      const playerInteracting = interactibles.some(interactible =>
         interactible.inProgress && interactible.assignedPlayer === playerName
       );
       setInteractionInProgress(playerInteracting);
@@ -116,7 +118,6 @@ const App = ({ history }) => {
 
   useEffect(() => {
     const handleBlur = () => {
-      // When window loses focus, reset all keys to false
       keysPressed.current = {
         w: false,
         a: false,
@@ -148,11 +149,10 @@ const App = ({ history }) => {
   };
 
   const handleSpawnPlayer = () => {
-    const trimmedName = inputName.trim(); // Trim the input name
-  
-    // Ensure playerName is updated only when the trimmedName is not empty
+    const trimmedName = inputName.trim();
+
     if (trimmedName) {
-      setPlayerName(trimmedName); // Set the playerName state
+      setPlayerName(trimmedName);
       if (Object.values(inGamePlayers as Record<string, { name: string }>).some(player => player.name === trimmedName)) {
         alert('Player name already exists in the game. Please choose a different name.');
         return;
@@ -162,35 +162,31 @@ const App = ({ history }) => {
       }
       if (stompClient) {
         if (Object.keys(players).length > 0) {
-          alert("The game has already started. You cannot join at this time.");
+          alert('The game has already started. You cannot join at this time.');
           return;
         }
         setPlayer(stompClient, trimmedName);
         setPlayerSpawned(true);
         setInputName('');
-        history.push('/game');
+        navigate('/game');
       }
     }
   };
-  
-  
 
   const handleInputChange = (event) => {
-    setInputName(event.target.value); // Update local state with input value
+    setInputName(event.target.value);
   };
-
 
   const handleHost = () => {
     setHost(true);
-    history.push('/host')
-  }
+    navigate('/host');
+  };
 
   const handlePrivate = () => {
     setPrivate(true);
-    history.push('/private');
-  }
-  
-  
+    navigate('/private');
+  };
+
   const handleStartButtonClick = () => {
     setIsStartButtonClicked(true);
     if (stompClient) {
@@ -200,60 +196,65 @@ const App = ({ history }) => {
 
   useEffect(() => {
     if (redirectToSpaceShip && gameStarted) {
-      history.push('/spaceship');
+      navigate('/spaceship');
     }
-  }, [redirectToSpaceShip, gameStarted, history]);
+  }, [redirectToSpaceShip, gameStarted, navigate]);
 
-  useEffect(() => {
-    startGame(stompClient, setRedirectToSpaceShip);
-
-    const handleGameStart = () => {
-      history.push('/spaceship');
-    };
-
-  }, [stompClient]);
+  const handleJoinPrivateRoom = () => {
+    // Implementation for joining a private room
+  };
 
   return (
-    <div style={{ position: 'relative', padding: '20px' }}>
-      {!playerSpawned && (
-        <div className={styles.gifBackground}></div>
-      )}
-      {!playerSpawned && (
-        <div className={styles.loginbackground}>
-          <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '7%', bottom: '0px', left: '50%', right: '50%' }}>
-            <button onClick={handleHost} className={styles.button}>HOST</button>
-            <button onClick={handlePrivate} className={styles.button}>PRIVATE</button>
-          </div>
-        </div>
-      )}
-      {playerSpawned && !redirectToSpaceShip && (
-        <div>
-          {/* Pass firstPlayerName as a prop to the Lobby component */}
-          <Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} />
-
-          <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
-          {chatVisible && (
-            <div className={styles.chatBox}>
-              <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
+    <Routes>
+      <Route path="/login" element={
+        <div style={{ position: 'relative', padding: '20px' }}>
+          {!playerSpawned && (
+            <div className={styles.gifBackground}></div>
+          )}
+          {!playerSpawned && (
+            <div className={styles.loginbackground}>
+              <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '7%', bottom: '0px', left: '50%', right: '50%' }}>
+                <button onClick={handleHost} className={styles.button}>HOST</button>
+                <button onClick={handlePrivate} className={styles.button}>PRIVATE</button>
               </div>
-              <button className={styles.button} onClick={() => setChatVisible(false)}>Exit</button>
-              <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
-              <ChatRoom messages={messages} />
+            </div>
+          )}
+          {host && !playerSpawned && (
+            <div className={styles.loginbackground}>
+              <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
+                <input
+                  type="text"
+                  value={inputName}
+                  onChange={handleInputChange}
+                  placeholder="Enter your name"
+                  className={styles.input}
+                />
+                <button onClick={handleSpawnPlayer} className={styles.button}>Host Game</button>
+              </div>
+            </div>
+          )}
+          {privateRoom && !playerSpawned && (
+            <div className={styles.loginbackground}>
+              <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
+                <input
+                  type="text"
+                  value={inputName}
+                  onChange={handleInputChange}
+                  placeholder="Enter your name"
+                  className={styles.input}
+                />
+                <button onClick={handleSpawnPlayer} className={styles.button}>Join Private Room</button>
+              </div>
             </div>
           )}
         </div>
-      )}
-      {redirectToSpaceShip && (
-        <SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} />
-      )}
-      {host && (
-        <Host history={undefined} />
-      )}
-      {privateRoom && (
-        <Private history={undefined} />
-      )}
-    </div>
+      } />
+      <Route path="/host" element={<Host history={undefined} />} />
+      <Route path="/private" element={ <Private history={undefined} />} />
+      <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} />} />
+      <Route path="/spaceship" element={ <SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} />} />
+      <Route path="/" element={<Navigate replace to="/login" />} />
+    </Routes>
   );
 };
 
