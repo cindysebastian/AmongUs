@@ -13,8 +13,8 @@ public class Player implements Serializable, Cloneable {
     private Integer step = 12;
     private Boolean isMoving = false;
     private String facing = "RIGHT";
-    private int width = 130;
-    private int height = 130;
+    private int width = 80;
+    private int height = 80;
     private boolean canInteract = false;
     private boolean isAlive = true;
 
@@ -141,7 +141,6 @@ public class Player implements Serializable, Cloneable {
     public CollisionBox getBounds() {
         return new CollisionBox(position.getX(), position.getY(), width, height);
     }
-
 
     @Override
     public Object clone() throws CloneNotSupportedException {

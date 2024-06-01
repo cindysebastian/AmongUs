@@ -33,8 +33,8 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, currentPlayer,
   // Camera logic
   const mapWidth = 1920;
   const mapHeight = 1080;
-  const playerWidth = 130; 
-  const playerHeight = 130;
+  const playerWidth = 80; 
+  const playerHeight = 80;
   const currentPlayerData = inGamePlayers[currentPlayer];
 
   // Ensure currentPlayerData is defined before accessing its properties
