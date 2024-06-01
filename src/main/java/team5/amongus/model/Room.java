@@ -219,7 +219,7 @@ public class Room {
 
     public void broadcastInteractiblesUpdate(SimpMessagingTemplate messagingTemplate) {
         if (!Objects.equals(interactibles, previousInteractibles)) {
-            messagingTemplate.convertAndSend("/{roomcode}/topic/interactions", interactibles);
+            messagingTemplate.convertAndSend("/topic/interactions/{roomCode}", interactibles);
             previousInteractibles.clear();
             previousInteractibles.addAll(interactibles);
         }

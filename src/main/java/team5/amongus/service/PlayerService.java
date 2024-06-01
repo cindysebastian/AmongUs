@@ -9,6 +9,8 @@ import java.util.ArrayList;
 
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -97,7 +99,7 @@ public class PlayerService implements IPlayerService {
         return null;
     }
 
-    public Map<String, Player> handleKill(Imposter imposter, Map<String, Player> playersMap) {
+    public Map<String, Player> handleKill(Imposter imposter, Map<String, Player> playersMap, String roomCode, SimpMessagingTemplate template ) {
         System.out.println("Trying to kill...");
         if (imposter != null && playersMap != null) {
             Player collidingPlayer = null;
@@ -120,6 +122,7 @@ public class PlayerService implements IPlayerService {
                 Position newPosition = new Position(collidingPlayer.getPosition().getX(),
                         collidingPlayer.getPosition().getY());
                 imposter.setPosition(newPosition);
+                notifyPlayerKilled(collidingPlayer, roomCode, template);
             } else {
                 System.out.println("No colliding non-imposter player found.");
             }
@@ -128,5 +131,10 @@ public class PlayerService implements IPlayerService {
             // You can optionally log a message or handle this situation accordingly
         }
         return playersMap; // Return the updated players map
+    }
+
+    public void notifyPlayerKilled(Player killedPlayer, String roomCode, SimpMessagingTemplate template) {
+        String destination = "/topic/killedPlayer/" + roomCode;
+        template.convertAndSend(destination, killedPlayer);
     }
 }

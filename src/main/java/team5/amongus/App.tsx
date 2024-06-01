@@ -192,7 +192,7 @@ const App = () => {
       console.error("Missing required parameters for joining game:", { trimmedName, stompClient, roomCode });
       return;
     }
-    
+
 
     const message = {
       playerName: trimmedName,
@@ -200,7 +200,7 @@ const App = () => {
     };
 
     stompClient.send(`/app/joinGame/${roomCode}`, {}, JSON.stringify(message));
-  
+
     const subscription = stompClient.subscribe('/topic/joinResponse', (message) => {
       const response = JSON.parse(message.body);
       console.log("Response:" + response.roomCode)
@@ -213,10 +213,13 @@ const App = () => {
         setInputName('');
 
         navigate('/game');
+      } else if (response.status === 'NAME_TAKEN') {
+        alert('Failed to join game: This name is already in use! Please choose another. ');
+      } else if (response.status === 'No_SUCH_ROOM') {
+        alert('Failed to join game: The Room with the code you entered does not exist. Please double check your code.');
       } else {
-        alert('Failed to join game: ' + response.message);
-      }
-      // Unsubscribe after receiving the response
+        alert('Failed to Join game. Message: ' + response.message);
+      }// Unsubscribe after receiving the response
       subscription.unsubscribe();
     });
   }
@@ -271,7 +274,7 @@ const App = () => {
             <button onClick={() => handleJoinGame(playerName, roomCode)} className={styles.button}>Join Private Room</button>
           </div></div>
       </div>} />
-      <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} roomCode={roomCode}/>} />
+      <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} />} />
       <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} roomCode={roomCode} />} />
       <Route path="/" element={<Navigate replace to="/login" />} />
     </Routes>

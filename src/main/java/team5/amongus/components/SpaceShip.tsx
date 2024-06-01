@@ -6,7 +6,7 @@ import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import ProgressBar from './ProgressBar';
-import { killPlayer} from '../service (Frontend)/WebsocketService';
+import { killPlayer, subscribeToPlayerKilled } from '../service (Frontend)/WebsocketService';
 import KillButton from './KillButton';
 
 interface Props {
@@ -28,6 +28,13 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
       setIsImposter(currentPlayerObj.isImposter === true);
     }
   }, [players, currentPlayer]);
+
+  useEffect(() => {
+    const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
+    return () => {
+      unsubscribeKilled;
+    };
+  }, [stompClient]);
 
   const handlePlayerKilled = (killedPlayer: Player) => {
     if (killedPlayer.name === currentPlayer) {

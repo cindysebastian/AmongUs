@@ -68,7 +68,7 @@ public class WebSocketController {
         synchronized (usedRoomCodes) {
             do {
                 room = new Room();
-                roomCode =room.getRoomCode();
+                roomCode = room.getRoomCode();
             } while (!usedRoomCodes.add(roomCode)); // Add the code to the set
         }
 
@@ -98,16 +98,23 @@ public class WebSocketController {
         if (activeRooms.get(request.getRoomCode()) != null) {
             Room room = activeRooms.get(request.getRoomCode());
             Position position = new Position(500, 500);
-            room.addPlayer(new Player(request.getPlayerName(), position));
-            room.broadcastPlayerUpdate(messagingTemplate);
-            response.put("status", "OK");
-            response.put("roomCode", room.getRoomCode());
-        } else {
-            response.put("status", "NO_SUCH_ROOM");
-            response.put("roomCode", null);
-        }
-        
-        messagingTemplate.convertAndSend("/topic/joinResponse", response);
+            if (room.getInGamePlayersMap().get(request.getPlayerName()) == null) {
+
+                room.addPlayer(new Player(request.getPlayerName(), position));
+                room.broadcastPlayerUpdate(messagingTemplate);
+                response.put("status", "OK");
+                response.put("roomCode", room.getRoomCode());
+            } else {
+                response.put("status", "NAME_TAKEN");
+                response.put("roomCode", null);
+            }
+        }else{
+        response.put("status", "NO_SUCH_ROOM");
+        response.put("roomCode", null);
+    }
+
+    messagingTemplate.convertAndSend("/topic/joinResponse",response);
+
     }
 
     public void removePlayer(String playerName, Room room) {
@@ -209,7 +216,7 @@ public class WebSocketController {
             System.err.println("Imposter not found or mismatch");
         }
 
-        playerService.handleKill(imposter, room.getPlayersMap());
+        playerService.handleKill(imposter, room.getPlayersMap(), roomCode, messagingTemplate);
         room.broadcastPlayerUpdate(messagingTemplate);
 
     }
@@ -228,7 +235,6 @@ public class WebSocketController {
     public String startGame(@DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
         System.out.println("Game started!");
-        
 
         List<Position> positions = new ArrayList<>();
         positions.add(new Position(2175, 350));
