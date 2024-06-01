@@ -86,16 +86,14 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
               <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '80px', height: '90px', position: 'relative' }} />
             </div>
           ))}
+          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} />
         </div>
-      <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} />
       </div>
-
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
       )}
-      {isImposter && <KillButton onKill={handleKill} />}
-      
+      {isImposter && <KillButton onKill={handleKill} />}      
     </div>
   );
 };

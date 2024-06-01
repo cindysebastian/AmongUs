@@ -17,7 +17,7 @@ interface Props {
 
 const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer}) => {
     return (
-        <div>
+        <div style={{position: 'fixed'}}>
             {/* Render images at the coordinates of interactibles */}
             {interactibles.map(interactible => (
                 <img
