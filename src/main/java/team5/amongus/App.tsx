@@ -23,6 +23,7 @@ const App = () => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
   const [inputName, setInputName] = useState('');
+  const [inputCode, setInputCode] = useState('');
   const [firstPlayerName, setFirstPlayerName] = useState('');
   const [players, setPlayers] = useState({});
   const [messages, setMessages] = useState([]);
@@ -69,16 +70,6 @@ const App = () => {
     }
   }, [roomCode, playerName]);
 
-
-  useEffect(() => {
-    let subscription;
-
-    return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
-    };
-  }, [stompClient]);
 
   useEffect(() => {
     if (interactibles && playerName) {
@@ -138,6 +129,10 @@ const App = () => {
     setInputName(event.target.value);
   };
 
+  const handle2InputChange = (event) => {
+    setInputCode(event.target.value);
+  };
+
   const handleHostGame = () => {
     const trimmedName = inputName.trim();
     console.log("Hosting Game...");
@@ -154,7 +149,7 @@ const App = () => {
           setRoomCode(string);
           setPlayerSpawned(true);
           setInputName('');
-          
+
           navigate('/game');
         } else {
           alert('Failed to host game: ' + response.message);
@@ -190,11 +185,40 @@ const App = () => {
   }, [redirectToSpaceShip, gameStarted, navigate]);
 
   const handleJoinGame = (playerName, roomCode) => {
+    roomCode = inputCode;
+
+    const trimmedName = inputName ? inputName.trim() : '';
+    if (!trimmedName || !stompClient || !roomCode) {
+      console.error("Missing required parameters for joining game:", { trimmedName, stompClient, roomCode });
+      return;
+    }
+    
+
     const message = {
-      playerName: playerName,
+      playerName: trimmedName,
       roomCode: roomCode
     };
-    stompClient.send('/app/joinGame/' + roomCode, message);
+
+    stompClient.send(`/app/joinGame/${roomCode}`, {}, JSON.stringify(message));
+  
+    const subscription = stompClient.subscribe('/topic/joinResponse', (message) => {
+      const response = JSON.parse(message.body);
+      console.log("Response:" + response.roomCode)
+      if (response.status === 'OK') {
+        setPlayerName(trimmedName);
+        setFirstPlayerName(null);
+        let string = response.roomCode;
+        setRoomCode(string);
+        setPlayerSpawned(true);
+        setInputName('');
+
+        navigate('/game');
+      } else {
+        alert('Failed to join game: ' + response.message);
+      }
+      // Unsubscribe after receiving the response
+      subscription.unsubscribe();
+    });
   }
 
   return (
@@ -235,6 +259,13 @@ const App = () => {
               value={inputName}
               onChange={handleInputChange}
               placeholder="Enter your name"
+              className={styles.input}
+            />
+            <input
+              type="text"
+              value={inputCode}
+              onChange={handle2InputChange}
+              placeholder="Enter your Room Code"
               className={styles.input}
             />
             <button onClick={() => handleJoinGame(playerName, roomCode)} className={styles.button}>Join Private Room</button>

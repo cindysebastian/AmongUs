@@ -128,7 +128,9 @@ public class Room {
             }
             previousPlayersMap.putAll(clonedPlayersMap);
 
-            messagingTemplate.convertAndSend("/topic/players/{roomCode}", playersMap);
+            String destination = "/topic/players/" + roomCode;
+
+            messagingTemplate.convertAndSend(destination, playersMap);
 
         }
 

@@ -10,6 +10,12 @@ import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.context.event.EventListener;
 import org.springframework.security.core.Authentication;
 
@@ -72,23 +78,27 @@ public class WebSocketController {
         room.broadcastPlayerUpdate(messagingTemplate);
     }
 
-    @MessageMapping("/joinGame")
-    @SendToUser("/queue/joinResponse")
-    public Map<String, Object> joinGame(@Payload String playerName, @DestinationVariable String roomCode) {
+    @MessageMapping("/joinGame/{roomCode}")
+    public void joinGame(@Payload JoinGameRequest request) {
+        System.out.println("Received join game request: " + request);
+        System.out.println("Player name: " + request.getPlayerName());
+        System.out.println("Room code: " + request.getRoomCode());
 
         Map<String, Object> response = new HashMap<>();
 
-        if (activeRooms.get(roomCode) != null) {
-            Room room = activeRooms.get(roomCode);
-            room.addPlayer(new Player(playerName));
+        if (activeRooms.get(request.getRoomCode()) != null) {
+            Room room = activeRooms.get(request.getRoomCode());
+            Position position = new Position(500, 500);
+            room.addPlayer(new Player(request.getPlayerName(), position));
             room.broadcastPlayerUpdate(messagingTemplate);
+            response.put("status", "OK");
+            response.put("roomCode", room.getRoomCode());
+        } else {
+            response.put("status", "NO_SUCH_ROOM");
+            response.put("roomCode", null);
         }
 
-        // Add response parameters
-        response.put("status", "OK");
-        response.put("roomCode", roomCode);
-
-        return response;
+        messagingTemplate.convertAndSend("/topic/joinResponse", response);
     }
 
     public void removePlayer(String playerName, Room room) {
@@ -143,7 +153,7 @@ public class WebSocketController {
 
     @MessageMapping("/move/{roomCode}")
     public void move(String payload, @DestinationVariable String roomCode) {
-       
+
         Room room = activeRooms.get(roomCode);
         if (room == null) {
             // Handle case where the room doesn't exist
