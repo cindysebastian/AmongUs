@@ -6,7 +6,7 @@ const directionMap = {
   'd': 'RIGHT',
 };
 
-export const movePlayer = (stompClient, playerName, keysPressed, interactionInProgress) => {
+export const movePlayer = (stompClient, playerName, keysPressed, interactionInProgress, roomCode) => {
   if (!stompClient || !playerName) return;
 
   const handleKeyPress = (e: KeyboardEvent) => {
@@ -38,11 +38,9 @@ export const movePlayer = (stompClient, playerName, keysPressed, interactionInPr
 
     if (pressedKeys.length > 0) {
       const directionsToSend = pressedKeys.map(key => directionMap[key]);
-      stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: directionsToSend }));
-      stompClient.send('/app/move/inGamePlayers', {}, JSON.stringify({ playerName: playerName, directions: directionsToSend }));
+      stompClient.send(`/app/move/${roomCode}`, {}, JSON.stringify({ playerName: playerName, directions: directionsToSend, roomCode: roomCode }));
     } else {
-      stompClient.send('/app/move', {}, JSON.stringify({ playerName: playerName, directions: [] }));
-      stompClient.send('/app/move/inGamePlayers', {}, JSON.stringify({ playerName: playerName, directions: [] }));
+      stompClient.send(`/app/move/${roomCode}`, {}, JSON.stringify({ playerName: playerName, directions: [], roomCode: roomCode  }));
     }
   };
 

@@ -1,7 +1,6 @@
 package team5.amongus.model;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

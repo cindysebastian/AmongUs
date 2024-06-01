@@ -9,10 +9,6 @@ import java.util.Random;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import team5.amongus.service.IChatService;
-import team5.amongus.service.ICollisionMaskService;
-import team5.amongus.service.IPlayerService;
-import team5.amongus.service.ITaskService;
 
 public class Room {
     private final String roomCode;
@@ -24,12 +20,10 @@ public class Room {
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private List<Message> chatMessages = new ArrayList<>();
     private boolean gameStarted = false;
-    private final SimpMessagingTemplate messagingTemplate;
 
 
     public Room() {
         this.roomCode = generateRoomCode();
-        this.messagingTemplate = null;
     }
 
     public String getRoomCode() {
@@ -61,7 +55,12 @@ public class Room {
     }
 
     public void addPlayer(Player player) {
-        playersMap.put(player.getName(), player);
+        inGamePlayersMap.put(player.getName(), player);
+        System.out.println(inGamePlayersMap);
+    }
+
+    public void removeLobbyPlayer(String playerName) {
+        inGamePlayersMap.remove(playerName);
     }
 
     public void removePlayer(String playerName) {
@@ -103,21 +102,14 @@ public class Room {
     }
 
 
-    private final long broadcastInterval = 25; // Limit to 30 broadcasts per second
-    private long lastBroadcastTime = 0;
+    
 
-    @SuppressWarnings("unused")
-    public void broadcastPlayerUpdate() {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastBroadcastTime < broadcastInterval) {
-            // Too soon to broadcast again, ignore this request
-            return;
-        }
+
+    public void broadcastPlayerUpdate(SimpMessagingTemplate messagingTemplate) {
+        
 
         // Update the last broadcast time
-        lastBroadcastTime = currentTime;
-
-        // Check if there are any changes in the playersMap or inGamePlayersMap
+                // Check if there are any changes in the playersMap or inGamePlayersMap
         boolean playerMapChanged = !isMapEqual(playersMap, previousPlayersMap);
         boolean inGamePlayerMapChanged = !isMapEqual(inGamePlayersMap, previousinGamePlayersMap);
 
@@ -136,7 +128,7 @@ public class Room {
             }
             previousPlayersMap.putAll(clonedPlayersMap);
 
-            messagingTemplate.convertAndSend("/topic/players", playersMap);
+            messagingTemplate.convertAndSend("/topic/players/{roomCode}", playersMap);
 
         }
 
@@ -153,8 +145,9 @@ public class Room {
                 }
             }
             previousinGamePlayersMap.putAll(clonedInGamePlayersMap);
+            String destination = "/topic/inGamePlayers/" + roomCode;
 
-            messagingTemplate.convertAndSend("/topic/inGamePlayers", inGamePlayersMap);
+            messagingTemplate.convertAndSend(destination, inGamePlayersMap);
 
         }
 
@@ -204,7 +197,7 @@ public class Room {
         interactibles = updatedInteractables;
     }
 
-    public void broadcastInteractiblesUpdate() {
+    public void broadcastInteractiblesUpdate(SimpMessagingTemplate messagingTemplate) {
         if (!Objects.equals(interactibles, previousInteractibles)) {
             messagingTemplate.convertAndSend("/{roomcode}/topic/interactions", interactibles);
             previousInteractibles.clear();

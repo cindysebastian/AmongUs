@@ -12,10 +12,11 @@ interface Props {
     stompClient: Stomp.Client | null; // Add stompClient to props
     interactibles: Interactible[];
     currentPlayer: String;
+    roomCode: String;
 
 }
 
-const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer}) => {
+const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, roomCode}) => {
     return (
         <div>
             {/* Render images at the coordinates of interactibles */}
@@ -40,11 +41,11 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer}) => 
                 if (interactible.assignedPlayer == currentPlayer && interactible.inProgress) {
                     switch (interactible.type) {
                         case 'MINE':
-                            return <MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} />;
+                            return <MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} roomCode={roomCode}/>;
                         case 'SCAN':
-                            return <ScanMinigame key={interactible.id} stompClient={stompClient} interactible={interactible}/>;
+                            return <ScanMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} roomCode={roomCode}/>;
                         case 'SWIPE':
-                            return <SwipeMinigame key={interactible.id} stompClient={stompClient} interactible={interactible}/>;
+                            return <SwipeMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} roomCode={roomCode}/>;
                         default:
                             return null;
                     }

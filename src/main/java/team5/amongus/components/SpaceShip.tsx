@@ -6,7 +6,7 @@ import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import ProgressBar from './ProgressBar';
-import { killPlayer, subscribeToPlayerKilled, subscribeToImposter } from '../service (Frontend)/WebsocketService';
+import { killPlayer} from '../service (Frontend)/WebsocketService';
 import KillButton from './KillButton';
 
 interface Props {
@@ -14,24 +14,13 @@ interface Props {
   players: Record<string, Player>;
   interactibles: Interactible[];
   currentPlayer: string;  // Change to 'string' instead of 'String'
+  roomCode: string;
 }
 
-const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, currentPlayer }) => {
+const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, currentPlayer, roomCode}) => {
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
-
-  useEffect(() => {
-    const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
-    const unsubscribeImposter = subscribeToImposter(stompClient, (imposterName: string) => {
-      // Add logic if needed for imposter subscription
-    });
-
-    return () => {
-      unsubscribeKilled();
-      unsubscribeImposter();
-    };
-  }, [stompClient]);
 
   useEffect(() => {
     if (currentPlayer && players[currentPlayer]) {
@@ -49,7 +38,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   };
 
   const handleKill = () => {
-    killPlayer(stompClient, currentPlayer);
+    killPlayer(stompClient, currentPlayer, roomCode);
   };
 
   const completedTasks = interactibles.filter(interactible => interactible.completed).length;
@@ -81,7 +70,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
         {showKillGif && (
           <div className={styles.killGifContainer}></div>
         )}
-        <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} />
+        <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} roomCode={roomCode}/>
       </div>
     </div>
   );

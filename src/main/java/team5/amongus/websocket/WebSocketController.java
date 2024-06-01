@@ -7,9 +7,11 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.core.Authentication;
 
 import team5.amongus.model.*;
 import team5.amongus.service.IChatService;
@@ -49,21 +51,25 @@ public class WebSocketController {
     }
 
     @MessageMapping("/hostGame")
-    @SendToUser("/queue/hostResponse")
-    public Map<String, Object> hostGame(@Payload String playerName, Principal principal) {
-        Map<String, Object> response = new HashMap<>();
-
-        // Create a new Room
+    public void hostGame(@Payload HostGameRequest request) {
         Room room = new Room();
-        room.addPlayer(new Player(playerName));
-        String roomCode = room.getRoomCode();
-        activeRooms.put(roomCode, room);
+        Position position = new Position(500, 500);
+        activeRooms.put(room.getRoomCode(), room);
+        room.addPlayer(new Player(request.getPlayerName(), position));
+        HostGameResponse response = new HostGameResponse("OK", room.getRoomCode());
+        messagingTemplate.convertAndSend("/topic/hostResponse", response);
+    }
 
-        // Add response parameters
-        response.put("status", "OK");
-        response.put("roomCode", roomCode);
+    @MessageMapping("/topic/players/{roomCode}")
+    public void subscribeToPlayers(@DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
+        room.broadcastPlayerUpdate(messagingTemplate);
+    }
 
-        return response;
+    @MessageMapping("/topic/inGamePlayers/{roomCode}")
+    public void subscribeToInGamePlayers(@DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
+        room.broadcastPlayerUpdate(messagingTemplate);
     }
 
     @MessageMapping("/joinGame")
@@ -72,10 +78,10 @@ public class WebSocketController {
 
         Map<String, Object> response = new HashMap<>();
 
-        if(activeRooms.get(roomCode)!= null){
+        if (activeRooms.get(roomCode) != null) {
             Room room = activeRooms.get(roomCode);
             room.addPlayer(new Player(playerName));
-            room.broadcastPlayerUpdate();
+            room.broadcastPlayerUpdate(messagingTemplate);
         }
 
         // Add response parameters
@@ -88,10 +94,10 @@ public class WebSocketController {
     public void removePlayer(String playerName, Room room) {
         room.getInGamePlayersMap().remove(playerName);
         room.getPlayersMap().remove(playerName);
-        room.broadcastPlayerUpdate();
+        room.broadcastPlayerUpdate(messagingTemplate);
     }
 
-    @MessageMapping("/heartbeat")
+    @MessageMapping("/heartbeat/{roomCode}")
     public void handleHeartbeat(String playerName, @DestinationVariable String roomCode) {
 
         Room room = activeRooms.get(roomCode);
@@ -103,8 +109,8 @@ public class WebSocketController {
         }
     }
 
-    @MessageMapping("/{roomCode}/interact")
-    @SendTo("/topic/interactions")
+    @MessageMapping("/interact/{roomCode}")
+    @SendTo("/topic/interactions/{roomCode}")
     public ArrayList<Interactible> handleInteract(@Payload String playerName, @DestinationVariable String roomCode)
             throws IOException {
         Room room = activeRooms.get(roomCode);
@@ -131,36 +137,40 @@ public class WebSocketController {
                 room.setInteractibles(updatedInteractables);
             }
         }
-        room.broadcastInteractiblesUpdate();
+        room.broadcastInteractiblesUpdate(messagingTemplate);
         return room.getInteractibles();
     }
 
-    @MessageMapping("/{roomCode}/move")
+    @MessageMapping("/move/{roomCode}")
     public void move(String payload, @DestinationVariable String roomCode) {
-
+       
         Room room = activeRooms.get(roomCode);
         if (room == null) {
             // Handle case where the room doesn't exist
             return;
         }
+
         if (room.getGameStarted()) {
             playerService.movePlayer(room.getPlayersMap(), payload, collisionMask);
         } else {
             playerService.movePlayer(room.getInGamePlayersMap(), payload, collisionMask);
         }
-        room.broadcastPlayerUpdate();
+
+        room.broadcastPlayerUpdate(messagingTemplate);
+        System.out.println(room.getInGamePlayersMap());
     }
 
-    @MessageMapping("/{roomcode}/sendMessage")
-    @SendTo("/{roomcode}/topic/messages")
-    public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor, @DestinationVariable String roomCode) {
+    @MessageMapping("/sendMessage/{roomCode}")
+    @SendTo("/topic/messages/{roomCode}")
+    public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor,
+            @DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
         List<Message> updatedChatMessages = chatService.processMessage(room.getChatMessages(), message);
         room.setMessages(updatedChatMessages);
         return updatedChatMessages;
     }
 
-    @MessageMapping("/{roomcode}/killPlayer")
+    @MessageMapping("/killPlayer/{roomCode}")
     public void handleKill(String playerName, @DestinationVariable String roomCode) {
         if (playerName == null || playerName.trim().isEmpty()) {
             System.out.println("PlayerName null");
@@ -182,21 +192,21 @@ public class WebSocketController {
         }
 
         playerService.handleKill(imposter, room.getPlayersMap());
-        room.broadcastPlayerUpdate();
+        room.broadcastPlayerUpdate(messagingTemplate);
 
     }
 
-    @MessageMapping("/{roomcode}/completeTask")
+    @MessageMapping("/completeTask/{roomCode}")
     public void completeTask(String payload, @DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
 
         ArrayList<Interactible> updatedInteractables = taskService.completeTask(payload, room.getInteractibles());
-        room.setInteractibles(updatedInteractables); 
-        room.broadcastInteractiblesUpdate();
+        room.setInteractibles(updatedInteractables);
+        room.broadcastInteractiblesUpdate(messagingTemplate);
     }
 
-    @MessageMapping("/{roomcode}/startGame")
-    @SendTo("/{roomcode}/topic/gameStart")
+    @MessageMapping("/startGame/{roomCode}")
+    @SendTo("/topic/gameStart/{roomCode}")
     public String startGame(@DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
         System.out.println("Game started!");
@@ -224,48 +234,56 @@ public class WebSocketController {
         collisionMask = collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
         room.setInteractibles(taskService.createTasks(room.getPlayersMap()));
 
-        room.broadcastPlayerUpdate();
-        room.broadcastInteractiblesUpdate();
+        room.broadcastPlayerUpdate(messagingTemplate);
+        room.broadcastInteractiblesUpdate(messagingTemplate);
         return "Game has started";
     }
 
-    /*@EventListener
-    public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
-        String sessionId = event.getSessionId();
-
-        boolean isFirstPlayer = false;
-        String firstPlayerName = "";
-
-        if (!inGamePlayersMap.isEmpty()) {
-            firstPlayerName = inGamePlayersMap.keySet().iterator().next();
-            isFirstPlayer = inGamePlayersMap.get(firstPlayerName).getSessionId().equals(sessionId);
-        }
-
-        for (Iterator<Map.Entry<String, Player>> iterator = inGamePlayersMap.entrySet().iterator(); iterator
-                .hasNext();) {
-            Map.Entry<String, Player> entry = iterator.next();
-            Player player = entry.getValue();
-            if (player.getSessionId() != null && player.getSessionId().equals(sessionId)) {
-                iterator.remove();
-                playersMap.remove(entry.getKey());
-                broadcastPlayerUpdate();
-                break;
-            }
-        }
-
-        if (isFirstPlayer && !inGamePlayersMap.isEmpty()) {
-            String nextPlayerName = inGamePlayersMap.keySet().iterator().next();
-            messagingTemplate.convertAndSend("/topic/nextPlayerStartButton", nextPlayerName);
-        }
-
-        for (Iterator<Map.Entry<String, Player>> iterator = playersMap.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry<String, Player> entry = iterator.next();
-            Player player = entry.getValue();
-            if (player.getSessionId() != null && player.getSessionId().equals(sessionId)) {
-                iterator.remove();
-                broadcastPlayerUpdate();
-                break;
-            }
-        }
-    }*/
+    /*
+     * @EventListener
+     * public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+     * String sessionId = event.getSessionId();
+     * 
+     * boolean isFirstPlayer = false;
+     * String firstPlayerName = "";
+     * 
+     * if (!inGamePlayersMap.isEmpty()) {
+     * firstPlayerName = inGamePlayersMap.keySet().iterator().next();
+     * isFirstPlayer =
+     * inGamePlayersMap.get(firstPlayerName).getSessionId().equals(sessionId);
+     * }
+     * 
+     * for (Iterator<Map.Entry<String, Player>> iterator =
+     * inGamePlayersMap.entrySet().iterator(); iterator
+     * .hasNext();) {
+     * Map.Entry<String, Player> entry = iterator.next();
+     * Player player = entry.getValue();
+     * if (player.getSessionId() != null && player.getSessionId().equals(sessionId))
+     * {
+     * iterator.remove();
+     * playersMap.remove(entry.getKey());
+     * broadcastPlayerUpdate();
+     * break;
+     * }
+     * }
+     * 
+     * if (isFirstPlayer && !inGamePlayersMap.isEmpty()) {
+     * String nextPlayerName = inGamePlayersMap.keySet().iterator().next();
+     * messagingTemplate.convertAndSend("/topic/nextPlayerStartButton",
+     * nextPlayerName);
+     * }
+     * 
+     * for (Iterator<Map.Entry<String, Player>> iterator =
+     * playersMap.entrySet().iterator(); iterator.hasNext();) {
+     * Map.Entry<String, Player> entry = iterator.next();
+     * Player player = entry.getValue();
+     * if (player.getSessionId() != null && player.getSessionId().equals(sessionId))
+     * {
+     * iterator.remove();
+     * broadcastPlayerUpdate();
+     * break;
+     * }
+     * }
+     * }
+     */
 }

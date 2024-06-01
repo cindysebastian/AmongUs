@@ -7,11 +7,11 @@ import { handleReceivedInteractibles } from './InteractionService';
 
 export const connectWebSocket = (setStompClient) => {
   // Disable Stomp.js logging
- 
+
 
   const socket = new SockJS('http://localhost:8080/ws');
   const stomp = Stomp.over(socket);
-  
+
 
   stomp.connect({}, () => {
     console.log('Connected to WebSocket');
@@ -26,28 +26,46 @@ export const connectWebSocket = (setStompClient) => {
   };
 };
 
-export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGamePlayers) => {
-  if (!stompClient || !playerName) return;
+export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGamePlayers, roomCode) => {
+  if (!stompClient || !playerName || !roomCode) {
+    console.error("Missing required parameters for subscription:", { stompClient, playerName, roomCode });
+    return;
+  }
 
-  stompClient.subscribe('/topic/players', (message) => {
-    const updatedPlayers = JSON.parse(message.body);
-    const playersWithImposterFlag = addImposterFlag(updatedPlayers);
-    setPlayers(playersWithImposterFlag);
-    const currentPlayer = playersWithImposterFlag[playerName];
+  console.log(`Subscribing to /topic/players/${roomCode}`);
+  stompClient.subscribe(`/topic/players/${roomCode}`, (message) => {
+    try {
+      console.log("Received message on /topic/players:", message);
+      const updatedPlayers = JSON.parse(message.body);
+      const playersWithImposterFlag = addImposterFlag(updatedPlayers);
+      setPlayers(playersWithImposterFlag);
+      const currentPlayer = playersWithImposterFlag[playerName];
+      console.log("Updated players:", playersWithImposterFlag);
+    } catch (error) {
+      console.error('Error processing player message:', error);
+    }
   });
 
-  stompClient.subscribe('/topic/inGamePlayers', (message) => {
-    const updatedInGamePlayers = JSON.parse(message.body);
-    const inGamePlayersWithImposterFlag = addImposterFlag(updatedInGamePlayers);
-    setInGamePlayers(inGamePlayersWithImposterFlag);
-    const currentPlayer = inGamePlayersWithImposterFlag[playerName];
+  console.log(`Subscribing to /topic/inGamePlayers/${roomCode}`);
+  stompClient.subscribe(`/topic/inGamePlayers/${roomCode}`, (message) => {
+    try {
+      console.log("Received message on /topic/inGamePlayers:", message);
+      const updatedInGamePlayers = JSON.parse(message.body);
+      const inGamePlayersWithImposterFlag = addImposterFlag(updatedInGamePlayers);
+      setInGamePlayers(inGamePlayersWithImposterFlag);
+      const currentPlayer = inGamePlayersWithImposterFlag[playerName];
+      console.log("Updated in-game players:", inGamePlayersWithImposterFlag);
+    } catch (error) {
+      console.error('Error processing in-game player message:', error);
+    }
   });
 };
+
 
 const addImposterFlag = (playersMap) => {
   return Object.keys(playersMap).reduce((acc, key) => {
     const player = playersMap[key];
-    
+
     // Example condition to identify imposters
     if (player.canKill != null) {
       player.isImposter = true;
@@ -73,10 +91,11 @@ export default interface Player {
 }
 
 
-export const subscribeToMessages = (stompClient, setMessages) => {
+export const subscribeToMessages = (stompClient, setMessages, roomCode) => {
   if (!stompClient) return;
 
-  const subscription = stompClient.subscribe('/topic/messages', (message) => {
+
+  const subscription = stompClient.subscribe(`/topic/messages/${roomCode}`, (message) => {
     const newMessage = JSON.parse(message.body);
     setMessages((prevMessages) => [...prevMessages, newMessage]);
   });
@@ -86,95 +105,61 @@ export const subscribeToMessages = (stompClient, setMessages) => {
   };
 };
 
-export const markTaskAsCompleted = (stompClient, interactibleId: number) => {
+export const markTaskAsCompleted = (stompClient, interactibleId: number, roomCode) => {
   if (!stompClient) return;
 
   // Construct the message body
   const messageBody = {
-      interactibleId: interactibleId
+    interactibleId: interactibleId
   };
 
   // Send a STOMP message to your backend to mark the task as completed
 
-  stompClient.send('/app/completeTask', {}, JSON.stringify(messageBody));
+  stompClient.send(`/app/completeTask/${roomCode}`, {}, JSON.stringify(messageBody));
 };
 
 
 
 
-export const subscribetoInteractions = (stompClient, setInteractibles) => {
+export const subscribetoInteractions = (stompClient, setInteractibles, roomCode) => {
   if (!stompClient) return;
 
-  
-  stompClient.subscribe('/topic/interactions', (message) => {
+
+  stompClient.subscribe(`/topic/interactions/${roomCode}`, (message) => {
     const updatedInteractibles = JSON.parse(message.body);
     setInteractibles(updatedInteractibles);
     handleReceivedInteractibles(updatedInteractibles, setInteractibles);
 
   });
 
- 
+
 };
 
-export const sendInteraction = (stompClient, playerName) => {
+export const sendInteraction = (stompClient, playerName, roomCode) => {
   if (!stompClient || !playerName) return;
 
 
-  stompClient.send('/app/interact', {},playerName);
+  stompClient.send(`/app/interact//${roomCode}`, {}, playerName);
 };
 
-export const sendChatMessage = (stompClient, playerName, messageContent) => {
+export const sendChatMessage = (stompClient, playerName, messageContent, roomCode) => {
   if (!stompClient || !playerName) return;
 
   const newMessage = {
     sender: playerName,
     content: messageContent,
+    roomCode: roomCode
   };
 
-  stompClient.send('/topic/messages', {}, JSON.stringify(newMessage));
+  stompClient.send(`/topic/messages/${roomCode}`, {}, JSON.stringify(newMessage));
 };
 
-export const setPlayer = (stompClient, playerName) => {
+
+export const killPlayer = (stompClient, playerName, roomCode) => {
   if (!stompClient || !playerName.trim()) return;
 
-  const initialPlayer = {
-    name: playerName.trim(),
-    position: { x: 400, y: 400 }, // Initial spawn position
-  };
-
-  stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
+  stompClient.send(`/app/killPlayer/${roomCode}`, {}, playerName);
 };
 
-export const killPlayer = (stompClient, playerName) => {
-  if (!stompClient || !playerName.trim()) return;
-
-  stompClient.send('/app/killPlayer', {}, playerName);
-};
-
-export const subscribeToPlayerKilled = (stompClient, setPlayerKilled) => {
-  if (!stompClient) return;
-
-  const subscription = stompClient.subscribe('/topic/killedPlayer', (message) => {
-      const killedPlayer = JSON.parse(message.body);
-      setPlayerKilled(killedPlayer);
-  });
-
-  return () => {
-      subscription.unsubscribe();
-  };
-};
-
-export const subscribeToImposter = (stompClient, setIsImposter) => {
-  if (!stompClient) return;
-
-  const subscription = stompClient.subscribe('/topic/isImposter', (message) => {
-    const isImposter = JSON.parse(message.body);
-    setIsImposter(isImposter.name); 
-  });
-
-  return () => {
-    subscription.unsubscribe();
-  };
-};
 
 

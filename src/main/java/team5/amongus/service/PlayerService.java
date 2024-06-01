@@ -6,7 +6,7 @@ import team5.amongus.model.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -14,11 +14,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class PlayerService implements IPlayerService {
 
-    private final Room room;
-
-    public PlayerService(Room room) {
-        this.room = room;
-    }
 
     @Override
     public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask) {
