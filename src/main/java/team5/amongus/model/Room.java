@@ -238,7 +238,10 @@ public class Room {
         if (player1.getIsMoving() != player2.getIsMoving()) {
 
             return false;
+        }if (player1.getWillContinue() != player2.getWillContinue()) {
+            return false;
         }
+
 
         return true;
     }

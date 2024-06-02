@@ -16,6 +16,8 @@ public class Player implements Serializable, Cloneable {
     private int height = 130;
     private boolean canInteract = false;
     private boolean isAlive = true;
+    private boolean willContinue = false;
+
 
     private long lastActivityTime;
     private String sessionId;
@@ -25,6 +27,14 @@ public class Player implements Serializable, Cloneable {
         this.name = name;
         this.position = position;
         this.lastActivityTime = System.currentTimeMillis();
+    }
+
+    public void setWillContinue(boolean set){
+        this.willContinue = set;
+    }
+
+    public boolean getWillContinue(){
+        return this.willContinue;
     }
 
     public int getWidth() {

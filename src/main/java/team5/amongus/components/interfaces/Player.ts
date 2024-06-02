@@ -9,6 +9,7 @@ interface Player {
   //isDead?: boolean; // for dead body 
   isImposter? : boolean; // for imposter
   host? : boolean;
+  willContinue?: boolean; // for continue game
 
 }
 export default Player

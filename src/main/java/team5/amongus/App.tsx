@@ -167,8 +167,10 @@ const App = () => {
       stompClient.send('/app/hostGame', {}, JSON.stringify({ playerName: trimmedName, playerCount: selectedPlayerCount }));
     }
   };
-
-
+ const handleResetLobby= () => {
+  stompClient.send(`/topic/resetLobby/${roomCode}`)
+};
+  
   const handlePrivate = () => {
     navigate('/private');
   };
@@ -181,6 +183,12 @@ const App = () => {
     if (stompClient) {
       stompClient.send('/app/startGame/' + roomCode);
     }
+  };
+
+  const handleDisconnect = () => {
+    stompClient && stompClient.disconnect();
+    connectWebSocket(setStompClient);
+    navigate('/login');
   };
 
   useEffect(() => {
@@ -293,7 +301,7 @@ const App = () => {
       </div>} />
       <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage}/> } />
       <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} roomCode={roomCode} />} />
-      <Route path="/end" element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState}/>} />
+      <Route path="/end" element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode}/> } />
       <Route path="/" element={<Navigate replace to="/login" />} />
       
       

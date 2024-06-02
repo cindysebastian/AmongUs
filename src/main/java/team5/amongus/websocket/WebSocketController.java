@@ -239,6 +239,23 @@ public class WebSocketController {
         room.broadcastInteractiblesUpdate(messagingTemplate);
     }
 
+    @MessageMapping("/wait/{roomCode}")
+    public void waitForContinue(String payload, @DestinationVariable String roomCode){
+        // Retrieve the room using the roomCode
+        Room room = activeRooms.get(roomCode);
+        
+        // Retrieve the player from the room's players map using the payload (player name or identifier)
+        Player player = room.getPlayersMap().get(payload);
+        
+        // Set the player's willContinue property to true
+        player.setWillContinue(true);
+        
+        // Broadcast the updated player information to all players in the room
+        room.broadcastPlayerUpdate(messagingTemplate);
+    }
+    
+
+
     @MessageMapping("/startGame/{roomCode}")
     @SendTo("/topic/gameStart/{roomCode}")
     public String startGame(@DestinationVariable String roomCode) {
