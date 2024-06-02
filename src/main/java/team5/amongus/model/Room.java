@@ -191,7 +191,7 @@ public class Room {
                 }
             }
             previousinGamePlayersMap.putAll(clonedInGamePlayersMap);
-            String destination = "/topic/inGamePlayers/" + roomCode;
+            String destination = "/topic/inGamePlayers/" + this.roomCode;
 
             messagingTemplate.convertAndSend(destination, inGamePlayersMap);
 
@@ -244,11 +244,20 @@ public class Room {
     }
 
     public void broadcastInteractiblesUpdate(SimpMessagingTemplate messagingTemplate) {
-        if (!Objects.equals(interactibles, previousInteractibles)) {
-            messagingTemplate.convertAndSend("/topic/interactions/{roomCode}", interactibles);
+        List<Interactible> clonedInteractibles = cloneInteractibles(interactibles);
+        if (!Objects.equals(clonedInteractibles, previousInteractibles)) {
+            messagingTemplate.convertAndSend("/topic/interactions/" + roomCode, clonedInteractibles);
             previousInteractibles.clear();
-            previousInteractibles.addAll(interactibles);
+            previousInteractibles.addAll(clonedInteractibles);
         }
+    }
+
+    private List<Interactible> cloneInteractibles(List<Interactible> original) {
+        List<Interactible> clonedList = new ArrayList<>(original.size());
+        for (Interactible interactible : original) {
+            clonedList.add(interactible.clone());
+        }
+        return clonedList;
     }
 
 }

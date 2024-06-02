@@ -66,6 +66,7 @@ const App = () => {
       subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers, roomCode);
       subscribeToMessages(stompClient, setMessages, roomCode);
       subscribeToGameStatus(stompClient, setRedirectToSpaceShip, roomCode);
+      subscribetoInteractions(stompClient, setInteractibles, roomCode);
     }
   }, [roomCode, playerName]);
 

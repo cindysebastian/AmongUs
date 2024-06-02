@@ -2,7 +2,7 @@ package team5.amongus.model;
 
 import java.util.ArrayList;
 
-public class Interactible {
+public class Interactible implements Cloneable {
 
     private Position position;
     private long id;
@@ -53,13 +53,20 @@ public class Interactible {
     }
 
     public static Interactible getInteractibleById(int interactibleId, ArrayList<Interactible> interactibles) {
-    for (Interactible interactible : interactibles) {
-        if (interactible.getId() == interactibleId) { 
-            return interactible;
+        for (Interactible interactible : interactibles) {
+            if (interactible.getId() == interactibleId) {
+                return interactible;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Interactible clone() {
+        try {
+            return (Interactible) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("Clone not supported", e);
         }
     }
-    return null; 
-}
-
-    
 }
