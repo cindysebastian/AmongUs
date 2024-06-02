@@ -87,9 +87,6 @@ const App = () => {
     }
   }, [interactibles, playerName]);
 
-
-
-
   useEffect(() => {
     if (stompClient && playerSpawned) {
       return movePlayer(stompClient, playerName, keysPressed, interactionInProgress, roomCode);

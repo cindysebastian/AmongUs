@@ -177,7 +177,6 @@ public class Room {
             String destination = "/topic/players/" + roomCode;
 
             messagingTemplate.convertAndSend(destination, playersMap);
-
         }
 
         if (inGamePlayerMapChanged) {
@@ -224,24 +223,19 @@ public class Room {
     private boolean arePlayersEqual(Player player1, Player player2) {
 
         if (player1.getPosition().getX() != player2.getPosition().getX()) {
-
             return false;
         }
         if (player1.getPosition().getY() != player2.getPosition().getY()) {
-
             return false;
         }
         if (player1.getisAlive() != player2.getisAlive()) {
-
             return false;
         }
         if (player1.getIsMoving() != player2.getIsMoving()) {
-
             return false;
         }if (player1.getWillContinue() != player2.getWillContinue()) {
             return false;
         }
-
 
         return true;
     }

@@ -125,10 +125,11 @@ img {
     padding: 20px;
     border-radius: 10px;
     max-width: 5000px;
-    width: 1000px;
-    height: 600px;
+    width: 80%;
+    height: 50%;
     max-height: 400px;
-    overflow-y: Fauto;
+    overflow-y: auto;
+    z-index: 10;
   }
   
   .button {

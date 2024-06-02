@@ -46,7 +46,8 @@ public class WebSocketController {
     private final IPlayerService playerService;
     private final ITaskService taskService;
     private final ICollisionMaskService collisionMaskService;
-    private CollisionMask collisionMask;
+    private CollisionMask collisionMaskLobby;
+    private CollisionMask collisionMaskGame;
     private final IChatService chatService;
     private Set<String> usedRoomCodes = new HashSet<>();
 
@@ -57,7 +58,8 @@ public class WebSocketController {
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
         this.collisionMaskService = collisionMaskService;
-        this.collisionMask = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
+        this.collisionMaskLobby = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
+        this.collisionMaskGame = this.collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
     }
 
     @MessageMapping("/hostGame")
@@ -102,29 +104,29 @@ public class WebSocketController {
             Room room = activeRooms.get(request.getRoomCode());
             Position position = new Position(500, 500);
             if (room.getInGamePlayersMap().get(request.getPlayerName()) == null) {
-                if(room.getInGamePlayersMap().size()<room.getMaxPlayers()){
+                if (room.getInGamePlayersMap().size() < room.getMaxPlayers()) {
 
-                room.addPlayer(new Player(request.getPlayerName(), position));
-                room.broadcastPlayerUpdate(messagingTemplate);
-                response.put("status", "OK");
-                response.put("roomCode", room.getRoomCode());
-            }else{
-                response.put("status", "FULL");
-                response.put("roomCode", null);
-            }
+                    room.addPlayer(new Player(request.getPlayerName(), position));
+                    room.broadcastPlayerUpdate(messagingTemplate);
+                    response.put("status", "OK");
+                    response.put("roomCode", room.getRoomCode());
+                } else {
+                    response.put("status", "FULL");
+                    response.put("roomCode", null);
+                }
             } else {
                 response.put("status", "NAME_TAKEN");
                 response.put("roomCode", null);
             }
-        }else{
-        response.put("status", "NO_SUCH_ROOM");
-        response.put("roomCode", null);
+        } else {
+            response.put("status", "NO_SUCH_ROOM");
+            response.put("roomCode", null);
+        }
+
+        messagingTemplate.convertAndSend("/topic/joinResponse", response);
     }
 
-    messagingTemplate.convertAndSend("/topic/joinResponse",response);
-
-    }
-    //TODO: Make Functional/remove if redundant
+    // TODO: Make Functional/remove if redundant
     public void removePlayer(String playerName, Room room) {
         room.getInGamePlayersMap().remove(playerName);
         room.getPlayersMap().remove(playerName);
@@ -177,22 +179,22 @@ public class WebSocketController {
 
     @MessageMapping("/move/{roomCode}")
     public void move(String payload, @DestinationVariable String roomCode) {
-
         Room room = activeRooms.get(roomCode);
         if (room == null) {
             // Handle case where the room doesn't exist
+            System.out.println("room doesn't exist " + roomCode);
             return;
         }
 
-        if (room.getGameStarted()=="Game running") {
-            playerService.movePlayer(room.getPlayersMap(), payload, collisionMask);
-        } else if (room.getGameStarted()=="Game waiting"){
-            playerService.movePlayer(room.getInGamePlayersMap(), payload, collisionMask);
+        if (room.getGameStarted() == "Game running") {
+            playerService.movePlayer(room.getPlayersMap(), payload, collisionMaskGame);
+        }
+        else if (room.getGameStarted() == "Game waiting") {
+            playerService.movePlayer(room.getInGamePlayersMap(), payload, collisionMaskLobby);
         }
 
         room.broadcastPlayerUpdate(messagingTemplate);
     }
-    
 
     @MessageMapping("/sendMessage/{roomCode}")
     @SendTo("/topic/messages/{roomCode}")
@@ -208,7 +210,6 @@ public class WebSocketController {
     public void handleKill(String playerName, @DestinationVariable String roomCode) {
         if (playerName == null || playerName.trim().isEmpty()) {
             System.out.println("PlayerName null");
-
         }
 
         Room room = activeRooms.get(roomCode);
@@ -227,7 +228,6 @@ public class WebSocketController {
 
         playerService.handleKill(imposter, room.getPlayersMap(), roomCode, messagingTemplate);
         room.broadcastPlayerUpdate(messagingTemplate);
-
     }
 
     @MessageMapping("/completeTask/{roomCode}")
@@ -240,21 +240,20 @@ public class WebSocketController {
     }
 
     @MessageMapping("/wait/{roomCode}")
-    public void waitForContinue(String payload, @DestinationVariable String roomCode){
+    public void waitForContinue(String payload, @DestinationVariable String roomCode) {
         // Retrieve the room using the roomCode
         Room room = activeRooms.get(roomCode);
-        
-        // Retrieve the player from the room's players map using the payload (player name or identifier)
+
+        // Retrieve the player from the room's players map using the payload (player
+        // name or identifier)
         Player player = room.getPlayersMap().get(payload);
-        
+
         // Set the player's willContinue property to true
         player.setWillContinue(true);
-        
+
         // Broadcast the updated player information to all players in the room
         room.broadcastPlayerUpdate(messagingTemplate);
     }
-    
-
 
     @MessageMapping("/startGame/{roomCode}")
     @SendTo("/topic/gameStart/{roomCode}")
@@ -281,7 +280,6 @@ public class WebSocketController {
         room.chooseImposter();
         room.getInGamePlayersMap().clear();
 
-        collisionMask = collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
         room.setInteractibles(taskService.createTasks(room.getPlayersMap()));
         room.setGameState("Game running");
         String destination = "/topic/finishGame/" + room.getRoomCode();
@@ -292,55 +290,53 @@ public class WebSocketController {
         return "Game has started";
     }
 
-    /*
-     * @EventListener
-     * public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
-     * String sessionId = event.getSessionId();
-     * 
-     * boolean isFirstPlayer = false;
-     * String firstPlayerName = "";
-     * /* 
-     * CHANGE THIS LOGIC:
-     * When player disconnects, fetch correct room, check which player, BEFORE removing player from the list, check whether they are host
-     * If they are, remove them and then call the validateHost function on the room, if they are not, only remove them.*/
-     /*
-     * if (!inGamePlayersMap.isEmpty()) {
-     * firstPlayerName = inGamePlayersMap.keySet().iterator().next();
-     * isFirstPlayer =
-     * inGamePlayersMap.get(firstPlayerName).getSessionId().equals(sessionId);
-     * }
-     * 
-     * for (Iterator<Map.Entry<String, Player>> iterator =
-     * inGamePlayersMap.entrySet().iterator(); iterator
-     * .hasNext();) {
-     * Map.Entry<String, Player> entry = iterator.next();
-     * Player player = entry.getValue();
-     * if (player.getSessionId() != null && player.getSessionId().equals(sessionId))
-     * {
-     * iterator.remove();
-     * playersMap.remove(entry.getKey());
-     * broadcastPlayerUpdate();
-     * break;
-     * }
-     * }
-     * 
-     * if (isFirstPlayer && !inGamePlayersMap.isEmpty()) {
-     * String nextPlayerName = inGamePlayersMap.keySet().iterator().next();
-     * messagingTemplate.convertAndSend("/topic/nextPlayerStartButton",
-     * nextPlayerName);
-     * }
-     * 
-     * for (Iterator<Map.Entry<String, Player>> iterator =
-     * playersMap.entrySet().iterator(); iterator.hasNext();) {
-     * Map.Entry<String, Player> entry = iterator.next();
-     * Player player = entry.getValue();
-     * if (player.getSessionId() != null && player.getSessionId().equals(sessionId))
-     * {
-     * iterator.remove();
-     * broadcastPlayerUpdate();
-     * break;
-     * }
-     * }
-     * }
-     */
+    /* 
+    @EventListener
+    public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+        String sessionId = event.getSessionId();
+
+        boolean isFirstPlayer = false;
+        String firstPlayerName = "";
+        /*
+         * CHANGE THIS LOGIC:
+         * When player disconnects, fetch correct room, check which player, BEFORE
+         * removing player from the list, check whether they are host
+         * If they are, remove them and then call the validateHost function on the room,
+         * if they are not, only remove them.
+         */
+/*
+        if (!inGamePlayersMap.isEmpty()) {
+            firstPlayerName = inGamePlayersMap.keySet().iterator().next();
+            isFirstPlayer = inGamePlayersMap.get(firstPlayerName).getSessionId().equals(sessionId);
+        }
+
+        for (Iterator<Map.Entry<String, Player>> iterator = inGamePlayersMap.entrySet().iterator(); iterator
+                .hasNext();) {
+            Map.Entry<String, Player> entry = iterator.next();
+            Player player = entry.getValue();
+            if (player.getSessionId() != null && player.getSessionId().equals(sessionId)) {
+                iterator.remove();
+                playersMap.remove(entry.getKey());
+                broadcastPlayerUpdate();
+                break;
+            }
+        }
+
+        if (isFirstPlayer && !inGamePlayersMap.isEmpty()) {
+            String nextPlayerName = inGamePlayersMap.keySet().iterator().next();
+            messagingTemplate.convertAndSend("/topic/nextPlayerStartButton",
+                    nextPlayerName);
+        }
+
+        for (Iterator<Map.Entry<String, Player>> iterator = playersMap.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry<String, Player> entry = iterator.next();
+            Player player = entry.getValue();
+            if (player.getSessionId() != null && player.getSessionId().equals(sessionId)) {
+                iterator.remove();
+                broadcastPlayerUpdate();
+                break;
+            }
+        }
+    }*/
+
 }

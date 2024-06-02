@@ -24,8 +24,6 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
   const [isHost, setIsHost] = useState(false);
   const [chatVisible, setChatVisible] = useState(false);
 
-
-
   useEffect(() => {
     setPlayerCount(Object.keys(inGamePlayers).length);
   }, [inGamePlayers]);
@@ -47,8 +45,6 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
       console.error('Could not copy text: ', err);
     });
   }
-
-
 
   function showTooltip(element: HTMLElement) {
     const tooltip = document.createElement('div');
@@ -115,10 +111,8 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
               isMoving={isMoving}
             />
           </div>
-
         );
       })}
-
     </div>
   );
 };

@@ -4,10 +4,8 @@ import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { handleReceivedInteractibles } from './InteractionService';
 
-
 export const connectWebSocket = (setStompClient) => {
   // Disable Stomp.js logging
-
 
   const socket = new SockJS('http://localhost:8080/ws');
   const stomp = Stomp.over(socket);
@@ -56,7 +54,6 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
   });
 };
 
-
 const addImposterFlag = (playersMap) => {
   return Object.keys(playersMap).reduce((acc, key) => {
     const player = playersMap[key];
@@ -85,10 +82,8 @@ export default interface Player {
   isImposter?: boolean;
 }
 
-
 export const subscribeToMessages = (stompClient, setMessages, roomCode) => {
   if (!stompClient) return;
-
 
   const subscription = stompClient.subscribe(`/topic/messages/${roomCode}`, (message) => {
     const newMessage = JSON.parse(message.body);
@@ -113,7 +108,6 @@ export const subscribetoGameFinishing = (stompClient, setGameWonState, roomCode)
     subscription.unsubscribe();
   };
 };
-
 
 export const markTaskAsCompleted = (stompClient, interactibleId: number, roomCode) => {
   if (!stompClient) return;
@@ -141,12 +135,8 @@ export const subscribeToPlayerKilled = (stompClient, setPlayerKilled, roomCode) 
   };
 };
 
-
-
-
 export const subscribetoInteractions = (stompClient, setInteractibles, roomCode) => {
   if (!stompClient) return;
-
 
   stompClient.subscribe(`/topic/interactions/${roomCode}`, (message) => {
     const updatedInteractibles = JSON.parse(message.body);
@@ -154,13 +144,10 @@ export const subscribetoInteractions = (stompClient, setInteractibles, roomCode)
     handleReceivedInteractibles(updatedInteractibles, setInteractibles);
 
   });
-
-
 };
 
 export const sendInteraction = (stompClient, playerName, roomCode) => {
   if (!stompClient || !playerName) return;
-
 
   stompClient.send(`/app/interact//${roomCode}`, {}, playerName);
 };
@@ -176,7 +163,6 @@ export const sendChatMessage = (stompClient, playerName, messageContent, roomCod
 
   stompClient.send(`/topic/messages/${roomCode}`, {}, JSON.stringify(newMessage));
 };
-
 
 export const killPlayer = (stompClient, playerName, roomCode) => {
   if (!stompClient || !playerName.trim()) return;
