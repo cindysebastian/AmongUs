@@ -40,6 +40,7 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
             if (players[currentPlayer].host) {
                 isHost = true;
             }
+            console.log(isHost);
         }
     }, [currentPlayer, players]);
 

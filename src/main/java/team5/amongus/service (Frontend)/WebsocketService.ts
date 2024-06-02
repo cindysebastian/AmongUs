@@ -45,6 +45,7 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
 
   stompClient.subscribe(`/topic/inGamePlayers/${roomCode}`, (message) => {
     try {
+      //console.log("RAw Data: ", message.body);
       const updatedInGamePlayers = JSON.parse(message.body);
       const inGamePlayersWithImposterFlag = addImposterFlag(updatedInGamePlayers);
       setInGamePlayers(inGamePlayersWithImposterFlag);
