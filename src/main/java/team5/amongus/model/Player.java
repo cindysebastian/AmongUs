@@ -19,7 +19,7 @@ public class Player implements Serializable, Cloneable {
 
     private long lastActivityTime;
     private String sessionId;
-    private boolean isHost;
+    private boolean isHost = false;
    
 
     public Player(String name, Position position) {
@@ -27,6 +27,8 @@ public class Player implements Serializable, Cloneable {
         this.position = position;
         this.lastActivityTime = System.currentTimeMillis();
     }
+
+   
 
     public int getWidth() {
         return width;

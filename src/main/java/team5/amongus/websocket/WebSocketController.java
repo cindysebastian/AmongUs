@@ -67,14 +67,16 @@ public class WebSocketController {
         // Generate a unique room code
         synchronized (usedRoomCodes) {
             do {
-                room = new Room();
+                room = new Room(request.getPlayerCount(), request.getPlayerName());
                 roomCode = room.getRoomCode();
             } while (!usedRoomCodes.add(roomCode)); // Add the code to the set
         }
 
         Position position = new Position(500, 500);
         activeRooms.put(roomCode, room);
-        room.addPlayer(new Player(request.getPlayerName(), position));
+        Player host = new Player(request.getPlayerName(), position);
+        host.setHost(true);
+        room.addPlayer(host);
         HostGameResponse response = new HostGameResponse("OK", roomCode);
         messagingTemplate.convertAndSend("/topic/hostResponse", response);
     }
@@ -99,11 +101,16 @@ public class WebSocketController {
             Room room = activeRooms.get(request.getRoomCode());
             Position position = new Position(500, 500);
             if (room.getInGamePlayersMap().get(request.getPlayerName()) == null) {
+                if(room.getInGamePlayersMap().size()<room.getMaxPlayers()){
 
                 room.addPlayer(new Player(request.getPlayerName(), position));
                 room.broadcastPlayerUpdate(messagingTemplate);
                 response.put("status", "OK");
                 response.put("roomCode", room.getRoomCode());
+            }else{
+                response.put("status", "FULL");
+                response.put("roomCode", null);
+            }
             } else {
                 response.put("status", "NAME_TAKEN");
                 response.put("roomCode", null);

@@ -11,7 +11,6 @@ import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendChatMess
 import { movePlayer } from './service (Frontend)/PlayerMovementService';
 import { subscribeToGameStatus } from './service (Frontend)/GameStartingService';
 
-
 const directionMap = {
   w: 'UP',
   a: 'LEFT',
@@ -41,6 +40,7 @@ const App = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [inGamePlayers, setInGamePlayers] = useState({});
   const [roomCode, setRoomCode] = useState('');
+  const [selectedPlayerCount, setSelectedPlayerCount] = useState(3); // Add state for selected player count
 
   const navigate = useNavigate();
 
@@ -133,10 +133,13 @@ const App = () => {
     setInputCode(event.target.value);
   };
 
+  const handlePlayerCountChange = (event) => {
+    setSelectedPlayerCount(parseInt(event.target.value, 10));
+  };
+
   const handleHostGame = () => {
     const trimmedName = inputName.trim();
     console.log("Hosting Game...");
-    console.log(trimmedName && stompClient);
 
     if (trimmedName && stompClient) {
       const subscription = stompClient.subscribe('/topic/hostResponse', (message) => {
@@ -159,7 +162,7 @@ const App = () => {
       });
 
       // After subscribing, send the hostGame message
-      stompClient.send('/app/hostGame', {}, JSON.stringify({ playerName: trimmedName }));
+      stompClient.send('/app/hostGame', {}, JSON.stringify({ playerName: trimmedName, playerCount: selectedPlayerCount }));
     }
   };
 
@@ -193,7 +196,6 @@ const App = () => {
       return;
     }
 
-
     const message = {
       playerName: trimmedName,
       roomCode: roomCode
@@ -215,8 +217,10 @@ const App = () => {
         navigate('/game');
       } else if (response.status === 'NAME_TAKEN') {
         alert('Failed to join game: This name is already in use! Please choose another. ');
-      } else if (response.status === 'No_SUCH_ROOM') {
+      } else if (response.status === 'NO_SUCH_ROOM') {
         alert('Failed to join game: The Room with the code you entered does not exist. Please double check your code.');
+      } else if (response.status === 'FULL') {
+        alert('Failed to join game: The Room with the code you entered is already full!');
       } else {
         alert('Failed to Join game. Message: ' + response.message);
       }// Unsubscribe after receiving the response
@@ -251,6 +255,11 @@ const App = () => {
               placeholder="Enter your name"
               className={styles.input}
             />
+            <select value={selectedPlayerCount} onChange={handlePlayerCountChange} className={styles.input}>
+              {[...Array(8).keys()].map(i => (
+                <option key={i + 3} value={i + 3}>{i + 3}</option>
+              ))}
+            </select>
             <button onClick={handleHostGame} className={styles.button}>Host Game</button>
           </div></div>
       </div>} />

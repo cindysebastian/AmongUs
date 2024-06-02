@@ -9,9 +9,10 @@ import java.util.Random;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-
 public class Room {
     private final String roomCode;
+    private final int maxPlayers;
+    private String host;
     private final Map<String, Player> playersMap = new HashMap<>();
     private final Map<String, Player> previousPlayersMap = new HashMap<>();
     private final Map<String, Player> previousinGamePlayersMap = new HashMap<>();
@@ -21,10 +22,16 @@ public class Room {
     private List<Message> chatMessages = new ArrayList<>();
     private boolean gameStarted = false;
 
-
-    public Room() {
+    public Room(int maxPlayers, String host) {
         this.roomCode = generateRoomCode();
+        this.maxPlayers = maxPlayers;
+        this.host = host;
     }
+
+    public int getMaxPlayers() {
+        return maxPlayers;
+    }
+
 
     public String getRoomCode() {
         return roomCode;
@@ -42,7 +49,7 @@ public class Room {
         return chatMessages;
     }
 
-    public void setMessages(List<Message> chatMessages){
+    public void setMessages(List<Message> chatMessages) {
         this.chatMessages = chatMessages;
     }
 
@@ -67,14 +74,39 @@ public class Room {
         playersMap.remove(playerName);
     }
 
-    public boolean getGameStarted(){
+    public boolean getGameStarted() {
         return gameStarted;
+    }
+
+    public String validateHost() {
+        boolean hostConnected = false;
+        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+            String key = entry.getKey();
+            
+            if (key == this.host) {
+                hostConnected = true;
+                break;
+            }
+        }
+        if (hostConnected) {
+            return this.host;
+        } else {
+            for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+                String key = entry.getKey();
+                Player player = entry.getValue();
+                this.host = key;
+                player.setHost(true);
+                break;
+            }
+            System.out.println("[Room.java] Host changed! New host: "+ this.host);
+            return this.host;
+        }
     }
 
     private String generateRoomCode() {
         StringBuilder sb = new StringBuilder();
         Random random = new Random();
-    
+
         // Generate 6 characters
         for (int i = 0; i < 6; i++) {
             // Randomly choose between uppercase letters and digits
@@ -89,10 +121,9 @@ public class Room {
                 sb.append(digit);
             }
         }
-    
+
         return sb.toString();
     }
-    
 
     public Map<String, Player> chooseImposter() {
         Random random = new Random();
@@ -119,15 +150,10 @@ public class Room {
         return playersMap;
     }
 
-
-    
-
-
     public void broadcastPlayerUpdate(SimpMessagingTemplate messagingTemplate) {
-        
 
         // Update the last broadcast time
-                // Check if there are any changes in the playersMap or inGamePlayersMap
+        // Check if there are any changes in the playersMap or inGamePlayersMap
         boolean playerMapChanged = !isMapEqual(playersMap, previousPlayersMap);
         boolean inGamePlayerMapChanged = !isMapEqual(inGamePlayersMap, previousinGamePlayersMap);
 
