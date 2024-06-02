@@ -1,6 +1,9 @@
 /* ProgressBar.module.css */
 
 .progressBarContainer {
+  position: fixed;
+  top: 20px;
+  left: 20px;
     width: 610px;
     height: 51px;
     background-color: #e0e0e0;
@@ -10,12 +13,13 @@
     overflow: hidden;
     margin-bottom: 20px; /* Adjust spacing as needed */
     margin-top: 5%;
-    z-index: 30;
+    z-index: 5;
     margin: 1%;
     border-radius: 10px;
   }
   
   .progressBar {
+    position: absolute;
     height: 100%;
     background-color: #05abec;
     background-image:url("../../../../resources/taskBar.png");
