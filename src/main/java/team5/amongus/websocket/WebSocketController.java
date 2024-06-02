@@ -123,7 +123,7 @@ public class WebSocketController {
     messagingTemplate.convertAndSend("/topic/joinResponse",response);
 
     }
-
+    //TODO: Make Functional/remove if redundant
     public void removePlayer(String playerName, Room room) {
         room.getInGamePlayersMap().remove(playerName);
         room.getPlayersMap().remove(playerName);
@@ -191,7 +191,7 @@ public class WebSocketController {
 
         room.broadcastPlayerUpdate(messagingTemplate);
     }
-
+    //TODO: Test
     @MessageMapping("/sendMessage/{roomCode}")
     @SendTo("/topic/messages/{roomCode}")
     public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor,

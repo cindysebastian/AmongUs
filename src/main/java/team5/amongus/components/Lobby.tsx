@@ -5,19 +5,24 @@ import { useLocation } from 'react-router-dom';
 import PlayerSprite from './PlayerSprite';
 import Space from './Space';
 import styles from '../styles/lobby.module.css';
+import MessageInput from './MessageInput';
+import ChatRoom from './ChatRoom';
 
 interface Props {
   inGamePlayers: Record<string, Player>;
   onStartButtonClick: (playersData: Record<string, Player>) => void;
   roomCode: string;
   currentPlayer: string;
+  messages: String[];
+  sendMessage: (messageContent: string) => void;
 }
 
-const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode , currentPlayer}) => {
+const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, currentPlayer, messages, sendMessage }) => {
   const [playerCount, setPlayerCount] = useState(Object.keys(inGamePlayers).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
   const [impostersChosen, setImpostersChosen] = useState(false);
   const [isHost, setIsHost] = useState(false);
+  const [chatVisible, setChatVisible] = useState(false);
 
 
 
@@ -42,6 +47,8 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode , 
       console.error('Could not copy text: ', err);
     });
   }
+
+
 
   function showTooltip(element: HTMLElement) {
     const tooltip = document.createElement('div');
@@ -71,6 +78,18 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode , 
     <div style={{ position: 'relative' }}>
       <div className={styles.lobbyBackground}></div>
       <Space />
+      <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
+      {chatVisible && (
+        <div className={styles.chatBox}>
+          <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+            <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
+          </div>
+          <button className={styles.button} onClick={() => setChatVisible(false)}>Exit</button>
+          <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
+          <ChatRoom messages={messages} />
+        </div>
+      )}
+
       <div className={styles.roomCode}>
         Room Code: {roomCode}
       </div>
@@ -96,8 +115,10 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode , 
               isMoving={isMoving}
             />
           </div>
+
         );
       })}
+
     </div>
   );
 };

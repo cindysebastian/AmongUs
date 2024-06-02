@@ -25,7 +25,6 @@ const App = () => {
   const [inputCode, setInputCode] = useState('');
   const [players, setPlayers] = useState({});
   const [messages, setMessages] = useState([]);
-  const [chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
   const [interactibles, setInteractibles] = useState([]);
   const [interactionInProgress, setInteractionInProgress] = useState(false);
@@ -70,6 +69,11 @@ const App = () => {
     }
   }, [roomCode, playerName]);
 
+  const sendMessage = (messageContent) => {
+    if (!interactionInProgress && stompClient) {
+      sendChatMessage(stompClient, playerName, messageContent, roomCode);
+    }
+  };
 
   useEffect(() => {
     if (interactibles && playerName) {
@@ -80,11 +84,7 @@ const App = () => {
     }
   }, [interactibles, playerName]);
 
-  const sendMessage = (messageContent) => {
-    if (!interactionInProgress && stompClient) {
-      sendChatMessage(stompClient, playerName, messageContent, roomCode);
-    }
-  };
+
 
 
   useEffect(() => {
@@ -281,7 +281,7 @@ const App = () => {
             <button onClick={() => handleJoinGame(playerName, roomCode)} className={styles.button}>Join Private Room</button>
           </div></div>
       </div>} />
-      <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName}/>} />
+      <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage}/> } />
       <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} roomCode={roomCode} />} />
       <Route path="/" element={<Navigate replace to="/login" />} />
     </Routes>
