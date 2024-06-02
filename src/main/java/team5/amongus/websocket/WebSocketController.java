@@ -75,7 +75,7 @@ public class WebSocketController {
             } while (!usedRoomCodes.add(roomCode)); // Add the code to the set
         }
 
-        Position position = new Position(500, 500);
+        Position position = new Position(900, 500);
         activeRooms.put(roomCode, room);
         Player host = new Player(request.getPlayerName(), position);
         host.setHost(true);
@@ -102,7 +102,7 @@ public class WebSocketController {
 
         if (activeRooms.get(request.getRoomCode()) != null) {
             Room room = activeRooms.get(request.getRoomCode());
-            Position position = new Position(500, 500);
+            Position position = new Position(900, 500);
             if (room.getInGamePlayersMap().get(request.getPlayerName()) == null) {
                 if (room.getInGamePlayersMap().size() < room.getMaxPlayers()) {
 

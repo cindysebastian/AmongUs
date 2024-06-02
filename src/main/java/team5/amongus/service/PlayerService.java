@@ -94,7 +94,6 @@ public class PlayerService implements IPlayerService {
                     return object;
                 }
             }
-
         }
         return null;
     }

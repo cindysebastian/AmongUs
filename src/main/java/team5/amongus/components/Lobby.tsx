@@ -69,24 +69,41 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
       onStartButtonClick(inGamePlayers); // Pass players' data to the onStartButtonClick function
     }
   };
-// Camera logic
-const mapWidth = 1920;
-const mapHeight = 1080;
-const playerWidth = 80; 
-const playerHeight = 80;
-const currentPlayerData = inGamePlayers[currentPlayer];
+  // Camera logic
+  const mapWidth = 1920;
+  const mapHeight = 1080;
+  const playerWidth = 80;
+  const playerHeight = 80;
+  const currentPlayerData = inGamePlayers[currentPlayer];
 
-// Ensure currentPlayerData is defined before accessing its properties
-const cameraStyle = currentPlayerData ? {
-  transform: `translate(-${Math.max(0, Math.min(currentPlayerData.position.x + playerWidth / 2 - window.innerWidth / 2, mapWidth - window.innerWidth))}px, -${Math.max(0, Math.min(currentPlayerData.position.y + playerHeight / 2 - window.innerHeight / 2, mapHeight - window.innerHeight))}px)`
-} : {};
+  // Ensure currentPlayerData is defined before accessing its properties
+  const cameraStyle = currentPlayerData ? {
+    transform: `translate(-${Math.max(0, Math.min(currentPlayerData.position.x + playerWidth / 2 - window.innerWidth / 2, mapWidth - window.innerWidth))}px, -${Math.max(0, Math.min(currentPlayerData.position.y + playerHeight / 2 - window.innerHeight / 2, mapHeight - window.innerHeight))}px)`
+  } : {};
 
   return (
     <div style={{ position: 'relative' }}>
       <Space />
       <div style={cameraStyle}>
-      <div className={styles.lobbyBackground}></div>
-      <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
+        <div className={styles.lobbyBackground}></div>
+        <div className={styles.roomCode}>
+          Room Code: {roomCode}
+        </div>
+
+        {Object.values(inGamePlayers).map(player => {
+          const isMoving = player.isMoving !== undefined ? player.isMoving : false;
+          return (
+            <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
+              <PlayerSprite
+                player={player}
+                facing={player.facing !== undefined ? player.facing : 'RIGHT'}
+                isMoving={isMoving}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <div onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</div>
       {chatVisible && (
         <div className={styles.chatBox}>
           <div style={{ textAlign: 'center', marginBottom: '10px' }}>
@@ -98,9 +115,6 @@ const cameraStyle = currentPlayerData ? {
         </div>
       )}
 
-      <div className={styles.roomCode}>
-        Room Code: {roomCode}
-      </div>
       <div className={styles.playerCountContainer}>
         <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
         <div className={styles.playerCount}>{playerCount}</div>
@@ -113,19 +127,6 @@ const cameraStyle = currentPlayerData ? {
           </div>
         )}
       </div>
-      {Object.values(inGamePlayers).map(player => {
-        const isMoving = player.isMoving !== undefined ? player.isMoving : false;
-        return (
-          <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
-            <PlayerSprite
-              player={player}
-              facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-              isMoving={isMoving}
-            />
-          </div>
-        );
-      })}
-    </div>
     </div>
   );
 };
