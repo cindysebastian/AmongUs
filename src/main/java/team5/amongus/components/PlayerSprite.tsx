@@ -27,14 +27,12 @@ const StyledPlayer = styled.div<StyledPlayerProps>`
   background: url(${SpritePage}) left top;
  
   box-sizing: border-box; /* Ensure border is included in the total width and height */
-  transform: ${({ facing }) => facing === 'LEFT'? 'scaleX(-1)' : 'none'};
+  transform: ${({ facing }) => facing === 'LEFT'? 'scaleX(-0.6)' : 'scaleX(0.6)'} scaleY(0.6);
   ${({ isMoving, facing }) =>
     isMoving &&
     css`
       animation: ${mainAnimation} 0.6s steps(8) infinite;
       animation-timing-function: steps(8);
-      
-      
     `}
 `;
 
