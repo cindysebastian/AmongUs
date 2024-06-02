@@ -105,6 +105,21 @@ export const subscribeToMessages = (stompClient, setMessages, roomCode) => {
   };
 };
 
+export const subscribetoGameFinishing = (stompClient, setGameWonState, roomCode) => {
+  if (!stompClient) return;
+
+  const subscription = stompClient.subscribe('/topic/finishGame/'+ roomCode, (message) => {
+    console.log('Received message:', message.body); // Log the message body
+    const gameWonStateMessage = message.body;
+    setGameWonState(gameWonStateMessage);
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
+};
+
+
 export const markTaskAsCompleted = (stompClient, interactibleId: number, roomCode) => {
   if (!stompClient) return;
 

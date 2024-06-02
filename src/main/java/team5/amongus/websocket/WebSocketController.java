@@ -2,7 +2,6 @@ package team5.amongus.websocket;
 
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -24,6 +23,7 @@ import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
 import team5.amongus.service.ITaskService;
 import team5.amongus.service.ICollisionMaskService;
+import team5.amongus.service.IGameWinningService;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -45,6 +45,7 @@ public class WebSocketController {
     private final IPlayerService playerService;
     private final ITaskService taskService;
     private final ICollisionMaskService collisionMaskService;
+    private final IGameWinningService gameWinningService;
     private CollisionMask collisionMask;
     private final IChatService chatService;
     private Set<String> usedRoomCodes = new HashSet<>();
@@ -56,6 +57,7 @@ public class WebSocketController {
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
         this.collisionMaskService = collisionMaskService;
+        this.gameWinningService = gameWinningService;
         this.collisionMask = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
     }
 

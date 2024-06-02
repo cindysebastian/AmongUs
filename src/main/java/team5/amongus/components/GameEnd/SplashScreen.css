@@ -1,0 +1,78 @@
+.splash-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: fixed; /* Change to fixed position to cover the entire viewport */
+    top: 0; /* Position from the top */
+    left: 0; /* Position from the left */
+    width: 100%; /* Take up full width */
+    height: 100%; /* Take up full height of the viewport */
+    opacity: 0;
+    animation: fadeIn 1s forwards;
+    z-index: 999;
+    background-color: black;
+    font-size: large;
+    font-family: 'Lucida Console';
+}
+
+/* Add a CSS rule for the nametag */
+.nametag {
+    padding: 5px 10px;
+    background-color: red;
+    font-size: large;
+    color: white;
+    text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000, 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
+    white-space: nowrap;
+    position: absolute;
+    bottom: 50%; /* Adjust the position as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Lucida Console';
+}
+
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.win-text {
+    color: green;
+    font-family: 'Lucida Console';
+}
+
+.loss-text {
+    color: red;
+}
+
+.center-image {
+    max-width: 80%;
+    max-height: 50%;
+    margin: 20px 0;
+}
+
+.action-button {
+    position: absolute;
+    bottom: 5%;
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Center horizontally */
+    background-color: #4caf50; /* Green for primary button */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-family: 'Lucida Console';
+    font-size: larger;
+}
+
+.action-button:hover {
+    background-color: #45a049; /* Darker shade of green on hover */
+}

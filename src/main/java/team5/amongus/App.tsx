@@ -7,9 +7,11 @@ import MessageInput from './components/MessageInput';
 import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
 import styles from './styles/index.module.css';
-import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendChatMessage, subscribetoInteractions, sendInteraction } from './service (Frontend)/WebsocketService';
-import { movePlayer } from './service (Frontend)/PlayerMovementService';
 import { subscribeToGameStatus } from './service (Frontend)/GameStartingService';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions, subscribetoGameFinishing } from './service (Frontend)/WebsocketService';
+import { movePlayer } from './service (Frontend)/PlayerMovementService';
+import KillButton from './components/KillButton';
+import GameEndHandler from './components/GameEnd/GameEndHandler';
 
 const directionMap = {
   w: 'UP',
@@ -66,6 +68,7 @@ const App = () => {
       subscribeToMessages(stompClient, setMessages, roomCode);
       subscribeToGameStatus(stompClient, setRedirectToSpaceShip, roomCode);
       subscribetoInteractions(stompClient, setInteractibles, roomCode);
+      subscribetoGameFinishing();
     }
   }, [roomCode, playerName]);
 
