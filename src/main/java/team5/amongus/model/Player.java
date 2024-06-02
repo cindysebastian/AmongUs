@@ -20,15 +20,12 @@ public class Player implements Serializable, Cloneable {
     private long lastActivityTime;
     private String sessionId;
     private boolean isHost = false;
-   
 
     public Player(String name, Position position) {
         this.name = name;
         this.position = position;
         this.lastActivityTime = System.currentTimeMillis();
     }
-
-   
 
     public int getWidth() {
         return width;
@@ -128,14 +125,14 @@ public class Player implements Serializable, Cloneable {
 
     public void handleMovementRequest(Position.Direction direction) {
         Position newPosition = position.getNextPosition(direction, step);
-        if (isAlive) {
-            if (newPosition.getX() < position.getX()) {
-                setFacing("LEFT");
-            } else if (newPosition.getX() > position.getX()) {
-                setFacing("RIGHT");
-            }
-            this.position = newPosition;
+
+        if (newPosition.getX() < position.getX()) {
+            setFacing("LEFT");
+        } else if (newPosition.getX() > position.getX()) {
+            setFacing("RIGHT");
         }
+        this.position = newPosition;
+
     }
 
     public boolean collidesWith(Player otherPlayer) {
@@ -152,7 +149,6 @@ public class Player implements Serializable, Cloneable {
     public CollisionBox getBounds() {
         return new CollisionBox(position.getX(), position.getY(), width, height);
     }
-
 
     @Override
     public Object clone() throws CloneNotSupportedException {

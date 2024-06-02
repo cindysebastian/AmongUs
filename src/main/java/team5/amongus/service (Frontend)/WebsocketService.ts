@@ -11,7 +11,7 @@ export const connectWebSocket = (setStompClient) => {
 
   const socket = new SockJS('http://localhost:8080/ws');
   const stomp = Stomp.over(socket);
-
+  stomp.debug = null;
 
   stomp.connect({}, () => {
     console.log('Connected to WebSocket');
@@ -32,29 +32,23 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
     return;
   }
 
-  console.log(`Subscribing to /topic/players/${roomCode}`);
   stompClient.subscribe(`/topic/players/${roomCode}`, (message) => {
     try {
-      console.log("Received message on /topic/players:", message);
       const updatedPlayers = JSON.parse(message.body);
       const playersWithImposterFlag = addImposterFlag(updatedPlayers);
       setPlayers(playersWithImposterFlag);
       const currentPlayer = playersWithImposterFlag[playerName];
-      console.log("Updated players:", playersWithImposterFlag);
     } catch (error) {
       console.error('Error processing player message:', error);
     }
   });
 
-  console.log(`Subscribing to /topic/inGamePlayers/${roomCode}`);
   stompClient.subscribe(`/topic/inGamePlayers/${roomCode}`, (message) => {
     try {
-      console.log("Received message on /topic/inGamePlayers:", message);
       const updatedInGamePlayers = JSON.parse(message.body);
       const inGamePlayersWithImposterFlag = addImposterFlag(updatedInGamePlayers);
       setInGamePlayers(inGamePlayersWithImposterFlag);
       const currentPlayer = inGamePlayersWithImposterFlag[playerName];
-      console.log("Updated in-game players:", inGamePlayersWithImposterFlag);
     } catch (error) {
       console.error('Error processing in-game player message:', error);
     }
@@ -108,7 +102,7 @@ export const subscribeToMessages = (stompClient, setMessages, roomCode) => {
 export const subscribetoGameFinishing = (stompClient, setGameWonState, roomCode) => {
   if (!stompClient) return;
 
-  const subscription = stompClient.subscribe('/topic/finishGame/'+ roomCode, (message) => {
+  const subscription = stompClient.subscribe(`/topic/finishGame/${roomCode}`, (message) => {
     console.log('Received message:', message.body); // Log the message body
     const gameWonStateMessage = message.body;
     setGameWonState(gameWonStateMessage);

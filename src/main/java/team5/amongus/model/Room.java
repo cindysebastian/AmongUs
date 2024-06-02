@@ -9,6 +9,9 @@ import java.util.Random;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
+import team5.amongus.service.GameWinningService;
+import team5.amongus.service.IGameWinningService;
+
 public class Room {
     private final String roomCode;
     private final int maxPlayers;
@@ -20,18 +23,18 @@ public class Room {
     private ArrayList<Interactible> previousInteractibles = new ArrayList<>();
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private List<Message> chatMessages = new ArrayList<>();
-    private boolean gameStarted = false;
+    private String gameState = "stopped";
 
     public Room(int maxPlayers, String host) {
         this.roomCode = generateRoomCode();
         this.maxPlayers = maxPlayers;
         this.host = host;
+        this.gameState = "Game waiting";
     }
 
     public int getMaxPlayers() {
         return maxPlayers;
     }
-
 
     public String getRoomCode() {
         return roomCode;
@@ -57,8 +60,8 @@ public class Room {
         return interactibles;
     }
 
-    public void setGameStarted(boolean gameStarted) {
-        this.gameStarted = gameStarted;
+    public void setGameState(String gameStarted) {
+        this.gameState = gameStarted;
     }
 
     public void addPlayer(Player player) {
@@ -74,15 +77,15 @@ public class Room {
         playersMap.remove(playerName);
     }
 
-    public boolean getGameStarted() {
-        return gameStarted;
+    public String getGameStarted() {
+        return gameState;
     }
 
     public String validateHost() {
         boolean hostConnected = false;
         for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
             String key = entry.getKey();
-            
+
             if (key == this.host) {
                 hostConnected = true;
                 break;
@@ -98,7 +101,7 @@ public class Room {
                 player.setHost(true);
                 break;
             }
-            System.out.println("[Room.java] Host changed! New host: "+ this.host);
+            System.out.println("[Room.java] Host changed! New host: " + this.host);
             return this.host;
         }
     }
@@ -152,7 +155,6 @@ public class Room {
 
     public void broadcastPlayerUpdate(SimpMessagingTemplate messagingTemplate) {
 
-        // Update the last broadcast time
         // Check if there are any changes in the playersMap or inGamePlayersMap
         boolean playerMapChanged = !isMapEqual(playersMap, previousPlayersMap);
         boolean inGamePlayerMapChanged = !isMapEqual(inGamePlayersMap, previousinGamePlayersMap);
@@ -196,7 +198,9 @@ public class Room {
             messagingTemplate.convertAndSend(destination, inGamePlayersMap);
 
         }
-
+        if (this.gameState == "Game running") {
+            finishGame(messagingTemplate);
+        }
     }
 
     private boolean isMapEqual(Map<String, Player> map1, Map<String, Player> map2) {
@@ -250,6 +254,9 @@ public class Room {
             previousInteractibles.clear();
             previousInteractibles.addAll(clonedInteractibles);
         }
+        if (this.gameState == "Game running") {
+            finishGame(messagingTemplate);
+        }
     }
 
     private List<Interactible> cloneInteractibles(List<Interactible> original) {
@@ -258,6 +265,32 @@ public class Room {
             clonedList.add(interactible.clone());
         }
         return clonedList;
+    }
+
+    public String finishGame(SimpMessagingTemplate messagingTemplate) {
+        final IGameWinningService gameWinningService = new GameWinningService();
+
+        String result;
+        if (gameWinningService.allTasksCompleted(this.interactibles)) {
+            result = "Crewmates win";
+        } else if (gameWinningService.enoughCrewmatesDead(this.playersMap)) {
+            result = "Imposter wins";
+        } else if (gameWinningService.imposterDead(this.playersMap)) {
+            result = "Crewmates win";
+        } else {
+            result = "Game running";
+        }
+
+        // Check if the result has changed
+        if (!result.equals(this.gameState)) {
+            // Send the message only if the result has changed
+            String destination = "/topic/finishGame/" + this.roomCode;
+            messagingTemplate.convertAndSend(destination, result);
+            this.gameState = result; // Update the previousResult variable
+            System.out.println("Game State changed to: "+ gameState);
+        }
+
+        return result;
     }
 
 }

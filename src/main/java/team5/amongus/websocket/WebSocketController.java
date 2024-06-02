@@ -2,6 +2,7 @@ package team5.amongus.websocket;
 
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -45,7 +46,6 @@ public class WebSocketController {
     private final IPlayerService playerService;
     private final ITaskService taskService;
     private final ICollisionMaskService collisionMaskService;
-    private final IGameWinningService gameWinningService;
     private CollisionMask collisionMask;
     private final IChatService chatService;
     private Set<String> usedRoomCodes = new HashSet<>();
@@ -57,7 +57,6 @@ public class WebSocketController {
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
         this.collisionMaskService = collisionMaskService;
-        this.gameWinningService = gameWinningService;
         this.collisionMask = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
     }
 
@@ -185,15 +184,16 @@ public class WebSocketController {
             return;
         }
 
-        if (room.getGameStarted()) {
+        if (room.getGameStarted()=="Game running") {
             playerService.movePlayer(room.getPlayersMap(), payload, collisionMask);
-        } else {
+        } else if (room.getGameStarted()=="Game waiting"){
             playerService.movePlayer(room.getInGamePlayersMap(), payload, collisionMask);
         }
 
         room.broadcastPlayerUpdate(messagingTemplate);
     }
-    //TODO: Test
+    
+
     @MessageMapping("/sendMessage/{roomCode}")
     @SendTo("/topic/messages/{roomCode}")
     public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor,
@@ -266,7 +266,10 @@ public class WebSocketController {
 
         collisionMask = collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
         room.setInteractibles(taskService.createTasks(room.getPlayersMap()));
-        room.setGameStarted(true);
+        room.setGameState("Game running");
+        String destination = "/topic/finishGame/" + room.getRoomCode();
+        messagingTemplate.convertAndSend(destination, room.getGameStarted());
+
         room.broadcastPlayerUpdate(messagingTemplate);
         room.broadcastInteractiblesUpdate(messagingTemplate);
         return "Game has started";

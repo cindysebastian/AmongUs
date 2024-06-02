@@ -8,7 +8,7 @@ import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
 import styles from './styles/index.module.css';
 import { subscribeToGameStatus } from './service (Frontend)/GameStartingService';
-import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions, subscribetoGameFinishing } from './service (Frontend)/WebsocketService';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, subscribetoInteractions, subscribetoGameFinishing } from './service (Frontend)/WebsocketService';
 import { movePlayer } from './service (Frontend)/PlayerMovementService';
 import KillButton from './components/KillButton';
 import GameEndHandler from './components/GameEnd/GameEndHandler';
@@ -37,7 +37,7 @@ const App = () => {
     d: false,
   });
   const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false);
-  const [gameStarted, setGameStarted] = useState(false);
+  const [gameState, setGameState] = useState('');
   const [inGamePlayers, setInGamePlayers] = useState({});
   const [roomCode, setRoomCode] = useState('');
   const [selectedPlayerCount, setSelectedPlayerCount] = useState(3); // Add state for selected player count
@@ -68,7 +68,7 @@ const App = () => {
       subscribeToMessages(stompClient, setMessages, roomCode);
       subscribeToGameStatus(stompClient, setRedirectToSpaceShip, roomCode);
       subscribetoInteractions(stompClient, setInteractibles, roomCode);
-      subscribetoGameFinishing();
+      subscribetoGameFinishing(stompClient, setGameState, roomCode);
     }
   }, [roomCode, playerName]);
 
@@ -184,10 +184,17 @@ const App = () => {
   };
 
   useEffect(() => {
-    if (redirectToSpaceShip) {
-      navigate('/spaceship');
+    if (gameState == "Imposter wins"|| gameState == "Crewmates win") {
+      navigate('/end');
     }
-  }, [redirectToSpaceShip, gameStarted, navigate]);
+  }, [gameState, navigate]);
+
+  useEffect(() => {
+    if (redirectToSpaceShip && gameState== "Game running") {
+      navigate('/spaceship');
+      //TODO: Add Info about Roles animation here before navigating
+    }
+  }, [redirectToSpaceShip, gameState, navigate]);
 
   const handleJoinGame = (playerName, roomCode) => {
     roomCode = inputCode;
@@ -286,7 +293,10 @@ const App = () => {
       </div>} />
       <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage}/> } />
       <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} roomCode={roomCode} />} />
+      <Route path="/end" element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState}/>} />
       <Route path="/" element={<Navigate replace to="/login" />} />
+      
+      
     </Routes>
   );
 };
