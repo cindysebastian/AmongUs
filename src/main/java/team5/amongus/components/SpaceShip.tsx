@@ -30,7 +30,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   }, [players, currentPlayer]);
 
   useEffect(() => {
-    const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
+    const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled, roomCode);
     return () => {
       unsubscribeKilled;
     };

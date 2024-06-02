@@ -1,13 +1,11 @@
 // InteractionService.ts
 
-import { sendInteraction } from "./WebsocketService";
 
-
-  // When receiving interactibles from the backend
+// When receiving interactibles from the backend
 export const handleReceivedInteractibles = (interactiblesData, setInteractibles) => {
 
-  const parsedInteractibles = interactiblesData.map((data) => {   
-    
+  const parsedInteractibles = interactiblesData.map((data) => {
+
     return {
       id: data.id,
       completed: data.taskCompleted,
@@ -16,13 +14,12 @@ export const handleReceivedInteractibles = (interactiblesData, setInteractibles)
       height: data.height,
       inProgress: data.inProgress,
       type: data.type,
-      assignedPlayer: data.assignedPlayer, 
+      assignedPlayer: data.assignedPlayer,
     };
   });
 
   setInteractibles(parsedInteractibles);
 };
 
-  
 
-  
+

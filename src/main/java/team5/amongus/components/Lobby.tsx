@@ -8,16 +8,16 @@ import styles from '../styles/lobby.module.css';
 
 interface Props {
   inGamePlayers: Record<string, Player>;
-  firstPlayerName: string;
   onStartButtonClick: (playersData: Record<string, Player>) => void;
   roomCode: string;
+  currentPlayer: string;
 }
 
-const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonClick, roomCode }) => {
+const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode , currentPlayer}) => {
   const [playerCount, setPlayerCount] = useState(Object.keys(inGamePlayers).length);
   const [isStartButtonClicked, setIsStartButtonClicked] = useState(false);
   const [impostersChosen, setImpostersChosen] = useState(false);
-  const [isFirstPlayer, setIsFirstPlayer] = useState(false);
+  const [isHost, setIsHost] = useState(false);
 
 
 
@@ -26,10 +26,12 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
   }, [inGamePlayers]);
 
   useEffect(() => {
-    if (firstPlayerName != null) {
-      setIsFirstPlayer(true);
-    } 
-  }, [firstPlayerName]);
+    if (inGamePlayers[currentPlayer] && inGamePlayers[currentPlayer].host) {
+      setIsHost(true);
+    } else {
+      setIsHost(false);
+    }
+  }, [inGamePlayers, currentPlayer]);
 
 
   function copyToClipboard(text: string, element: HTMLElement) {
@@ -77,7 +79,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, firstPlayerName, onStartButtonC
         <div className={styles.playerCount}>{playerCount}</div>
 
         <div className={styles.gameCode} onClick={(e) => copyToClipboard(roomCode, e.currentTarget)}>CODE: {roomCode}</div>
-        {isFirstPlayer && (
+        {isHost && (
           <div className={styles.startButtonContainer} onClick={handleStartButtonClick}>
             <img src="src/main/resources/startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
             />

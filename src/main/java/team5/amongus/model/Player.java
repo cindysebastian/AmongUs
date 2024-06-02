@@ -46,8 +46,8 @@ public class Player implements Serializable, Cloneable {
         return isHost;
     }
 
-    public void setHost(boolean host) {
-        isHost = host;
+    public void setHost(boolean isHost) {
+        this.isHost = isHost;
     }
 
     public String getSessionId() {

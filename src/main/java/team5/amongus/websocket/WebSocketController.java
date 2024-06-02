@@ -277,7 +277,11 @@ public class WebSocketController {
      * 
      * boolean isFirstPlayer = false;
      * String firstPlayerName = "";
-     * 
+     * /* 
+     * CHANGE THIS LOGIC:
+     * When player disconnects, fetch correct room, check which player, BEFORE removing player from the list, check whether they are host
+     * If they are, remove them and then call the validateHost function on the room, if they are not, only remove them.*/
+     /*
      * if (!inGamePlayersMap.isEmpty()) {
      * firstPlayerName = inGamePlayersMap.keySet().iterator().next();
      * isFirstPlayer =

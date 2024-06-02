@@ -8,7 +8,7 @@ interface Player {
   isMoving?: boolean; // Optional ismoving property
   //isDead?: boolean; // for dead body 
   isImposter? : boolean; // for imposter
-  isHost? : boolean;
+  host? : boolean;
 
 }
 export default Player

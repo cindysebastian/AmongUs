@@ -8,7 +8,7 @@ export const subscribeToGameStatus = (stompClient, setRedirectToSpaceShip, roomC
     });
 
     return () => {
-        // TODO: Cindy this is your problem now
+        // TODO: Disconnecting? If not necessary here remove TODO
         stompClient;
         setRedirectToSpaceShip;
     };

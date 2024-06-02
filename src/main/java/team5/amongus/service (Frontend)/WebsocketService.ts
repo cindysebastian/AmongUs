@@ -118,10 +118,10 @@ export const markTaskAsCompleted = (stompClient, interactibleId: number, roomCod
   stompClient.send(`/app/completeTask/${roomCode}`, {}, JSON.stringify(messageBody));
 };
 
-export const subscribeToPlayerKilled = (stompClient, setPlayerKilled) => {
+export const subscribeToPlayerKilled = (stompClient, setPlayerKilled, roomCode) => {
   if (!stompClient) return;
 
-  const subscription = stompClient.subscribe('/topic/killedPlayer', (message) => {
+  const subscription = stompClient.subscribe(`/topic/killedPlayer/${roomCode}`, (message) => {
     const killedPlayer = JSON.parse(message.body);
     setPlayerKilled(killedPlayer);
   });

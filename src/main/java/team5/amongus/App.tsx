@@ -23,7 +23,6 @@ const App = () => {
   const [playerName, setPlayerName] = useState('');
   const [inputName, setInputName] = useState('');
   const [inputCode, setInputCode] = useState('');
-  const [firstPlayerName, setFirstPlayerName] = useState('');
   const [players, setPlayers] = useState({});
   const [messages, setMessages] = useState([]);
   const [chatVisible, setChatVisible] = useState(false);
@@ -63,7 +62,7 @@ const App = () => {
       // Perform operations that depend on roomCode here
       console.log("Room Code Updated:", roomCode);
 
-      // Example: Subscribe to players and messages
+      //All Game context Subscriptions here please, ensures RoomCode is valid and present!
       subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers, roomCode);
       subscribeToMessages(stompClient, setMessages, roomCode);
       subscribeToGameStatus(stompClient, setRedirectToSpaceShip, roomCode);
@@ -147,7 +146,6 @@ const App = () => {
         console.log("Response:" + response.roomCode)
         if (response.status === 'OK') {
           setPlayerName(trimmedName);
-          setFirstPlayerName(trimmedName);
           let string = response.roomCode;
           setRoomCode(string);
           setPlayerSpawned(true);
@@ -208,7 +206,6 @@ const App = () => {
       console.log("Response:" + response.roomCode)
       if (response.status === 'OK') {
         setPlayerName(trimmedName);
-        setFirstPlayerName(null);
         let string = response.roomCode;
         setRoomCode(string);
         setPlayerSpawned(true);
@@ -283,7 +280,7 @@ const App = () => {
             <button onClick={() => handleJoinGame(playerName, roomCode)} className={styles.button}>Join Private Room</button>
           </div></div>
       </div>} />
-      <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} />} />
+      <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName}/>} />
       <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} roomCode={roomCode} />} />
       <Route path="/" element={<Navigate replace to="/login" />} />
     </Routes>
