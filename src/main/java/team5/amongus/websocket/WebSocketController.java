@@ -40,10 +40,12 @@ public class WebSocketController {
     private CollisionMask collisionMask;
     private boolean gameStarted = false;
     private EmergencyMeetingService emergencyMeetingService;
+    private Map<String, Integer> voteCounts = new HashMap<>();
+    private EmergencyMeeting emergencyMeeting;
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
             ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService,
-            GameManager gameManager, EmergencyMeetingService emergencyMeetingService) {
+            GameManager gameManager, EmergencyMeetingService emergencyMeetingService, EmergencyMeeting emergencyMeeting) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.messagingTemplate = messagingTemplate;
@@ -52,6 +54,7 @@ public class WebSocketController {
         this.collisionMaskService = collisionMaskService;
         this.collisionMask = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
         this.emergencyMeetingService = emergencyMeetingService;
+        this.emergencyMeeting = emergencyMeeting;
     }
 
     public void removePlayer(String playerName) {
@@ -309,12 +312,21 @@ public class WebSocketController {
 
     @MessageMapping("/emergencyMeeting")
     public void emergencyMeeting(String playerName) {
-        // Broadcast the emergency meeting to all clients
         messagingTemplate.convertAndSend("/topic/emergencyMeeting", playerName);
-        // Add any additional logic you might want to handle for emergency meetings
     }
 
-
-
-
+    @MessageMapping("/vote")
+    public void handleVote(String payload) {
+        // Assuming payload contains playerName and votedPlayer separated by a comma
+        String[] parts = payload.split(",");
+        if (parts.length == 2) {
+            String playerName = parts[0].trim();
+            String votedPlayer = parts[1].trim();
+            emergencyMeeting.handleVoting(playerName, votedPlayer);
+            if (emergencyMeeting.allPlayersVoted()) {
+                emergencyMeeting.submitVotes();
+            }
+        }
+    }
+    
 }

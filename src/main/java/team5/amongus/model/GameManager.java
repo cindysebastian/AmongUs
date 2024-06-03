@@ -33,7 +33,6 @@ public class GameManager {
             Player player = playersMap.get(playerName);
             Imposter imposter = new Imposter(player.getName(), player.getPosition());
             playersMap.put(imposter.getName(), imposter);
-
             System.out.println("Imposter: " + imposter.getName());
 
         } else {

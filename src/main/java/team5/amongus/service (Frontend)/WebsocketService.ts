@@ -193,3 +193,19 @@ export const subscribeToEmergencyMeeting = (stompClient, handleEmergencyMeeting)
     subscription.unsubscribe();
   };
 };
+
+export const subscribeToEjectedPlayer = (stompClient, playerName) => {
+    if(!stompClient) return;
+
+    const subscription = stompClient.subscribe("/topic/ejectedPlayer", playerName);
+    return () => {
+      subscription.unsubscribe();
+    };
+};
+
+export const sendVote = (stompClient, playerName, votedPlayer) => {
+  if (!stompClient || !playerName || !votedPlayer) return;
+
+  const payload = `${playerName},${votedPlayer}`;
+  stompClient.send('/app/vote', {}, payload);
+};

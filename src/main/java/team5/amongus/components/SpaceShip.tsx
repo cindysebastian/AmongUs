@@ -67,7 +67,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     // Automatically close the overlay after 30 seconds
     setTimeout(() => {
       setShowEmergencyMeeting(false);
-    }, 30000); // 30 seconds in milliseconds
+    }, 10000); // 30 seconds in milliseconds
   };
 
   const playerNames = Object.values(players).map(player => player.name);
