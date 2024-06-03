@@ -29,6 +29,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   useEffect(() => {
     const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
     const unsubscribeImposter = subscribeToImposter(stompClient, (imposterName: string) => {
+      // handle imposter subscription if necessary
     });
     const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, showEmergencyMeeting);
 
@@ -38,7 +39,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
       unsubscribeEmergencyMeeting();
     };
   }, [stompClient, currentPlayer]);
-
 
   useEffect(() => {
     if (currentPlayer && players[currentPlayer]) {
@@ -79,19 +79,20 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     height: '100%',
   };
 
+  const playerNames = Object.keys(players);
 
   return (
     <div>
       <Space />
       <div style={cameraStyle}>
-      {showEmergencyMeeting &&  (
-        <EmergencyMeetingOverlay
-        playerNames={playerNames}
-        killedPlayers={killedPlayers}
-        stompClient={stompClient}
-        playerName={currentPlayer}
-      />
-      )}
+        {showEmergencyMeeting && (
+          <EmergencyMeetingOverlay
+            playerNames={playerNames}
+            killedPlayers={killedPlayers}
+            stompClient={stompClient}
+            playerName={currentPlayer}
+          />
+        )}
         <div className={styles.gifBackground}></div>
         <div className={styles.spaceShipBackground}>
           {Object.values(players).map(player => (
@@ -121,7 +122,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
       {isImposter && <KillButton onKill={handleKill} />}
     </div>
   );
-
 };
 
 export default SpaceShip;
