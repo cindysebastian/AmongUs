@@ -17,10 +17,7 @@ public class Player implements Serializable, Cloneable {
     private boolean canInteract = false;
     private boolean isAlive = true;
     private boolean willContinue = false;
-
-
     private long lastActivityTime;
-    private String sessionId;
     private boolean isHost = false;
 
     public Player(String name, Position position) {
@@ -57,13 +54,6 @@ public class Player implements Serializable, Cloneable {
         this.isHost = isHost;
     }
 
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
 
     public void updateLastActivityTime() {
         this.lastActivityTime = System.currentTimeMillis();

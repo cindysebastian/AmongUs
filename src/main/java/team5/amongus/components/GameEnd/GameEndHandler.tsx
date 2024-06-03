@@ -37,7 +37,7 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
     useEffect(() => {
         if (players[currentPlayer]) {
             setCurrentPlayerObj(players[currentPlayer]);
-            if (players[currentPlayer].host) {
+            if (players[currentPlayer].isHost) {
                 isHost = true;
             }
             console.log(isHost);
