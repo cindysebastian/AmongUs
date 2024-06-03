@@ -86,7 +86,7 @@ public class Room {
         for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
             String key = entry.getKey();
 
-            if (key == this.host) {
+            if (key.equals(this.host)) {
                 hostConnected = true;
                 break;
             }
@@ -98,7 +98,7 @@ public class Room {
                 String key = entry.getKey();
                 Player player = entry.getValue();
                 this.host = key;
-                player.setHost(true);
+                player.setIsHost(true);
                 break;
             }
             System.out.println("[Room.java] Host changed! New host: " + this.host);
@@ -197,7 +197,7 @@ public class Room {
             messagingTemplate.convertAndSend(destination, inGamePlayersMap);
 
         }
-        if (this.gameState == "Game running") {
+        if (this.gameState.equals("Game running")) {
             finishGame(messagingTemplate);
         }
     }
@@ -233,7 +233,8 @@ public class Room {
         }
         if (player1.getIsMoving() != player2.getIsMoving()) {
             return false;
-        }if (player1.getWillContinue() != player2.getWillContinue()) {
+        }
+        if (player1.getWillContinue() != player2.getWillContinue()) {
             return false;
         }
 
@@ -251,7 +252,7 @@ public class Room {
             previousInteractibles.clear();
             previousInteractibles.addAll(clonedInteractibles);
         }
-        if (this.gameState == "Game running") {
+        if (this.gameState.equals("Game running")) {
             finishGame(messagingTemplate);
         }
     }
@@ -284,7 +285,7 @@ public class Room {
             String destination = "/topic/finishGame/" + this.roomCode;
             messagingTemplate.convertAndSend(destination, result);
             this.gameState = result; // Update the previousResult variable
-            System.out.println("Game State changed to: "+ gameState);
+            System.out.println("Game State changed to: " + gameState);
         }
 
         return result;

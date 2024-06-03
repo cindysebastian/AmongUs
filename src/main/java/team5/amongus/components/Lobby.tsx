@@ -29,7 +29,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
   }, [inGamePlayers]);
 
   useEffect(() => {
-    if (inGamePlayers[currentPlayer] && inGamePlayers[currentPlayer].host) {
+    if (inGamePlayers[currentPlayer] && inGamePlayers[currentPlayer].isHost) {
       setIsHost(true);
     } else {
       setIsHost(false);

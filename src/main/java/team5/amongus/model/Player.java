@@ -26,11 +26,11 @@ public class Player implements Serializable, Cloneable {
         this.lastActivityTime = System.currentTimeMillis();
     }
 
-    public void setWillContinue(boolean set){
+    public void setWillContinue(boolean set) {
         this.willContinue = set;
     }
 
-    public boolean getWillContinue(){
+    public boolean getWillContinue() {
         return this.willContinue;
     }
 
@@ -46,14 +46,13 @@ public class Player implements Serializable, Cloneable {
         return step;
     }
 
-    public boolean isHost() {
+    public boolean getIsHost() {
         return isHost;
     }
 
-    public void setHost(boolean isHost) {
+    public void setIsHost(boolean isHost) {
         this.isHost = isHost;
     }
-
 
     public void updateLastActivityTime() {
         this.lastActivityTime = System.currentTimeMillis();

@@ -16,7 +16,7 @@ public class CollisionMask {
 
     public boolean getCollidesWithBorder(int x, int y) {
         if (x < 0 || y < 0 || x >= imageWidth || y >= imageHeight) {
-            return true; // Consider out of bounds as collision
+            return true;
         }
         return mask[y][x];
     }
