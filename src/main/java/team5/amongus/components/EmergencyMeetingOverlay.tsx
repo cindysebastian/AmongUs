@@ -116,7 +116,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
             <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
           </div>
           <button className={styles.closeChatButton} onClick={handleToggleChat}>Exit</button>
-          <MessageInput sendMessage={sendMessage} chatVisible={isChatVisible} />
+          <MessageInput sendMessage={sendMessage} chatVisible={isChatVisible} playerName={playerName} killedPlayers={killedPlayers} />
           <ChatRoom messages={messages} />
         </div>
       )}
