@@ -267,7 +267,6 @@ public class WebSocketController {
 
         playerService.handleKill(imposter, playersMap);
         broadcastPlayerUpdate();
-
     }
 
     @MessageMapping("/completeTask")
@@ -353,6 +352,7 @@ public class WebSocketController {
 
     @MessageMapping("/emergencyMeeting")
     public void emergencyMeeting(String playerName) {
+        emergencyMeetingService.handleEmergencyMeeting(playerName, playersMap);
         messagingTemplate.convertAndSend("/topic/emergencyMeeting", playerName);
     }
 

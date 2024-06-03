@@ -25,13 +25,14 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const [isImposter, setIsImposter] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
   const [showEmergencyMeeting, setShowEmergencyMeeting] = useState(false);
+  const [playerPositions, setPlayerPositions] = useState(players);
 
   useEffect(() => {
     const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
     const unsubscribeImposter = subscribeToImposter(stompClient, (imposterName: string) => {
       // handle imposter subscription if necessary
     });
-    const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, showEmergencyMeeting);
+    const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, handleEmergencyMeeting);
 
     return () => {
       unsubscribeKilled();
@@ -85,14 +86,14 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   };
 
   const playerNames = Object.keys(players);
-
+  const playerNamesforMeeting = Object.values(players).map(player => player.name);
   return (
     <div>
       <Space />
       <div style={cameraStyle}>
         {showEmergencyMeeting && (
           <EmergencyMeetingOverlay
-            playerNames={playerNames}
+            playerNames={playerNamesforMeeting}
             killedPlayers={killedPlayers}
             stompClient={stompClient}
             playerName={currentPlayer}

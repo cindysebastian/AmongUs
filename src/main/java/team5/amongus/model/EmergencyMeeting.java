@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class EmergencyMeeting {
     private boolean inMeeting;
-    private SimpMessagingTemplate messagingTemplate = null;
+    private static SimpMessagingTemplate messagingTemplate = null;
     private Map<String, Player> playersMap;
     private Map<String, Integer> votes = new HashMap<>();
     private int totalVotes;
@@ -55,6 +55,10 @@ public class EmergencyMeeting {
                 }
             }
         }
+    }
+
+    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap) {
+        messagingTemplate.convertAndSend("/topic/emergencyMeeting", playerName);
     }
 
 }
