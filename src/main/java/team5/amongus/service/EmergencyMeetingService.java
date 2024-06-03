@@ -27,7 +27,6 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
             x += 30;
             y += 30;
         }
-        throw new UnsupportedOperationException("Unimplemented method 'handleEmergencyMeeting'");
     }
 
 }

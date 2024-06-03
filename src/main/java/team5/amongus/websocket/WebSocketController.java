@@ -363,10 +363,7 @@ public class WebSocketController {
         if (parts.length == 2) {
             String playerName = parts[0].trim();
             String votedPlayer = parts[1].trim();
-            emergencyMeeting.handleVoting(playerName, votedPlayer);
-            if (emergencyMeeting.allPlayersVoted()) {
-                emergencyMeeting.submitVotes();
-            }
+            emergencyMeeting.handleVoting(playerName, votedPlayer, playersMap);
         }
     }
     

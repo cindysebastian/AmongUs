@@ -11,33 +11,27 @@ import org.springframework.stereotype.Component;
 public class EmergencyMeeting {
     private boolean inMeeting;
     private static SimpMessagingTemplate messagingTemplate = null;
-    private Map<String, Player> playersMap;
     private Map<String, Integer> votes = new HashMap<>();
-    private int totalVotes;
 
-    public EmergencyMeeting(Map<String, Player> playersMap, SimpMessagingTemplate messagingTemplate) {
-        this.playersMap = playersMap;
+
+    public EmergencyMeeting(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
-        this.totalVotes = playersMap.size();
     }
 
-    public boolean allPlayersVoted() {
-        return votes.size() == totalVotes;
-    }
-
-    public void handleVoting(String playerName, String votedPlayer) {
+    public void handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap) {
+        int totalVotes = playersMap.size();
         System.out.println(playerName + " voted for: " + votedPlayer);
         votes.put(votedPlayer, votes.getOrDefault(votedPlayer, 0) +1 );
-        totalVotes++;
+        System.out.println("Total votes: " + totalVotes);
+        System.out.println("Votes size: " + votes.size());
         System.out.println(playersMap);
-        if (allPlayersVoted()) {
+        if (playersMap.size() == totalVotes) {
             System.out.println("VOTES HAVE BEEN CAST UwU");
-            submitVotes(); 
+            submitVotes(playersMap); 
         }
     }
 
-    public void submitVotes() {
-        if (allPlayersVoted()) {
+    public void submitVotes(Map<String, Player> playersMap) {
             String playerWithMostVotes = null;
             int maxVotes = 0;
             for (Map.Entry<String, Integer> entry : votes.entrySet()) {
@@ -54,7 +48,6 @@ public class EmergencyMeeting {
                     messagingTemplate.convertAndSend("topic/ejectedPlayer", ejectedPlayer);
                 }
             }
-        }
     }
 
     public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap) {
