@@ -10,6 +10,8 @@ import { killPlayer, subscribeToPlayerKilled, subscribeToImposter, subscribeToEm
 import KillButton from './KillButton';
 import EmergencyButton from './EmergencyMeetingButton';
 import EmergencyMeetingOverlay from './EmergencyMeetingOverlay';
+import Space from './Space';
+import { CSSProperties } from 'react';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -28,7 +30,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled);
     const unsubscribeImposter = subscribeToImposter(stompClient, (imposterName: string) => {
     });
-    const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, handleEmergencyMeeting);
+    const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, showEmergencyMeeting);
 
     return () => {
       unsubscribeKilled();
@@ -60,20 +62,28 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const completedTasks = interactibles.filter(interactible => interactible.completed).length;
   const totalTasks = interactibles.length;
   const progressPercentage = (completedTasks / totalTasks) * 100;
+  const mapWidth = 4000;
+  const mapHeight = 2316;
 
-  const handleEmergencyMeeting = () => {
-    setShowEmergencyMeeting(true); // Set state to show emergency meeting overlay
-    
-    // Automatically close the overlay after 30 seconds
-    setTimeout(() => {
-      setShowEmergencyMeeting(false);
-    }, 10000); // 30 seconds in milliseconds
+  const playerX = players[currentPlayer].position.x;
+  const playerY = players[currentPlayer].position.y;
+  const offsetX = Math.max(0, Math.min(playerX - window.innerWidth / 2, mapWidth - window.innerWidth));
+  const offsetY = Math.max(0, Math.min(playerY - window.innerHeight / 2, mapHeight - window.innerHeight));
+
+  const cameraStyle: CSSProperties = {
+    transform: `translate(-${offsetX}px, -${offsetY}px)`,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
   };
 
-  const playerNames = Object.values(players).map(player => player.name);
 
   return (
-    <div className={styles.fillContainer}>
+    <div>
+      <Space />
+      <div style={cameraStyle}>
       {showEmergencyMeeting &&  (
         <EmergencyMeetingOverlay
         playerNames={playerNames}
@@ -82,32 +92,33 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
         playerName={currentPlayer}
       />
       )}
-      <div className={styles.gifBackground}></div>
-      <div className={styles.spaceShipBackground}>
-        <ProgressBar progress={progressPercentage} />
-        {Object.values(players).map(player => (
-          !killedPlayers.includes(player.name) && (
-            <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
-              <PlayerSprite
-                player={player}
-                facing={player.facing ?? 'RIGHT'}
-                isMoving={player.isMoving ?? false}
-              />
+        <div className={styles.gifBackground}></div>
+        <div className={styles.spaceShipBackground}>
+          {Object.values(players).map(player => (
+            !killedPlayers.includes(player.name) && (
+              <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
+                <PlayerSprite
+                  player={player}
+                  facing={player.facing !== undefined ? player.facing : 'RIGHT'}
+                  isMoving={player.isMoving !== undefined ? player.isMoving : false}
+                />
+              </div>
+            )
+          ))}
+          {killedPlayers.map(killedPlayerName => (
+            <div key={killedPlayerName} style={{ position: 'absolute', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x }}>
+              <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
             </div>
-          )
-        ))}
-        {killedPlayers.map(killedPlayerName => (
-          <div key={killedPlayerName} style={{ position: 'relative', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x, transform: 'scale(0.4)' }}>
-            <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" className={styles.deadPlayer} />
-          </div>
-        ))}
-        {isImposter && <KillButton onKill={handleKill} />}
-        {showKillGif && (
-          <div className={styles.killGifContainer}></div>
-        )}
-        <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} />
-        <EmergencyButton stompClient={stompClient} playerName={currentPlayer} onEmergencyMeeting={() => sendEmergencyMeeting(stompClient, currentPlayer)} />
+          ))}
+          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} />
+          <EmergencyButton stompClient={stompClient} playerName={currentPlayer} onEmergencyMeeting={() => sendEmergencyMeeting(stompClient, currentPlayer)} />
+        </div>
       </div>
+      <ProgressBar progress={progressPercentage} />
+      {showKillGif && (
+        <div className={styles.killGifContainer}></div>
+      )}
+      {isImposter && <KillButton onKill={handleKill} />}
     </div>
   );
 

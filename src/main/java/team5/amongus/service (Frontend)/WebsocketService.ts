@@ -13,7 +13,7 @@ export const connectWebSocket = (setStompClient) => {
 
   const socket = new SockJS('http://localhost:8080/ws');
   const stomp = Stomp.over(socket);
-  stomp.debug = function (){};//do nothing
+  
 
   stomp.connect({}, () => {
     console.log('Connected to WebSocket');
@@ -138,7 +138,7 @@ export const setPlayer = (stompClient, playerName) => {
 
   const initialPlayer = {
     name: playerName.trim(),
-    position: { x: 400, y: 400 }, // Initial spawn position
+    position: { x: 1920/2, y: 1080/2 }, // Initial spawn position
   };
 
   stompClient.send('/app/setPlayer', {}, JSON.stringify(initialPlayer));
