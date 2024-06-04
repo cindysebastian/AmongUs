@@ -3,6 +3,7 @@
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { handleReceivedInteractibles } from './InteractionService';
+import { handleReceivedSabotageTasks } from './SabotageInteractionService';
 import { PlayersMap } from '../components/interfaces/Player';
 
 export const connectWebSocket = (setStompClient) => {
@@ -57,8 +58,6 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
     }
   });
 };
-
-
 
 const addImposterFlag = (playersMap) => {
   return Object.keys(playersMap).reduce((acc, key) => {
@@ -128,6 +127,16 @@ export const markTaskAsCompleted = (stompClient, interactibleId: number, roomCod
   stompClient.send(`/app/completeTask/${roomCode}`, {}, JSON.stringify(messageBody));
 };
 
+export const markSabotageTaskAsCompleted = (stompClient, interactibleId: number, roomCode) => {
+  if (!stompClient) return;
+
+  const messageBody = {
+    interactibleId: interactibleId
+  };
+
+  stompClient.send(`/app/completeSabotageTask/${roomCode}`, {}, JSON.stringify(messageBody));
+};
+
 export const subscribeToPlayerKilled = (stompClient, setPlayerKilled, roomCode) => {
   if (!stompClient) return;
 
@@ -152,11 +161,27 @@ export const subscribetoInteractions = (stompClient, setInteractibles, roomCode)
   });
 };
 
+export const subscribeToInteractionWithSabotage = (stompClient, setSabotageTasks, roomCode) => {
+  if (!stompClient) return;
+
+  stompClient.subscribe(`/topic/sabotages/${roomCode}`, (message) => {
+    const updatedSabotageTasks = JSON.parse(message.body); 
+    setSabotageTasks(updatedSabotageTasks);
+    handleReceivedSabotageTasks(updatedSabotageTasks, setSabotageTasks);
+  });
+};
+
 export const sendInteraction = (stompClient, playerName, roomCode) => {
   if (!stompClient || !playerName) return;
 
   stompClient.send(`/app/interact//${roomCode}`, {}, playerName);
 };
+
+export const sendInteractionWithSabotageTask = (stompClient, playerName, roomCode) => {
+  if (!stompClient || !playerName) return;
+
+  stompClient.send(`/app/interactWithSabotage/${roomCode}`, {}, playerName);
+}
 
 export const sendChatMessage = (stompClient, playerName, messageContent, roomCode) => {
   if (!stompClient || !playerName) return;

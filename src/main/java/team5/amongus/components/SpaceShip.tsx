@@ -6,20 +6,24 @@ import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import ProgressBar from './ProgressBar';
-import { killPlayer, subscribeToPlayerKilled } from '../service (Frontend)/WebsocketService';
+import { enableSabotage, killPlayer, subscribeToPlayerKilled } from '../service (Frontend)/WebsocketService';
 import KillButton from './KillButton';
 import Space from './Space';
 import { CSSProperties } from 'react';
+import SabotageTask from './interfaces/SabotageTask';
+import SabotageButton from './Sabotage';
+import Sabotage from './Sabotage';
 
 interface Props {
   stompClient: Stomp.Client | null;
   players: Record<string, Player>;
   interactibles: Interactible[];
+  sabotageTasks: SabotageTask[];
   currentPlayer: string;
   roomCode: string;
 }
 
-const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, currentPlayer, roomCode }) => {
+const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabotageTasks, currentPlayer, roomCode }) => {
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
@@ -55,9 +59,10 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     killPlayer(stompClient, currentPlayer, roomCode);
   };
 
-  const handleSabotage = () => {
-    
-  }
+  const handleSabotage = (sabotageType: string) => {
+    if (!stompClient || !currentPlayer || !roomCode) return;
+    enableSabotage(stompClient, sabotageType, roomCode);
+  };
 
   const completedTasks = interactibles.filter(interactible => interactible.completed).length;
   const totalTasks = interactibles.length;
@@ -103,15 +108,16 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
             </div>
           ))}
           <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
+          <Sabotage stompClient={stompClient} sabotages={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
         </div>
       </div>
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
       )}
-      {isImposter && <KillButton onKill={handleKill}/>}
+      {isImposter && <KillButton onKill={handleKill} />}
       {isImposter && (
-        <div onClick={handleSabotage}>Sabotage</div>
+        <><div onClick={() => handleSabotage("EndGameSabotage")} style={{ position: 'absolute', top: '50px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>End Game Sabotage</div><div onClick={() => handleSabotage("AnnoySabotage")} style={{ position: 'absolute', top: '100px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>Annoy Sabotage</div></>
       )}
     </div>
   );

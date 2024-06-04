@@ -23,6 +23,7 @@ public class Room {
     private ArrayList<Interactible> sabotageTasks = new ArrayList<>();
     private ArrayList<Sabotage> sabotages = new ArrayList<>();
     private ArrayList<Interactible> previousInteractibles = new ArrayList<>();
+    private ArrayList<Interactible> previousSabotageTasks = new ArrayList<>();
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private List<Message> chatMessages = new ArrayList<>();
     private String gameState = "stopped";
@@ -276,6 +277,15 @@ public class Room {
         }
         if (this.gameState.equals("Game running")) {
             finishGame(messagingTemplate);
+        }
+    }
+
+    public void broadCastSabotageTasksUpdate(SimpMessagingTemplate messagingTemplate){
+        List<Interactible> clonedSabotageTasks = cloneInteractibles(sabotageTasks);
+        if (!Objects.equals(clonedSabotageTasks, previousSabotageTasks)) {
+            messagingTemplate.convertAndSend("/topic/sabotages/" + roomCode, clonedSabotageTasks);
+            previousSabotageTasks.clear();
+            previousSabotageTasks.addAll(clonedSabotageTasks);
         }
     }
 

@@ -180,6 +180,31 @@ public class WebSocketController {
         return room.getInteractibles();
     }
 
+    @MessageMapping("/interactWithSabotage/{roomCode}")
+    @SendTo("/topic/sabotages/{roomCode}")
+    public ArrayList<Interactible> handleSabotageTaskInteract(@Payload String playerName, @DestinationVariable String roomCode){
+        Room room = activeRooms.get(roomCode);
+        if (room == null) {
+            return new ArrayList<>();
+        }
+
+        Player player = room.getPlayersMap().get(playerName);
+        if (player == null) {
+            return new ArrayList<>();
+        }
+
+        Interactible obj = playerService.getPlayerInteractableObject(room.getSabotageTasks(), player);
+
+        if (obj != null) {
+            if (obj instanceof SabotageTask) {
+                ArrayList<Interactible> updatedSabTasks = sabotageService.updateSabotageTaskInteractions(room.getSabotageTasks(), player, (SabotageTask) obj);
+                room.setSabotageTasks(updatedSabTasks);
+            }
+        }
+        room.broadCastSabotageTasksUpdate(messagingTemplate);
+        return room.getSabotageTasks();
+    }
+
     @MessageMapping("/move/{roomCode}")
     public void move(String payload, @DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
@@ -241,6 +266,15 @@ public class WebSocketController {
         room.broadcastInteractiblesUpdate(messagingTemplate);
     }
 
+    @MessageMapping("/completeSabotageTask/{roomCode}")
+    public void completeSabotageTask(String payload, @DestinationVariable String roomCode){
+        Room room = activeRooms.get(roomCode);
+
+        ArrayList<Interactible> updatedSabotageTasks = sabotageService.completeSabotageTask(payload, room.getSabotageTasks());
+        room.setSabotageTasks(updatedSabotageTasks);
+        room.broadCastSabotageTasksUpdate(messagingTemplate);
+    }
+
     @MessageMapping("/enableSabotage/{roomCode}")
     public void enableSabotage(String sabotageName, @DestinationVariable String roomCode){
         Room room = activeRooms.get(roomCode);
@@ -252,9 +286,12 @@ public class WebSocketController {
             }
         }
 
-        ArrayList<Interactible> updatedInteractibles = sabotageService.enableSabotageTasks(room.getInteractibles(), sabotage);
-        room.setInteractibles(updatedInteractibles);
-        room.broadcastInteractiblesUpdate(messagingTemplate);
+        System.out.println("Enabling Sabotage: " + sabotage.getName());
+
+        ArrayList<Interactible> updatedInteractibles = sabotageService.enableSabotageTasks(room.getSabotageTasks(), sabotage);
+        room.setSabotageTasks(updatedInteractibles);
+        System.out.println(updatedInteractibles.toString());
+        room.broadCastSabotageTasksUpdate(messagingTemplate);
     }
 
     @MessageMapping("/wait/{roomCode}")

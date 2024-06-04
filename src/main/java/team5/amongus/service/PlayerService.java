@@ -87,9 +87,16 @@ public class PlayerService implements IPlayerService {
     public Interactible getPlayerInteractableObject(ArrayList<Interactible> interactibles, Player player) {
 
         for (Interactible object : interactibles) {
-            if (((Task) object).getAssignedPlayer().equals(player.getName())) {
+            if (object instanceof Task) {
+                if (((Task) object).getAssignedPlayer().equals(player.getName())) {
+                    if (player.collidesWith(object)) {
+    
+                        return object;
+                    }
+                }                
+            }
+            else if (object instanceof SabotageTask) {
                 if (player.collidesWith(object)) {
-
                     return object;
                 }
             }
