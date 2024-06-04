@@ -22,11 +22,11 @@ public class EmergencyMeeting {
         int totalVotes = playersMap.size();
         System.out.println(vote);
         System.out.println(playerName + " voted for: " + votedPlayer);
-        if (vote.equals("yes")) {
+        if (vote.equals("vote")) {
             //System.out.println("vote is being added to array");
             votes.put(votedPlayer, votes.getOrDefault(votedPlayer, 0) +1 );
         }
-        if (vote.equals("no")) {
+        if (vote.equals("skip")) {
             votes.put("skip", votes.getOrDefault("skip", 0) +1);
         }
         int votesCast = 0;

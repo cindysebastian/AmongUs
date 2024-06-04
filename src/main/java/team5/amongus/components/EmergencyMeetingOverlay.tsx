@@ -17,7 +17,7 @@ interface EmergencyMeetingOverlayProps {
 const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playerNames, stompClient, playerName, killedPlayers }) => {
   const [messages, setMessages] = useState([]);
   const [isChatVisible, setIsChatVisible] = useState(false);
-  const [votes, setVotes] = useState<{ [key: string]: { yes: number; no: number } }>({});
+  const [votes, setVotes] = useState<{ [key: string]: { vote: number; skip: number } }>({});
   const [ejectedPlayer, setEjectedPlayer] = useState<string | null>(null);
   const [showEjectedGif, setShowEjectedGif] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
@@ -47,7 +47,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
     setIsChatVisible(!isChatVisible);
   };
 
-  const handleVote = (votedPlayer: string, vote: 'yes' | 'no') => {
+  const handleVote = (votedPlayer: string, vote: 'vote' | 'skip') => {
     if (stompClient && playerName) {
       sendVote(stompClient, playerName, votedPlayer, vote);
     }
@@ -74,9 +74,8 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
               <li key={name} className={styles.playerName}>
                 {name} {killedPlayers.includes(name) && <span>(DEAD)</span>}
                 <div>
-                  Yes: {votes[name]?.yes ?? 0} No: {votes[name]?.no ?? 0}
-                  <button onClick={() => handleVote(name, 'yes')} disabled={hasVoted}>Yes</button>
-                  <button onClick={() => handleVote(name, 'no')} disabled={hasVoted}>No</button>
+                  Vote: {votes[name]?.vote ?? 0}
+                  <button onClick={() => handleVote(name, 'vote')} disabled={hasVoted}>Vote</button>
                 </div>
               </li>
             ))}
@@ -86,13 +85,15 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
               <li key={name} className={styles.playerName}>
                 {name} {killedPlayers.includes(name) && <span>(DEAD)</span>}
                 <div>
-                  Yes: {votes[name]?.yes ?? 0} No: {votes[name]?.no ?? 0}
-                  <button onClick={() => handleVote(name, 'yes')} disabled={hasVoted}>Yes</button>
-                  <button onClick={() => handleVote(name, 'no')} disabled={hasVoted}>No</button>
+                  Vote: {votes[name]?.vote ?? 0}
+                  <button onClick={() => handleVote(name, 'vote')} disabled={hasVoted}>Vote</button>
                 </div>
               </li>
             ))}
           </ul>
+        </div>
+        <div className={styles.skipButtonContainer}>
+          <button onClick={() => handleVote(playerName, 'skip')} disabled={hasVoted}>Skip</button>
         </div>
       </div>
       <button onClick={handleToggleChat} className={styles.chatButton}>
