@@ -5,7 +5,6 @@ export default interface Player {
     x: number;
     y: number;
   };
-  colour: string;
   step: number;
   isMoving?: boolean;
   facing?: 'LEFT' | 'RIGHT';

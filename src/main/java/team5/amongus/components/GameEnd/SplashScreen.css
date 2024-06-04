@@ -67,9 +67,9 @@
 
 
 .action-button {
-    position: sticky;
-    float: left;
+    position:relative;
     bottom: 5%;
+    margin: auto;
     left: 50%;
     /* Center horizontally */
     transform: translateX(-50%);
@@ -131,4 +131,9 @@
     padding: 4%;
     right: 0;
     text-align: center;
+}
+
+.choiceButtons{
+    position: relative;
+    justify-content: center;
 }

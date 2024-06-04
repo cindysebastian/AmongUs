@@ -26,8 +26,10 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
 
   useEffect(() => {
     if (!currentPlayer || !players) return;
-    const currentPlayerObj = players[currentPlayer] as Player;
-    setIsImposter(currentPlayerObj.isImposter === true);
+    const currentPlayerObj = players[currentPlayer] as Player | undefined;
+    if (currentPlayerObj && currentPlayerObj.isImposter) {
+      setIsImposter(true);
+    }
   }, [players, currentPlayer]);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   }, [stompClient]);
 
   const handlePlayerKilled = (killedPlayer: Player) => {
-    if (!killedPlayer || killedPlayer.name === undefined || !currentPlayer) return;
+    if (!killedPlayer || !killedPlayer.name || !currentPlayer) return;
     if (killedPlayer.name === currentPlayer) {
       setShowKillGif(true);
       setTimeout(() => setShowKillGif(false), 2500);
