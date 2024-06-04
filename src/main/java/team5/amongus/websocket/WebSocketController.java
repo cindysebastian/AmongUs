@@ -360,10 +360,13 @@ public class WebSocketController {
     public void handleVote(String payload) {
         // Assuming payload contains playerName and votedPlayer separated by a comma
         String[] parts = payload.split(",");
-        if (parts.length == 2) {
+        System.out.println("parts lenght: " + parts.length);
+        System.out.println("payload: " + payload);
+        if (parts.length == 3) {
             String playerName = parts[0].trim();
             String votedPlayer = parts[1].trim();
-            emergencyMeeting.handleVoting(playerName, votedPlayer, playersMap);
+            String vote = parts[2].trim();
+            emergencyMeeting.handleVoting(playerName, votedPlayer, vote, playersMap);
         }
     }
     

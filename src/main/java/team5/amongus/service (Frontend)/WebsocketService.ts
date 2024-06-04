@@ -203,9 +203,9 @@ export const subscribeToEjectedPlayer = (stompClient, playerName) => {
     };
 };
 
-export const sendVote = (stompClient, playerName, votedPlayer) => {
+export const sendVote = (stompClient, playerName, votedPlayer, vote) => {
   if (!stompClient || !playerName || !votedPlayer) return;
 
-  const payload = `${playerName},${votedPlayer}`;
+  const payload = `${playerName},${votedPlayer},${vote}`;
   stompClient.send('/app/vote', {}, payload);
 };

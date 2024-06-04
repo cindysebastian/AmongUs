@@ -48,21 +48,9 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
   };
 
   const handleVote = (votedPlayer: string, vote: 'yes' | 'no') => {
-    setVotes(prevVotes => {
-      const updatedVotes = {
-        ...prevVotes,
-        [votedPlayer]: {
-          yes: vote === 'yes' ? (prevVotes[votedPlayer]?.yes || 0) + 1 : prevVotes[votedPlayer]?.yes || 0,
-          no: vote === 'no' ? (prevVotes[votedPlayer]?.no || 0) + 1 : prevVotes[votedPlayer]?.no || 0,
-        },
-      };
-  
-      if (stompClient && playerName) {
-        sendVote(stompClient, playerName, votedPlayer);
-      }
-  
-      return updatedVotes;
-    });
+    if (stompClient && playerName) {
+      sendVote(stompClient, playerName, votedPlayer, vote);
+    }
     setHasVoted(true);
   };
 
