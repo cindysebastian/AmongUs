@@ -20,6 +20,8 @@ public class Room {
     private final Map<String, Player> previousPlayersMap = new HashMap<>();
     private final Map<String, Player> previousinGamePlayersMap = new HashMap<>();
     private ArrayList<Interactible> interactibles = new ArrayList<>();
+    private ArrayList<Interactible> sabotageTasks = new ArrayList<>();
+    private ArrayList<Sabotage> sabotages = new ArrayList<>();
     private ArrayList<Interactible> previousInteractibles = new ArrayList<>();
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private List<Message> chatMessages = new ArrayList<>();
@@ -79,6 +81,22 @@ public class Room {
 
     public String getGameStarted() {
         return gameState;
+    }
+
+    public void setSabotages(ArrayList<Sabotage> sabotages){
+        this.sabotages = sabotages;
+    }
+
+    public ArrayList<Sabotage> getSabotages(){
+        return sabotages;
+    }
+
+    public void setSabotageTasks(ArrayList<Interactible> sabotageTasks){
+        this.sabotageTasks = sabotageTasks;
+    }
+
+    public ArrayList<Interactible> getSabotageTasks(){
+        return sabotageTasks;
     }
 
     public String validateHost() {

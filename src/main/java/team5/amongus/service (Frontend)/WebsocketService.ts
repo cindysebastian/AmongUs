@@ -170,5 +170,9 @@ export const killPlayer = (stompClient, playerName, roomCode) => {
   stompClient.send(`/app/killPlayer/${roomCode}`, {}, playerName);
 };
 
+export const enableSabotage = (stompClient, sabotage, roomCode) => {
+  if(!stompClient) return;
 
+  stompClient.send(`/app/enableSabotage/${roomCode}`, {}, sabotage)
+}
 

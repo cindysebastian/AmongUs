@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import team5.amongus.model.*;
 import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
+import team5.amongus.service.ISabotageService;
 import team5.amongus.service.ITaskService;
 import team5.amongus.service.ICollisionMaskService;
 import team5.amongus.service.IGameWinningService;
@@ -46,15 +47,17 @@ public class WebSocketController {
     private final IPlayerService playerService;
     private final ITaskService taskService;
     private final ICollisionMaskService collisionMaskService;
+    private final ISabotageService sabotageService;
     private CollisionMask collisionMaskLobby;
     private CollisionMask collisionMaskGame;
     private final IChatService chatService;
     private Set<String> usedRoomCodes = new HashSet<>();
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
-            ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService) {
+            ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService, ISabotageService sabotageService) {
         this.playerService = playerService;
         this.taskService = taskService;
+        this.sabotageService = sabotageService;
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
         this.collisionMaskService = collisionMaskService;
@@ -239,6 +242,22 @@ public class WebSocketController {
         room.broadcastInteractiblesUpdate(messagingTemplate);
     }
 
+    @MessageMapping("/enableSabotage/{roomCode}")
+    public void enableSabotage(String sabotageName, @DestinationVariable String roomCode){
+        Room room = activeRooms.get(roomCode);
+        ArrayList<Sabotage> sabotages = room.getSabotages();
+        Sabotage sabotage = new Sabotage(null);
+        for (Sabotage sab : sabotages) {
+            if (sab.getName().equals(sabotageName)) {
+                sabotage = sab;
+            }
+        }
+
+        ArrayList<Interactible> updatedInteractibles = sabotageService.enableSabotageTasks(room.getInteractibles(), sabotage);
+        room.setInteractibles(updatedInteractibles);
+        room.broadcastInteractiblesUpdate(messagingTemplate);
+    }
+
     @MessageMapping("/wait/{roomCode}")
     public void waitForContinue(String payload, @DestinationVariable String roomCode) {
         // Retrieve the room using the roomCode
@@ -279,8 +298,12 @@ public class WebSocketController {
 
         room.chooseImposter();
         room.getInGamePlayersMap().clear();
+        // TODO: set Sabotages correctly
+        room.setSabotages(sabotageService.createSabotages());
+        room.setSabotageTasks(sabotageService.createSabotageTasks(room.getSabotages()));
 
         room.setInteractibles(taskService.createTasks(room.getPlayersMap()));
+        
         room.setGameState("Game running");
         String destination = "/topic/finishGame/" + room.getRoomCode();
         messagingTemplate.convertAndSend(destination, room.getGameStarted());

@@ -20,6 +20,3 @@ export const handleReceivedInteractibles = (interactiblesData, setInteractibles)
 
   setInteractibles(parsedInteractibles);
 };
-
-
-

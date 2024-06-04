@@ -23,6 +23,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
+  const [showSabotageGif, setShowSabotageGif] = useState(false);
 
   useEffect(() => {
     if (currentPlayer && players[currentPlayer]) {
@@ -49,6 +50,10 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const handleKill = () => {
     killPlayer(stompClient, currentPlayer, roomCode);
   };
+
+  const handleSabotage = () => {
+    
+  }
 
   const completedTasks = interactibles.filter(interactible => interactible.completed).length;
   const totalTasks = interactibles.length;
@@ -101,7 +106,10 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
       )}
-      {isImposter && <KillButton onKill={handleKill} />}
+      {isImposter && <KillButton onKill={handleKill}/>}
+      {isImposter && (
+        <div onClick={handleSabotage}>Sabotage</div>
+      )}
     </div>
   );
 };
