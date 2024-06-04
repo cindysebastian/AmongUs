@@ -1,15 +1,25 @@
-interface Player {
+// Player interface
+export default interface Player {
   name: string;
   position: {
     x: number;
     y: number;
   };
-  facing?: 'LEFT' | 'RIGHT'; // Optional facing property
-  isMoving?: boolean; // Optional ismoving property
-  //isDead?: boolean; // for dead body 
-  isImposter? : boolean; // for imposter
-  host? : boolean;
-  willContinue?: boolean; // for continue game
-
+  step: number;
+  isMoving?: boolean;
+  facing?: 'LEFT' | 'RIGHT';
+  width: number;
+  height: number;
+  canInteract: boolean;
+  isAlive: boolean;
+  willContinue?: boolean;
+  lastActivityTime: number;
+  sessionId: string;
+  isHost?: boolean;
+  isImposter?: boolean;
+  canKill?: boolean;
 }
-export default Player
+
+export interface PlayersMap {
+  [key: string]: Player;
+}

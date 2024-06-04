@@ -24,16 +24,26 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
   const [isHost, setIsHost] = useState(false);
   const [chatVisible, setChatVisible] = useState(false);
 
+  const currentPlayerObj = inGamePlayers[currentPlayer.trim()] as Player;
+
   useEffect(() => {
     setPlayerCount(Object.keys(inGamePlayers).length);
   }, [inGamePlayers]);
 
   useEffect(() => {
-    if (inGamePlayers[currentPlayer] && inGamePlayers[currentPlayer].host) {
-      setIsHost(true);
+    if (inGamePlayers && Object.keys(inGamePlayers).length > 0 && inGamePlayers[currentPlayer]) {
+      if (inGamePlayers[currentPlayer].isHost) {
+        setIsHost(true);
+      } else {
+        setIsHost(false);
+      }
+
+
     } else {
-      setIsHost(false);
+      console.log('inGamePlayers is empty or currentPlayer does not exist in inGamePlayers');
+      setIsHost(false); // Optionally set isHost to false if inGamePlayers is empty
     }
+
   }, [inGamePlayers, currentPlayer]);
 
 
@@ -74,7 +84,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
   const mapHeight = 1080;
   const playerWidth = 80;
   const playerHeight = 80;
-  const currentPlayerData = inGamePlayers[currentPlayer];
+  const currentPlayerData = inGamePlayers[currentPlayer.trim()];
 
   // Ensure currentPlayerData is defined before accessing its properties
   const cameraStyle = currentPlayerData ? {
@@ -86,9 +96,8 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
       <Space />
       <div style={cameraStyle}>
         <div className={styles.lobbyBackground}></div>
-        <div className={styles.roomCode}>
-          Room Code: {roomCode}
-        </div>
+
+
 
         {Object.values(inGamePlayers).map(player => {
           const isMoving = player.isMoving !== undefined ? player.isMoving : false;
@@ -115,11 +124,13 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
         </div>
       )}
 
-      <div className={styles.playerCountContainer}>
-        <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
-        <div className={styles.playerCount}>{playerCount}</div>
-
-        <div className={styles.gameCode} onClick={(e) => copyToClipboard(roomCode, e.currentTarget)}>CODE: {roomCode}</div>
+      <div className={styles.iconContainer}>
+        <div className={styles.playerCountContainer}>
+          <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
+          <div className={styles.playerCount}>{playerCount}</div>
+        </div>
+        <div className={styles.gameCode} onClick={(e) => copyToClipboard(roomCode, e.currentTarget)}>CODE: {roomCode}
+        </div>
         {isHost && (
           <div className={styles.startButtonContainer} onClick={handleStartButtonClick}>
             <img src="src/main/resources/startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
@@ -127,7 +138,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 

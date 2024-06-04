@@ -10,7 +10,7 @@
     background-position: center;
 }
 
-img {
+.image {
     position: fixed;
     top: 0;
     left: 0;
@@ -20,34 +20,32 @@ img {
     background-position: center;
 }
 
+
+.playerCountContainer {
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+}
+
+.startButtonContainer {
+    align-items: baseline;
+    justify-content: space-around;
+}
+
 .startButtonIcon {
-    position: absolute;
-    top: 50%;
-    bottom: 30px;
-    right: calc(50% + 50px);
-    /* Adjust the right offset to create space for the player count icon */
-    transform: translateY(-50%);
     width: 100px;
     height: auto;
     cursor: pointer;
     background-color: transparent;
     opacity: 1;
     transition: opacity 0.3s ease;
+    z-index: 999;
 }
 
 .startButtonIcon.clicked {
     opacity: 0.8 !important;
-}
-
-.playerCountContainer {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
 }
 
 .playerCountIcon {
@@ -56,6 +54,7 @@ img {
     margin-right: 8px;
 }
 
+
 .playerCount {
     background-color: rgba(0, 0, 0, 0.3);
     color: white;
@@ -63,35 +62,21 @@ img {
     padding: 8px 12px;
     border-radius: 4px;
     display: flex;
-    align-items: center;
+    align-items: baseline;
+    justify-content: space-around;
 }
 
-.playerCountIcon {
-    width: 30px;
-    height: auto;
-    top: 10%;
-    margin-bottom: 2px;
-    margin-left: 15px;
-    left: calc(15% + 10px);
-}
+
 
 .gameCode {
     font-size: 1.2em;
     font-family: monospace;
     cursor: pointer;
-    position: relative;
-    left: calc(50% + 50px);
     color: white;
+    justify-content: space-around;
+    z-index: 10;
 }
 
-.playerCount {
-    background-color: rgba(0, 0, 0, 0.3);
-    color: white;
-    font-size: 16px;
-    padding: 8px 12px;
-    border-radius: 4px;
-    left: calc(15% + 15px);
-}
 
 .collisionMask {
     position: fixed;
@@ -165,3 +150,18 @@ img {
     font-family: 'Lucida Console';
     z-index: 10;
   }
+
+  .iconContainer{
+    height: 10vh;
+    top: 90vh;
+    width: 80vw;
+    left: 10vw;
+    margin: auto;
+    position: absolute;
+    bottom: 0;
+    display: flex;
+    z-index: 99;
+    justify-content: space-around;
+    align-items: baseline;
+  }
+  

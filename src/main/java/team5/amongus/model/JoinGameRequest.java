@@ -1,4 +1,4 @@
-package team5.amongus.websocket;
+package team5.amongus.model;
 
 public class JoinGameRequest {
     private String playerName;

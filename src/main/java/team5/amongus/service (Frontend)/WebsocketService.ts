@@ -3,6 +3,7 @@
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { handleReceivedInteractibles } from './InteractionService';
+import { PlayersMap } from '../components/interfaces/Player';
 
 export const connectWebSocket = (setStompClient) => {
   // Disable Stomp.js logging
@@ -24,26 +25,29 @@ export const connectWebSocket = (setStompClient) => {
   };
 };
 
+
+
 export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGamePlayers, roomCode) => {
   if (!stompClient || !playerName || !roomCode) {
     console.error("Missing required parameters for subscription:", { stompClient, playerName, roomCode });
     return;
   }
 
-  stompClient.subscribe(`/topic/players/${roomCode}`, (message) => {
+  stompClient.subscribe(`/topic/players/${roomCode}`, (message: { body: string }) => {
     try {
+      console.log(message.body);
       const updatedPlayers = JSON.parse(message.body);
       const playersWithImposterFlag = addImposterFlag(updatedPlayers);
       setPlayers(playersWithImposterFlag);
       const currentPlayer = playersWithImposterFlag[playerName];
+      console.log(playersWithImposterFlag);
     } catch (error) {
       console.error('Error processing player message:', error);
     }
   });
 
-  stompClient.subscribe(`/topic/inGamePlayers/${roomCode}`, (message) => {
+  stompClient.subscribe(`/topic/inGamePlayers/${roomCode}`, (message: { body: string }) => {
     try {
-      //console.log("RAw Data: ", message.body);
       const updatedInGamePlayers = JSON.parse(message.body);
       const inGamePlayersWithImposterFlag = addImposterFlag(updatedInGamePlayers);
       setInGamePlayers(inGamePlayersWithImposterFlag);
@@ -53,6 +57,8 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
     }
   });
 };
+
+
 
 const addImposterFlag = (playersMap) => {
   return Object.keys(playersMap).reduce((acc, key) => {

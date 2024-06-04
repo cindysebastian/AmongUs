@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class PlayerService implements IPlayerService {
 
-
     @Override
     public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask) {
         try {
@@ -88,7 +87,7 @@ public class PlayerService implements IPlayerService {
     public Interactible getPlayerInteractableObject(ArrayList<Interactible> interactibles, Player player) {
 
         for (Interactible object : interactibles) {
-            if (((Task) object).getAssignedPlayer() == player.getName()) {
+            if (((Task) object).getAssignedPlayer().equals(player.getName())) {
                 if (player.collidesWith(object)) {
 
                     return object;
@@ -98,7 +97,8 @@ public class PlayerService implements IPlayerService {
         return null;
     }
 
-    public Map<String, Player> handleKill(Imposter imposter, Map<String, Player> playersMap, String roomCode, SimpMessagingTemplate template ) {
+    public Map<String, Player> handleKill(Imposter imposter, Map<String, Player> playersMap, String roomCode,
+            SimpMessagingTemplate template) {
         System.out.println("Trying to kill...");
         if (imposter != null && playersMap != null) {
             Player collidingPlayer = null;

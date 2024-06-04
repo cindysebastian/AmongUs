@@ -15,31 +15,34 @@ interface Props {
   stompClient: Stomp.Client | null;
   players: Record<string, Player>;
   interactibles: Interactible[];
-  currentPlayer: string;  // Change to 'string' instead of 'String'
+  currentPlayer: string;
   roomCode: string;
 }
 
-const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, currentPlayer, roomCode}) => {
+const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, currentPlayer, roomCode }) => {
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
   const [showSabotageGif, setShowSabotageGif] = useState(false);
 
   useEffect(() => {
-    if (currentPlayer && players[currentPlayer]) {
-      const currentPlayerObj = players[currentPlayer] as Player;
-      setIsImposter(currentPlayerObj.isImposter === true);
+    if (!currentPlayer || !players) return;
+    const currentPlayerObj = players[currentPlayer] as Player | undefined;
+    if (currentPlayerObj && currentPlayerObj.isImposter) {
+      setIsImposter(true);
     }
   }, [players, currentPlayer]);
 
   useEffect(() => {
+    if (!stompClient) return;
     const unsubscribeKilled = subscribeToPlayerKilled(stompClient, handlePlayerKilled, roomCode);
     return () => {
-      unsubscribeKilled;
+      unsubscribeKilled();
     };
   }, [stompClient]);
 
   const handlePlayerKilled = (killedPlayer: Player) => {
+    if (!killedPlayer || !killedPlayer.name || !currentPlayer) return;
     if (killedPlayer.name === currentPlayer) {
       setShowKillGif(true);
       setTimeout(() => setShowKillGif(false), 2500);
@@ -48,6 +51,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   };
 
   const handleKill = () => {
+    if (!stompClient || !currentPlayer || !roomCode) return;
     killPlayer(stompClient, currentPlayer, roomCode);
   };
 
@@ -62,8 +66,8 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const mapWidth = 4000;
   const mapHeight = 2316;
 
-  const playerX = players[currentPlayer].position.x;
-  const playerY = players[currentPlayer].position.y;
+  const playerX = players && players[currentPlayer] ? players[currentPlayer].position.x : 0;
+  const playerY = players && players[currentPlayer] ? players[currentPlayer].position.y : 0;
   const offsetX = Math.max(0, Math.min(playerX - window.innerWidth / 2, mapWidth - window.innerWidth));
   const offsetY = Math.max(0, Math.min(playerY - window.innerHeight / 2, mapHeight - window.innerHeight));
 
@@ -75,7 +79,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     width: '100%',
     height: '100%',
   };
-
 
   return (
     <div>
