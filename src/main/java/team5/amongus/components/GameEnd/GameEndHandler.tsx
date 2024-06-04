@@ -56,7 +56,6 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
         setWaitingPlayersCount(waitingCount);
         console.log(waitingPlayersCount);
         console.log(players);
-        checkAllPlayersMadeChoice();
     }, [players]);
 
     let imposterName = '';
@@ -134,21 +133,15 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
         stompClient.send(`/app/wait/${roomCode}`, {}, currentPlayer);
     };
 
-    const checkAllPlayersMadeChoice = () => {
-        if (waitingPlayersCount === totalPlayers) {
-            console.log("All players have made their choice");
-            handleResetLobby();
-        }
-    };
 
     return (
         <div>
             {splashScreen}
             <div>
-                {isHost && !(waitingPlayersCount == totalPlayers) && (
+                {true && !(waitingPlayersCount == totalPlayers) && (
                     <button className="grey-button">Reset Lobby</button>
                 )}
-                {isHost && waitingPlayersCount === totalPlayers && (
+                {true /*&& waitingPlayersCount === totalPlayers*/ && (
                     <button className="action-button" onClick={handleResetLobby}>Reset Lobby</button>
                 )}
             </div>

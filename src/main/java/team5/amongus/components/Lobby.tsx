@@ -120,7 +120,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
         <div className={styles.playerCount}>{playerCount}</div>
 
         <div className={styles.gameCode} onClick={(e) => copyToClipboard(roomCode, e.currentTarget)}>CODE: {roomCode}</div>
-        {isHost && (
+        {true && (
           <div className={styles.startButtonContainer} onClick={handleStartButtonClick}>
             <img src="src/main/resources/startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
             />

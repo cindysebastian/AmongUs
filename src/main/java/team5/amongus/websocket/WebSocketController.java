@@ -289,6 +289,45 @@ public class WebSocketController {
         return "Game has started";
     }
 
+    @MessageMapping("/resetLobby/{roomCode}")
+    public void resetLobby(@DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
+        System.out.println("Resetting Lobby...");
+
+        List<Position> positions = new ArrayList<>();
+        positions.add(new Position(900, 500));
+        positions.add(new Position(1000, 600));
+        positions.add(new Position(1100, 600));
+        positions.add(new Position(1200, 500));
+
+        int index = 0;
+        for (Map.Entry<String, Player> entry : room.getPlayersMap().entrySet()) {
+            if (entry.getValue() instanceof Imposter) {
+                Player resetImposter = (Player) entry.getValue();
+                resetImposter.setAlive(true);
+                resetImposter.setWillContinue(false);
+                resetImposter.setPosition(positions.get(index));
+                room.getInGamePlayersMap().put(entry.getKey(), resetImposter);
+            } else {
+                entry.getValue().setPosition(positions.get(index));
+                entry.getValue().setAlive(true);
+                entry.getValue().setWillContinue(false);
+                room.getInGamePlayersMap().put(entry.getKey(), entry.getValue());
+            }
+            index++;
+            if (index > 3) {
+                index = 0;
+            }
+        }
+        room.getPlayersMap().clear();
+        room.getInteractibles().clear();
+        room.getChatMessages().clear();
+        room.setGameState("Game waiting");
+        
+        room.broadcastInteractiblesUpdate(messagingTemplate);
+        room.broadcastPlayerUpdate(messagingTemplate);
+    }
+
     /*
      * @EventListener
      * public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
