@@ -303,7 +303,7 @@ public class WebSocketController {
         int index = 0;
         for (Map.Entry<String, Player> entry : room.getPlayersMap().entrySet()) {
             if (entry.getValue() instanceof Imposter) {
-                Player resetImposter = (Player) entry.getValue();
+                Player resetImposter = new Player((Imposter) entry.getValue());
                 resetImposter.setAlive(true);
                 resetImposter.setWillContinue(false);
                 resetImposter.setPosition(positions.get(index));

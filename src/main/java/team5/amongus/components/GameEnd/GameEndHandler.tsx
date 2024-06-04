@@ -40,7 +40,7 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
             if (players[currentPlayer].isHost) {
                 isHost = true;
             }
-            console.log(isHost);
+            
         }
     }, [currentPlayer, players]);
 
@@ -54,8 +54,6 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
         // Calculate the number of waiting players
         const waitingCount = Object.values(players).filter(player => player.willContinue).length;
         setWaitingPlayersCount(waitingCount);
-        console.log(waitingPlayersCount);
-        console.log(players);
     }, [players]);
 
     let imposterName = '';

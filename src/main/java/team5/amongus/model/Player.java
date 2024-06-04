@@ -8,12 +8,11 @@ public class Player implements Serializable, Cloneable {
     private String name;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Position position;
-    private String colour;
-    private Integer step = 12;
+    private final Integer step = 12;
     private Boolean isMoving = false;
     private String facing = "RIGHT";
-    private int width = 80;
-    private int height = 80;
+    private final int width = 80;
+    private final int height = 80;
     private boolean canInteract = false;
     private boolean isAlive = true;
     private boolean willContinue = false;
@@ -24,6 +23,13 @@ public class Player implements Serializable, Cloneable {
         this.name = name;
         this.position = position;
         this.lastActivityTime = System.currentTimeMillis();
+    }
+
+    public Player(Imposter imposter){
+        this.name = imposter.getName();
+        this.position = imposter.getPosition();
+        this.lastActivityTime = imposter.getLastActivityTime();
+        this.isHost = imposter.getIsHost();
     }
 
     public void setWillContinue(boolean set) {
@@ -82,13 +88,6 @@ public class Player implements Serializable, Cloneable {
         this.position = position;
     }
 
-    public String getColour() {
-        return colour;
-    }
-
-    public void setColour(String colour) {
-        this.colour = colour;
-    }
 
     public String getFacing() {
         return facing;

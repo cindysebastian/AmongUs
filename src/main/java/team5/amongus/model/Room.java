@@ -24,6 +24,7 @@ public class Room {
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private List<Message> chatMessages = new ArrayList<>();
     private String gameState = "stopped";
+    String result = "";
 
     public Room(int maxPlayers, String host) {
         this.roomCode = generateRoomCode();
@@ -197,7 +198,7 @@ public class Room {
             messagingTemplate.convertAndSend(destination, inGamePlayersMap);
 
         }
-        if (this.gameState.equals("Game running")) {
+        if (this.gameState.equals("Game running") || this.gameState.equals("Game waiting")) {
             finishGame(messagingTemplate);
         }
     }
@@ -268,23 +269,21 @@ public class Room {
     public String finishGame(SimpMessagingTemplate messagingTemplate) {
         final IGameWinningService gameWinningService = new GameWinningService();
 
-        String result;
-        if (gameWinningService.allTasksCompleted(this.interactibles)) {
-            result = "Crewmates win";
-        } else if (gameWinningService.enoughCrewmatesDead(this.playersMap)) {
-            result = "Imposter wins";
-        } else if (gameWinningService.imposterDead(this.playersMap)) {
-            result = "Crewmates win";
-        } else {
-            result = "Game running";
+        if (this.gameState.equals("Game running")) {
+            if (gameWinningService.allTasksCompleted(this.interactibles)) {
+                this.gameState = "Crewmates win";
+            } else if (gameWinningService.enoughCrewmatesDead(this.playersMap)) {
+                this.gameState = "Imposter wins";
+            } else if (gameWinningService.imposterDead(this.playersMap)) {
+                this.gameState = "Crewmates win";
+            }
         }
-
         // Check if the result has changed
         if (!result.equals(this.gameState)) {
             // Send the message only if the result has changed
             String destination = "/topic/finishGame/" + this.roomCode;
-            messagingTemplate.convertAndSend(destination, result);
-            this.gameState = result; // Update the previousResult variable
+            messagingTemplate.convertAndSend(destination, this.gameState);
+            result= this.gameState; // Update the previousResult variable
             System.out.println("Game State changed to: " + gameState);
         }
 

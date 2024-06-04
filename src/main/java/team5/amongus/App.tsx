@@ -168,7 +168,6 @@ const App = () => {
   const handleResetLobby = () => {
     if (stompClient) {
       stompClient.send('/app/resetLobby/' + roomCode);
-      navigate('/game');
     }
   };
 
@@ -193,8 +192,11 @@ const App = () => {
   };
 
   useEffect(() => {
+    console.log(gameState);
     if (gameState == "Imposter wins" || gameState == "Crewmates win") {
       navigate('/end');
+    }else if (gameState == "Game waiting"){
+      navigate('/game');
     }
   }, [gameState, navigate]);
 
