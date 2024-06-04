@@ -91,14 +91,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     <div>
       <Space />
       <div style={cameraStyle}>
-        {showEmergencyMeeting && (
-          <EmergencyMeetingOverlay
-            playerNames={playerNamesforMeeting}
-            killedPlayers={killedPlayers}
-            stompClient={stompClient}
-            playerName={currentPlayer}
-          />
-        )}
         <div className={styles.gifBackground}></div>
         <div className={styles.spaceShipBackground}>
           {Object.values(players).map(player => (
@@ -121,6 +113,14 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
           <EmergencyButton stompClient={stompClient} playerName={currentPlayer} onEmergencyMeeting={() => sendEmergencyMeeting(stompClient, currentPlayer)} />
         </div>
       </div>
+        {showEmergencyMeeting && (
+          <EmergencyMeetingOverlay
+            playerNames={playerNamesforMeeting}
+            killedPlayers={killedPlayers}
+            stompClient={stompClient}
+            playerName={currentPlayer}
+          />
+        )}
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>

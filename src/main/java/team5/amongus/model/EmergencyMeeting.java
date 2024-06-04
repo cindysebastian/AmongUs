@@ -65,6 +65,7 @@ public class EmergencyMeeting {
         } else {
             System.out.println("No player has been ejected.");
         }
+        votes.clear();
     }
 
     public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap) {
