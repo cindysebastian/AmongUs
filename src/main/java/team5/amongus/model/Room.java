@@ -82,7 +82,7 @@ public class Room {
         return gameState;
     }
 
-    public String validateHost() {
+    /*public String validateHost() {
         boolean hostConnected = false;
         for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
             String key = entry.getKey();
@@ -105,7 +105,7 @@ public class Room {
             System.out.println("[Room.java] Host changed! New host: " + this.host);
             return this.host;
         }
-    }
+    }*/
 
     private String generateRoomCode() {
         StringBuilder sb = new StringBuilder();
@@ -143,6 +143,9 @@ public class Room {
         if (!playerName.isEmpty()) {
             Player player = playersMap.get(playerName);
             Imposter imposter = new Imposter(player.getName(), player.getPosition());
+            if(player.getIsHost()){
+                imposter.setIsHost(true);
+            }
             playersMap.put(imposter.getName(), imposter);
 
             System.out.println("Imposter: " + imposter.getName());

@@ -2,11 +2,9 @@ package team5.amongus.model;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class Player implements Serializable, Cloneable {
     private String name;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Position position;
     private final Integer step = 12;
     private Boolean isMoving = false;
@@ -139,11 +137,9 @@ public class Player implements Serializable, Cloneable {
 
     // Method to check collision with an Interactable thing
     public boolean collidesWith(Interactible thing) {
-        Boolean collidesWith = this.getBounds().intersects(thing.getBounds());
-        return collidesWith;
+        return this.getBounds().intersects(thing.getBounds());
     }
 
-    // Method to get bounding box of the player
     public CollisionBox getBounds() {
         return new CollisionBox(position.getX(), position.getY(), width, height);
     }

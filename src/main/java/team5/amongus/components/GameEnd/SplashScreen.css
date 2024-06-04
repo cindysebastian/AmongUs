@@ -64,20 +64,11 @@
     margin: 20px 0;
 }
 
-.text {
-    color: white;
-    font-size: large;
-    font-family: 'Lucida Console';
-    z-index: 20000;
-    position: absolute;
-    text-align: center;
-    bottom: 0;
-    width: 100%;
-    padding: 5%;
-}
+
 
 .action-button {
-    position: relative;
+    position: sticky;
+    float: left;
     bottom: 5%;
     left: 50%;
     /* Center horizontally */
@@ -93,6 +84,7 @@
     transition: background-color 0.3s ease;
     font-family: 'Lucida Console';
     font-size: larger;
+    z-index: 999;
 }
 
 .grey-button {
@@ -112,6 +104,7 @@
     transition: background-color 0.3s ease;
     font-family: 'Lucida Console';
     font-size: larger;
+    z-index: 999;
 }
 
 
@@ -125,4 +118,17 @@
     font-family: 'Lucida Console';
     color: lightgrey;
     margin: 10%;
+    position: relative;
+}
+
+.text {
+    color: white;
+    font-size: large;
+    font-family: 'Lucida Console';
+    z-index: 20000;
+    position: absolute;
+    bottom: 43%;
+    padding: 4%;
+    right: 0;
+    text-align: center;
 }

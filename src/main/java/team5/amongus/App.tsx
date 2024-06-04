@@ -168,6 +168,7 @@ const App = () => {
   const handleResetLobby = () => {
     if (stompClient) {
       stompClient.send('/app/resetLobby/' + roomCode);
+      setInteractionInProgress(false);
     }
   };
 

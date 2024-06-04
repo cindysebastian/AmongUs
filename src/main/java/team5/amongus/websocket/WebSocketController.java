@@ -105,7 +105,7 @@ public class WebSocketController {
             Position position = new Position(900, 500);
             if (room.getInGamePlayersMap().get(request.getPlayerName()) == null) {
                 if (room.getInGamePlayersMap().size() < room.getMaxPlayers()) {
-
+                    
                     room.addPlayer(new Player(request.getPlayerName(), position));
                     room.broadcastPlayerUpdate(messagingTemplate);
                     response.put("status", "OK");

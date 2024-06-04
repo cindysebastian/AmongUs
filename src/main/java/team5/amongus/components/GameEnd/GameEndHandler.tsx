@@ -32,13 +32,16 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
     const [splashScreen, setSplashScreen] = useState<ReactElement | null>(null);
     const [totalPlayers, setTotalPlayers] = useState<number>(0);
     const [waitingPlayersCount, setWaitingPlayersCount] = useState<number>(0);
+    const [isHost, setIsHost] = useState(false);
+ 
 
-    let isHost = false;
     useEffect(() => {
         if (players[currentPlayer]) {
             setCurrentPlayerObj(players[currentPlayer]);
             if (players[currentPlayer].isHost) {
-                isHost = true;
+                setIsHost(true);
+            }else{
+                setIsHost(false);
             }
             
         }
@@ -69,7 +72,7 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
 
     useEffect(() => {
         if (currentPlayerObj) {
-            console.log("Updating game state");
+            console.log(isHost);
             switch (gameStatus) {
                 case 'Imposter wins':
                     setInteractionInProgress(true);
@@ -127,7 +130,6 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
     };
 
     const handleWait = () => {
-        console.log("Player wants to wait to join the next game");
         stompClient.send(`/app/wait/${roomCode}`, {}, currentPlayer);
     };
 
@@ -136,16 +138,17 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
         <div>
             {splashScreen}
             <div>
-                {true && !(waitingPlayersCount == totalPlayers) && (
+                {isHost && waitingPlayersCount<totalPlayers&&(
                     <button className="grey-button">Reset Lobby</button>
                 )}
-                {true /*&& waitingPlayersCount === totalPlayers*/ && (
+                {isHost && waitingPlayersCount >= totalPlayers && (
                     <button className="action-button" onClick={handleResetLobby}>Reset Lobby</button>
                 )}
-            </div>
-            <div className='text'>
+            
+            
                 {/* Display the number of connected players */}
-                <p>{waitingPlayersCount}/{totalPlayers} player(s) waiting...</p>
+                <p className='text'>{waitingPlayersCount}/{totalPlayers} player(s) waiting...</p>
+            
             </div>
         </div>
     );
