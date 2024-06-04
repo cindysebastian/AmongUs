@@ -137,7 +137,7 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
     return (
         <div>
             {splashScreen}
-            <div>
+            <div className='restartButton'>
                 {isHost && waitingPlayersCount<totalPlayers&&(
                     <button className="grey-button">Reset Lobby</button>
                 )}

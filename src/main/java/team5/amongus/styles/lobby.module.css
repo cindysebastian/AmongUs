@@ -10,7 +10,7 @@
     background-position: center;
 }
 
-img {
+.image {
     position: fixed;
     top: 0;
     left: 0;
@@ -22,20 +22,16 @@ img {
 
 
 .playerCountContainer {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
     transform: translateX(-50%);
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     z-index: 10;
 }
 
 .startButtonContainer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: baseline;
+    justify-content: space-around;
 }
 
 .startButtonIcon {
@@ -45,6 +41,7 @@ img {
     background-color: transparent;
     opacity: 1;
     transition: opacity 0.3s ease;
+    z-index: 999;
 }
 
 .startButtonIcon.clicked {
@@ -65,7 +62,8 @@ img {
     padding: 8px 12px;
     border-radius: 4px;
     display: flex;
-    align-items: center;
+    align-items: baseline;
+    justify-content: space-around;
 }
 
 
@@ -74,19 +72,11 @@ img {
     font-size: 1.2em;
     font-family: monospace;
     cursor: pointer;
-    position: relative;
-    left: calc(50% + 50px);
     color: white;
+    justify-content: space-around;
+    z-index: 10;
 }
 
-.playerCount {
-    background-color: rgba(0, 0, 0, 0.3);
-    color: white;
-    font-size: 16px;
-    padding: 8px 12px;
-    border-radius: 4px;
-    left: calc(15% + 15px);
-}
 
 .collisionMask {
     position: fixed;
@@ -161,5 +151,17 @@ img {
     z-index: 10;
   }
 
-
+  .iconContainer{
+    height: 10vh;
+    top: 90vh;
+    width: 80vw;
+    left: 10vw;
+    margin: auto;
+    position: absolute;
+    bottom: 0;
+    display: flex;
+    z-index: 99;
+    justify-content: space-around;
+    align-items: baseline;
+  }
   

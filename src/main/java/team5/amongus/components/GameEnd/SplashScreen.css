@@ -70,14 +70,10 @@
     position:relative;
     bottom: 5%;
     margin: auto;
-    left: 50%;
-    /* Center horizontally */
-    transform: translateX(-50%);
-    /* Center horizontally */
     background-color: #4caf50;
-    /* Green for primary button */
     color: white;
     padding: 10px 20px;
+    margin: 5%;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -88,16 +84,13 @@
 }
 
 .grey-button {
-    position: relative;
+    position:relative;
     bottom: 5%;
-    left: 50%;
-    /* Center horizontally */
-    transform: translateX(-50%);
-    /* Center horizontally */
-    background-color: grey;
-    /* Green for primary button */
-    color: white;
+    margin: auto;
+    background-color: rgb(119, 119, 119);
+    color: rgb(185, 185, 185);
     padding: 10px 20px;
+    opacity: 80%;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -126,14 +119,26 @@
     font-size: large;
     font-family: 'Lucida Console';
     z-index: 20000;
-    position: absolute;
-    bottom: 43%;
-    padding: 4%;
-    right: 0;
-    text-align: center;
+    
 }
 
 .choiceButtons{
     position: relative;
     justify-content: center;
+    width: 100vw;
+    justify-content: space-around;
+    align-items: baseline;
 }
+
+.restartButton{
+    top: 80vh;
+    margin: auto;
+    position: relative;
+    bottom: 0;
+    z-index: 999;
+    justify-content: space-between;
+    align-items: baseline;
+    position: relative;
+    text-align: center;
+}
+

@@ -33,8 +33,8 @@ const ImposterLossSplash = ({ imposterName, onLeave, onWait }) => {
                 <p className="waiting-text">Waiting for host...</p>
             ) : (
                 <div className='choiceButtons'>
-                    <button className="action-button" onClick={onLeave}>Depart thy Crew</button>
-                    <button className="action-button" onClick={handleWait}>Wait to Join</button>
+                    <button className="action-button" onClick={onLeave} title='Return to login screen'>Depart thy Crew</button>
+                    <button className="action-button" onClick={handleWait}title='Wait for another round to start'>Wait to Join</button>
                 </div>
             )}
         </div>

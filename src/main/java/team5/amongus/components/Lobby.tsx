@@ -37,7 +37,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
       } else {
         setIsHost(false);
       }
-     
+
 
     } else {
       console.log('inGamePlayers is empty or currentPlayer does not exist in inGamePlayers');
@@ -124,11 +124,13 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
         </div>
       )}
 
-      <div className={styles.playerCountContainer}>
-        <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
-        <div className={styles.playerCount}>{playerCount}</div>
-
-        <div className={styles.gameCode} onClick={(e) => copyToClipboard(roomCode, e.currentTarget)}>CODE: {roomCode}</div>
+      <div className={styles.iconContainer}>
+        <div className={styles.playerCountContainer}>
+          <img src="src/main/resources/playerCountIcon.png" alt="Among Us Icon" className={styles.playerCountIcon} />
+          <div className={styles.playerCount}>{playerCount}</div>
+        </div>
+        <div className={styles.gameCode} onClick={(e) => copyToClipboard(roomCode, e.currentTarget)}>CODE: {roomCode}
+        </div>
         {isHost && (
           <div className={styles.startButtonContainer} onClick={handleStartButtonClick}>
             <img src="src/main/resources/startButtonIcon.png" alt="Start Button Icon" className={`${styles.startButtonIcon} ${isStartButtonClicked ? styles.clicked : ''}`}
@@ -136,7 +138,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 
