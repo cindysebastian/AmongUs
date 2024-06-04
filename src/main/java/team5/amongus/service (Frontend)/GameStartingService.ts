@@ -1,15 +1,14 @@
-export const startGame = (stompClient, setRedirectToSpaceShip)=>
+export const subscribeToGameStatus = (stompClient, setRedirectToSpaceShip, roomCode) => {
+    console.log(roomCode)
+    if (!stompClient && !roomCode) return;
 
-{
-    if (!stompClient) return;
+    const subscription = stompClient.subscribe(`/topic/gameStart/${roomCode}`, () => {
 
-    const subscription = stompClient.subscribe('/topic/gameStart', () => {
-        // When the game starts, redirect all players to the spaceship
         setRedirectToSpaceShip(true);
     });
 
     return () => {
-        // TODO: Cindy this is your problem now
+        // TODO: Disconnecting? If not necessary here remove TODO
         stompClient;
         setRedirectToSpaceShip;
     };

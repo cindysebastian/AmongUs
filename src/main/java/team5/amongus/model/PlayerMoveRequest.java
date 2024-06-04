@@ -6,6 +6,9 @@ public class PlayerMoveRequest {
     private String playerName;
     private String direction;
     private List<String> directions;
+    private String roomCode;
+
+    
 
     public String getDirection() {
         return direction;
@@ -24,5 +27,13 @@ public class PlayerMoveRequest {
     }
     public void setDirections(List<String> directions) {
         this.directions = directions;
+    }
+
+    public String getRoomCode() {
+        return roomCode;
+    }
+
+    public void setRoomCode(String roomCode) {
+        this.roomCode = roomCode;
     }
 }

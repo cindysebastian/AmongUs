@@ -14,12 +14,12 @@ interface Props {
     stompClient: Stomp.Client | null; // Add stompClient to props
     interactibles: Interactible[];
     currentPlayer: String;
+    roomCode: String;
     offsetX: number;
     offsetY: number;
 }
 
-
-const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offsetX, offsetY }) => {
+const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offsetX, offsetY, roomCode }) => {
 
 
     const cameraStyle: CSSProperties = {
@@ -57,11 +57,11 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offs
                 if (interactible.assignedPlayer == currentPlayer && interactible.inProgress) {
                     switch (interactible.type) {
                         case 'MINE':
-                            return <div style={cameraStyle}><MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} /></div>;
+                            return <div style={cameraStyle}><MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} roomCode={roomCode}/></div>;
                         case 'SCAN':
-                            return <div style={cameraStyle}><ScanMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} /></div>;
+                            return <div style={cameraStyle}><ScanMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} roomCode={roomCode}/></div>;
                         case 'SWIPE':
-                            return <div style={cameraStyle}><SwipeMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} /></div>;
+                            return <div style={cameraStyle}><SwipeMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} roomCode={roomCode}/></div>;
                         default:
                             return null;
                     }

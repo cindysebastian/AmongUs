@@ -7,10 +7,10 @@ import styles from './MiniGame.module.css'; // Import CSS module
 interface Props {
   stompClient: Stomp.Client | null;
   interactible: Task;
-
+  roomCode: String;
 }
 
-const MineMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
+const MineMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode }) => {
   const [clickCount, setClickCount] = useState(0);
   const [isShaking, setIsShaking] = useState(false); // State to control animation
 
@@ -22,7 +22,7 @@ const MineMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
     if (clickCount === 4) {
       // Call completeMiniGame function with stompClient
       playDingSound();
-      completeMiniGame(stompClient, interactible.id);
+      completeMiniGame(stompClient, interactible.id, roomCode);
     }
   };
 

@@ -1,53 +1,53 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Route, Routes, useNavigate, Navigate } from 'react-router-dom';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import ChatRoom from './components/ChatRoom';
 import MessageInput from './components/MessageInput';
 import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
-import bgImage from '../../../resources/LoginBG.png';
 import styles from './styles/index.module.css';
-import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, setPlayer, subscribetoInteractions } from './service (Frontend)/WebsocketService';
+import { subscribeToGameStatus } from './service (Frontend)/GameStartingService';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, subscribetoInteractions, subscribetoGameFinishing } from './service (Frontend)/WebsocketService';
 import { movePlayer } from './service (Frontend)/PlayerMovementService';
-import { startGame } from './service (Frontend)/GameStartingService';
-import { handleInteraction } from './service (Frontend)/InteractionService';
 import KillButton from './components/KillButton';
+import GameEndHandler from './components/GameEnd/GameEndHandler';
 
 const directionMap = {
-  'w': 'UP',
-  'a': 'LEFT',
-  's': 'DOWN',
-  'd': 'RIGHT',
+  w: 'UP',
+  a: 'LEFT',
+  s: 'DOWN',
+  d: 'RIGHT',
 };
 
-const App = ({ history }) => {
+const App = () => {
   const [stompClient, setStompClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
   const [inputName, setInputName] = useState('');
-  const [firstPlayerName, setFirstPlayerName] = useState('');
+  const [inputCode, setInputCode] = useState('');
   const [players, setPlayers] = useState({});
   const [messages, setMessages] = useState([]);
-  const [chatVisible, setChatVisible] = useState(false);
   const [playerSpawned, setPlayerSpawned] = useState(false);
-  const [selectedVictim, setSelectedVictim] = useState('');
   const [interactibles, setInteractibles] = useState([]);
-  const [interactionInProgress, setInteractionInProgress] = useState(false); 
+  const [interactionInProgress, setInteractionInProgress] = useState(false);
   const keysPressed = useRef({
     w: false,
     a: false,
     s: false,
     d: false,
   });
-  const [collisionMask, setCollisionMask] = useState(null);
-  const [isStartButtonClicked, setIsStartButtonClicked] = useState(false); 
-  const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false); 
-  const [gameStarted, setGameStarted] = useState(false);
+  const [redirectToSpaceShip, setRedirectToSpaceShip] = useState(false);
+  const [gameState, setGameState] = useState('');
   const [inGamePlayers, setInGamePlayers] = useState({});
+  const [roomCode, setRoomCode] = useState('');
+  const [selectedPlayerCount, setSelectedPlayerCount] = useState(3); // Add state for selected player count
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const heartbeatInterval = setInterval(() => {
       if (stompClient && playerName) {
-        stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName }));
+        stompClient.send('/app/heartbeat', {}, JSON.stringify({ playerName: playerName, roomCode: roomCode }));
       }
     }, 1000);
     return () => clearInterval(heartbeatInterval);
@@ -59,61 +59,42 @@ const App = ({ history }) => {
   }, []);
 
   useEffect(() => {
-    if (stompClient && playerName) {
-      return subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers);
+    if (roomCode && playerName) {
+      // Perform operations that depend on roomCode here
+      console.log("Room Code Updated:", roomCode);
+
+      //All Game context Subscriptions here please, ensures RoomCode is valid and present!
+      subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers, roomCode);
+      subscribeToMessages(stompClient, setMessages, roomCode);
+      subscribeToGameStatus(stompClient, setRedirectToSpaceShip, roomCode);
+      subscribetoInteractions(stompClient, setInteractibles, roomCode);
+      subscribetoGameFinishing(stompClient, setGameState, roomCode);
     }
-  }, [stompClient, playerName]);
+  }, [roomCode, playerName]);
 
-  useEffect(() => {
-    if (stompClient) {
-      return subscribeToMessages(stompClient, setMessages);
+  const sendMessage = (messageContent) => {
+    if (!interactionInProgress && stompClient) {
+      sendChatMessage(stompClient, playerName, messageContent, roomCode);
     }
-  }, [stompClient]);
-
-  useEffect(() => {
-    let subscription;
-
-    if (stompClient) {
-      subscription = subscribetoInteractions(stompClient, (interactibles) => {
-        setInteractibles(interactibles);
-      });
-    }
-
-    return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
-    };
-  }, [stompClient]);
+  };
 
   useEffect(() => {
     if (interactibles && playerName) {
-      let playerInteracting = interactibles.some(interactible =>
+      const playerInteracting = interactibles.some(interactible =>
         interactible.inProgress && interactible.assignedPlayer === playerName
       );
       setInteractionInProgress(playerInteracting);
     }
   }, [interactibles, playerName]);
 
-  const sendMessage = (messageContent) => {
-    if (!interactionInProgress && stompClient) {
-      sendChatMessage(stompClient, playerName, messageContent);
-    }
-  };
-
-  useEffect(() => {
-    startGame(stompClient, setRedirectToSpaceShip);
-  }, [stompClient]);
-
   useEffect(() => {
     if (stompClient && playerSpawned) {
-      return movePlayer(stompClient, playerName, keysPressed, interactionInProgress);
+      return movePlayer(stompClient, playerName, keysPressed, interactionInProgress, roomCode);
     }
   }, [stompClient, playerName, playerSpawned, interactionInProgress]);
 
   useEffect(() => {
     const handleBlur = () => {
-      // When window loses focus, reset all keys to false
       keysPressed.current = {
         w: false,
         a: false,
@@ -140,70 +121,151 @@ const App = ({ history }) => {
 
   const handleInteractionKeyPress = (e) => {
     if (e.key === 'e' && !interactionInProgress) {
-      handleInteraction(stompClient, playerName);
+      sendInteraction(stompClient, playerName, roomCode);
     }
   };
-
-  const handleSpawnPlayer = () => {
-    const trimmedName = inputName.trim(); // Trim the input name
-  
-    // Ensure playerName is updated only when the trimmedName is not empty
-    if (trimmedName) {
-      setPlayerName(trimmedName); // Set the playerName state
-      if (Object.values(inGamePlayers as Record<string, { name: string }>).some(player => player.name === trimmedName)) {
-        alert('Player name already exists in the game. Please choose a different name.');
-        return;
-      }
-      if (!firstPlayerName) {
-        setFirstPlayerName(trimmedName);
-      }
-      if (stompClient) {
-        if (Object.keys(players).length > 0) {
-          alert("The game has already started. You cannot join at this time.");
-          return;
-        }
-        setPlayer(stompClient, trimmedName);
-        setPlayerSpawned(true);
-        setInputName('');
-        history.push('/game');
-      }
-    }
-  };
-  
-  
 
   const handleInputChange = (event) => {
-    setInputName(event.target.value); // Update local state with input value
+    setInputName(event.target.value);
+  };
+
+  const handle2InputChange = (event) => {
+    setInputCode(event.target.value);
+  };
+
+  const handlePlayerCountChange = (event) => {
+    setSelectedPlayerCount(parseInt(event.target.value, 10));
+  };
+
+  const handleHostGame = () => {
+    const trimmedName = inputName.trim();
+    console.log("Hosting Game...");
+
+    if (trimmedName && stompClient) {
+      const subscription = stompClient.subscribe('/topic/hostResponse', (message) => {
+        const response = JSON.parse(message.body);
+        console.log("Response:" + response.roomCode)
+        if (response.status === 'OK') {
+          setPlayerName(trimmedName);
+          let string = response.roomCode;
+          setRoomCode(string);
+          setPlayerSpawned(true);
+          setInputName('');
+
+          navigate('/game');
+        } else {
+          alert('Failed to host game: ' + response.message);
+        }
+        // Unsubscribe after receiving the response
+        subscription.unsubscribe();
+      });
+
+      // After subscribing, send the hostGame message
+      stompClient.send('/app/hostGame', {}, JSON.stringify({ playerName: trimmedName, playerCount: selectedPlayerCount }));
+    }
+  };
+
+  const handleResetLobby = () => {
+    if (stompClient) {
+      stompClient.send('/app/resetLobby/' + roomCode);
+      setInteractionInProgress(false);
+    }
+  };
+
+  const handlePrivate = () => {
+    navigate('/private');
+  };
+
+  const handleHost = () => {
+    navigate('/host');
   };
 
   const handleStartButtonClick = () => {
-    setIsStartButtonClicked(true);
     if (stompClient) {
-      stompClient.send('/app/startGame');
+      stompClient.send('/app/startGame/' + roomCode);
     }
   };
 
+  const handleDisconnect = () => {
+    stompClient && stompClient.disconnect();
+    connectWebSocket(setStompClient);
+    navigate('/login');
+  };
+
   useEffect(() => {
-    if (redirectToSpaceShip && gameStarted) {
-      history.push('/spaceship');
+    console.log(gameState);
+    if (gameState == "Imposter wins" || gameState == "Crewmates win") {
+      navigate('/end');
+    }else if (gameState == "Game waiting"){
+      navigate('/game');
     }
-  }, [redirectToSpaceShip, gameStarted, history]);
+  }, [gameState, navigate]);
 
   useEffect(() => {
-    startGame(stompClient, setRedirectToSpaceShip);
+    if (redirectToSpaceShip && gameState == "Game running") {
+      navigate('/spaceship');
+      //TODO: Add Info about Roles animation here before navigating
+    }
+  }, [redirectToSpaceShip, gameState, navigate]);
 
-    const handleGameStart = () => {
-      history.push('/spaceship');
+  const handleJoinGame = (playerName, roomCode) => {
+    roomCode = inputCode;
+
+    const trimmedName = inputName ? inputName.trim() : '';
+    if (!trimmedName || !stompClient || !roomCode) {
+      console.error("Missing required parameters for joining game:", { trimmedName, stompClient, roomCode });
+      return;
+    }
+
+    const message = {
+      playerName: trimmedName,
+      roomCode: roomCode
     };
 
-  }, [stompClient]);
+    stompClient.send(`/app/joinGame/${roomCode}`, {}, JSON.stringify(message));
+
+    const subscription = stompClient.subscribe('/topic/joinResponse', (message) => {
+      const response = JSON.parse(message.body);
+      console.log("Response:" + response.roomCode)
+      if (response.status === 'OK') {
+        setPlayerName(trimmedName);
+        let string = response.roomCode;
+        setRoomCode(string);
+        setPlayerSpawned(true);
+        setInputName('');
+
+        navigate('/game');
+      } else if (response.status === 'NAME_TAKEN') {
+        alert('Failed to join game: This name is already in use! Please choose another. ');
+      } else if (response.status === 'NO_SUCH_ROOM') {
+        alert('Failed to join game: The Room with the code you entered does not exist. Please double check your code.');
+      } else if (response.status === 'FULL') {
+        alert('Failed to join game: The Room with the code you entered is already full!');
+      } else {
+        alert('Failed to Join game. Message: ' + response.message);
+      }// Unsubscribe after receiving the response
+      subscription.unsubscribe();
+    });
+  }
 
   return (
-    <div>
-      {!playerSpawned && (
-        <div className={styles.gifBackground}></div>
-      )}
-      {!playerSpawned && (
+    <Routes>
+      <Route path="/login" element={
+        <div style={{ position: 'relative', padding: '20px' }}>
+          {!playerSpawned && (
+            <div className={styles.gifBackground}></div>
+          )}
+          {!playerSpawned && (
+            <div className={styles.loginbackground}>
+              <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '7%', bottom: '0px', left: '50%', right: '50%' }}>
+                <button onClick={handleHost} className={styles.button}>HOST</button>
+                <button onClick={handlePrivate} className={styles.button}>PRIVATE</button>
+              </div>
+            </div>
+          )}
+        </div>
+      } />
+      <Route path="/host" element={<div className={styles.gifBackground}>
         <div className={styles.loginbackground}>
           <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
             <input
@@ -213,32 +275,41 @@ const App = ({ history }) => {
               placeholder="Enter your name"
               className={styles.input}
             />
-            <button onClick={handleSpawnPlayer} className={styles.button}>Spawn Player</button>
-          </div>
-        </div>
-      )}
-      {playerSpawned && !redirectToSpaceShip && (
-        <div>
-          {/* Pass firstPlayerName as a prop to the Lobby component */}
-          <Lobby inGamePlayers={inGamePlayers} firstPlayerName={firstPlayerName} currentPlayer={playerName} onStartButtonClick={handleStartButtonClick} />
+            <select value={selectedPlayerCount} onChange={handlePlayerCountChange} className={styles.input}>
+              {[...Array(8).keys()].map(i => (
+                <option key={i + 3} value={i + 3}>{i + 3}</option>
+              ))}
+            </select>
+            <button onClick={handleHostGame} className={styles.button}>Host Game</button>
+          </div></div>
+      </div>} />
+      <Route path="/private" element={<div className={styles.gifBackground}>
+        <div className={styles.loginbackground}>
+          <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
+            <input
+              type="text"
+              value={inputName}
+              onChange={handleInputChange}
+              placeholder="Enter your name"
+              className={styles.input}
+            />
+            <input
+              type="text"
+              value={inputCode}
+              onChange={handle2InputChange}
+              placeholder="Enter your Room Code"
+              className={styles.input}
+            />
+            <button onClick={() => handleJoinGame(playerName, roomCode)} className={styles.button}>Join Private Room</button>
+          </div></div>
+      </div>} />
+      <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage} />} />
+      <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} roomCode={roomCode} />} />
+      <Route path="/end" element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />
+      <Route path="/" element={<Navigate replace to="/login" />} />
 
-          <button onClick={() => setChatVisible(!chatVisible)} className={styles.cursor}>Chat</button>
-          {chatVisible && (
-            <div className={styles.chatBox}>
-              <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
-              </div>
-              <button className={styles.button} onClick={() => setChatVisible(false)}>Exit</button>
-              <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
-              <ChatRoom messages={messages} />
-            </div>
-          )}
-        </div>
-      )}
-      {redirectToSpaceShip && (
-        <SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} />
-      )}
-    </div>
+
+    </Routes>
   );
 };
 

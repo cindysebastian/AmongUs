@@ -1,7 +1,7 @@
 package team5.amongus.model;
 
 import java.io.Serializable;
-import java.util.Objects;
+
 
 public class Position implements Serializable, Cloneable {
     private int x;

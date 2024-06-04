@@ -6,19 +6,15 @@ import team5.amongus.model.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PlayerService implements IPlayerService {
-
-    private final GameManager gameManager;
-
-    public PlayerService(GameManager gameManager) {
-        this.gameManager = gameManager;
-    }
 
     @Override
     public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask) {
@@ -91,18 +87,18 @@ public class PlayerService implements IPlayerService {
     public Interactible getPlayerInteractableObject(ArrayList<Interactible> interactibles, Player player) {
 
         for (Interactible object : interactibles) {
-            if (((Task) object).getAssignedPlayer() == player.getName()) {
+            if (((Task) object).getAssignedPlayer().equals(player.getName())) {
                 if (player.collidesWith(object)) {
 
                     return object;
                 }
             }
-
         }
         return null;
     }
 
-    public Map<String, Player> handleKill(Imposter imposter, Map<String, Player> playersMap) {
+    public Map<String, Player> handleKill(Imposter imposter, Map<String, Player> playersMap, String roomCode,
+            SimpMessagingTemplate template) {
         System.out.println("Trying to kill...");
         if (imposter != null && playersMap != null) {
             Player collidingPlayer = null;
@@ -125,7 +121,7 @@ public class PlayerService implements IPlayerService {
                 Position newPosition = new Position(collidingPlayer.getPosition().getX(),
                         collidingPlayer.getPosition().getY());
                 imposter.setPosition(newPosition);
-                gameManager.notifyPlayerKilled(collidingPlayer);
+                notifyPlayerKilled(collidingPlayer, roomCode, template);
             } else {
                 System.out.println("No colliding non-imposter player found.");
             }
@@ -134,5 +130,10 @@ public class PlayerService implements IPlayerService {
             // You can optionally log a message or handle this situation accordingly
         }
         return playersMap; // Return the updated players map
+    }
+
+    public void notifyPlayerKilled(Player killedPlayer, String roomCode, SimpMessagingTemplate template) {
+        String destination = "/topic/killedPlayer/" + roomCode;
+        template.convertAndSend(destination, killedPlayer);
     }
 }

@@ -8,10 +8,10 @@ import Task from "../interfaces/Interactible";
 interface Props {
     stompClient: Stomp.Client | null;
     interactible: Task;
-
+    roomCode: String;
 }
 
-const SwipeMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
+const SwipeMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode}) => {
     const [isDoorClosed, setIsDoorClosed] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
 
@@ -20,7 +20,7 @@ const SwipeMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
             if (stompClient) {
                 setTimeout(() => {
                     
-                    completeMiniGame(stompClient, interactible.id);
+                    completeMiniGame(stompClient, interactible.id, roomCode);
                     setIsCompleted(true);
                     // Play ding sound when completed
                 }, 1500); // Adjust the delay time as needed (1500 milliseconds = 1.5 seconds)

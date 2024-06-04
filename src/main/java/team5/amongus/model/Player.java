@@ -1,30 +1,41 @@
 package team5.amongus.model;
 
 import java.io.Serializable;
-import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class Player implements Serializable, Cloneable {
     private String name;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Position position;
-    private String colour;
-    private Integer step = 12;
+    private final Integer step = 12;
     private Boolean isMoving = false;
     private String facing = "RIGHT";
-    private int width = 80;
-    private int height = 80;
+    private final int width = 80;
+    private final int height = 80;
     private boolean canInteract = false;
     private boolean isAlive = true;
-
+    private boolean willContinue = false;
     private long lastActivityTime;
-    private String sessionId;
+    private boolean isHost = false;
 
     public Player(String name, Position position) {
         this.name = name;
         this.position = position;
         this.lastActivityTime = System.currentTimeMillis();
+    }
+
+    public Player(Imposter imposter){
+        this.name = imposter.getName();
+        this.position = imposter.getPosition();
+        this.lastActivityTime = imposter.getLastActivityTime();
+        this.isHost = imposter.getIsHost();
+    }
+
+    public void setWillContinue(boolean set) {
+        this.willContinue = set;
+    }
+
+    public boolean getWillContinue() {
+        return this.willContinue;
     }
 
     public int getWidth() {
@@ -39,12 +50,12 @@ public class Player implements Serializable, Cloneable {
         return step;
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public boolean getIsHost() {
+        return isHost;
     }
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
+    public void setIsHost(boolean isHost) {
+        this.isHost = isHost;
     }
 
     public void updateLastActivityTime() {
@@ -75,13 +86,6 @@ public class Player implements Serializable, Cloneable {
         this.position = position;
     }
 
-    public String getColour() {
-        return colour;
-    }
-
-    public void setColour(String colour) {
-        this.colour = colour;
-    }
 
     public String getFacing() {
         return facing;
@@ -117,14 +121,14 @@ public class Player implements Serializable, Cloneable {
 
     public void handleMovementRequest(Position.Direction direction) {
         Position newPosition = position.getNextPosition(direction, step);
-        if (isAlive) {
-            if (newPosition.getX() < position.getX()) {
-                setFacing("LEFT");
-            } else if (newPosition.getX() > position.getX()) {
-                setFacing("RIGHT");
-            }
-            this.position = newPosition;
+
+        if (newPosition.getX() < position.getX()) {
+            setFacing("LEFT");
+        } else if (newPosition.getX() > position.getX()) {
+            setFacing("RIGHT");
         }
+        this.position = newPosition;
+
     }
 
     public boolean collidesWith(Player otherPlayer) {
@@ -133,11 +137,9 @@ public class Player implements Serializable, Cloneable {
 
     // Method to check collision with an Interactable thing
     public boolean collidesWith(Interactible thing) {
-        Boolean collidesWith = this.getBounds().intersects(thing.getBounds());
-        return collidesWith;
+        return this.getBounds().intersects(thing.getBounds());
     }
 
-    // Method to get bounding box of the player
     public CollisionBox getBounds() {
         return new CollisionBox(position.getX(), position.getY(), width, height);
     }
