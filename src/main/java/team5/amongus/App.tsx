@@ -197,6 +197,7 @@ const App = () => {
     if (gameState == "Imposter wins" || gameState == "Crewmates win") {
       navigate('/end');
     }else if (gameState == "Game waiting"){
+      setInteractionInProgress(false);
       navigate('/game');
     }
   }, [gameState, navigate]);
