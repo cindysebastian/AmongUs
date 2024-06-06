@@ -22,11 +22,19 @@ interface Props {
 const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, currentPlayer, roomCode }) => {
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
+  const [currAlive, setCurrAlive] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
 
   useEffect(() => {
     if (!currentPlayer || !players) return;
     const currentPlayerObj = players[currentPlayer] as Player | undefined;
+    if (currentPlayerObj) {
+      if (currentPlayerObj.isAlive) {
+        setCurrAlive(true);
+      } else {
+        setCurrAlive(false);
+      }
+    }
     if (currentPlayerObj && currentPlayerObj.isImposter) {
       setIsImposter(true);
     }
@@ -82,20 +90,21 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
         <div className={styles.gifBackground}></div>
         <div className={styles.spaceShipBackground}>
           {Object.values(players).map(player => (
-            !killedPlayers.includes(player.name) && (
-              <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
-                <PlayerSprite
-                  player={player}
-                  facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-                  isMoving={player.isMoving !== undefined ? player.isMoving : false}
-                />
-              </div>
-            )
+
+            <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
+              <PlayerSprite
+                player={player}
+                facing={player.facing !== undefined ? player.facing : 'RIGHT'}
+                isMoving={player.isMoving !== undefined ? player.isMoving : false}
+                isAlive={currAlive}
+              />
+            </div>
+
           ))}
           <div>
             {
               interactibles
-              .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
+                .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
                 .map(interactible => (
                   <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y, left: interactible.position.x }}>
                     {/* Render your component based on the interactible */}

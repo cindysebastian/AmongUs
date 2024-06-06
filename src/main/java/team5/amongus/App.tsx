@@ -121,7 +121,7 @@ const App = () => {
   }, [playerSpawned]);
 
   const handleInteractionKeyPress = (e) => {
-    if (e.key === 'e' && !interactionInProgress) {
+    if (e.key === 'e' && !interactionInProgress&&players[playerName].isAlive) {
       sendInteraction(stompClient, playerName, roomCode);
     }
   };
