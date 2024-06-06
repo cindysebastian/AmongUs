@@ -243,9 +243,10 @@ public class WebSocketController {
         if (imposter == null || !imposter.getName().equals(playerName)) {
             System.err.println("Imposter not found or mismatch");
         }
+        playerService.handleKill(imposter, room.getPlayersMap(), roomCode, messagingTemplate);
         taskService.generateDeadBody(imposter, room);
 
-        playerService.handleKill(imposter, room.getPlayersMap(), roomCode, messagingTemplate);
+        
         room.broadcastPlayerUpdate(messagingTemplate);
         room.broadcastInteractiblesUpdate(messagingTemplate);
     }
