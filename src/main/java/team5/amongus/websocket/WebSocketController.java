@@ -172,16 +172,21 @@ public class WebSocketController {
 
                 room.setInteractibles(updatedInteractables);
             } else if (interactableObject instanceof DeadBody) {
-                ((DeadBody) interactableObject).setFound(true);
-                Iterator<Interactible> iterator = room.getInteractibles().iterator();
-                while (iterator.hasNext()) {
-                    Interactible interactible = iterator.next();
-                    if (interactible instanceof DeadBody) {
-                        iterator.remove(); // Safe removal using iterator
+                if (room.getPlayersMap().get(playerName).getisAlive()) {
+                    ((DeadBody) interactableObject).setFound(true);
+                    Iterator<Interactible> iterator = room.getInteractibles().iterator();
+                    while (iterator.hasNext()) {
+                        Interactible interactible = iterator.next();
+                        if (interactible instanceof DeadBody) {
+                            iterator.remove(); // Safe removal using iterator
+                        }
                     }
-                }
 
-                System.out.println("Triggering Emergency Meeting, dead body found");
+                    System.out.println("Triggering Emergency Meeting, dead body found");
+                }
+                else{
+                    System.out.println("Dead Players cannot report bodies.");
+                }
                 // TODO FOR MARTINA: add proper trigger for Emergency Meeting, dead body
                 // behaviour is fully handled (When found, disappears), only need to add
                 // functionality here to start the meeting
