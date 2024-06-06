@@ -12,13 +12,14 @@ import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteract
 import { movePlayer } from './service (Frontend)/PlayerMovementService';
 import KillButton from './components/KillButton';
 import GameEndHandler from './components/GameEnd/GameEndHandler';
-
 const directionMap = {
   w: 'UP',
   a: 'LEFT',
   s: 'DOWN',
   d: 'RIGHT',
 };
+
+const allowedRoutes = ['/login', '/host', '/private', '/game', '/spaceship', '/end'];
 
 const App = () => {
   const [stompClient, setStompClient] = useState(null);
@@ -42,6 +43,7 @@ const App = () => {
   const [roomCode, setRoomCode] = useState('');
   const [selectedPlayerCount, setSelectedPlayerCount] = useState(3); // Add state for selected player count
 
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,7 +65,7 @@ const App = () => {
       // Perform operations that depend on roomCode here
       console.log("Room Code Updated:", roomCode);
 
-      //All Game context Subscriptions here please, ensures RoomCode is valid and present!
+      // All Game context Subscriptions here please, ensures RoomCode is valid and present!
       subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers, roomCode);
       subscribeToMessages(stompClient, setMessages, roomCode);
       subscribeToGameStatus(stompClient, setRedirectToSpaceShip, roomCode);
@@ -152,7 +154,7 @@ const App = () => {
           setPlayerSpawned(true);
           setInputName('');
 
-          navigate('/game');
+          navigateToAllowedRoute('/game');
         } else {
           alert('Failed to host game: ' + response.message);
         }
@@ -173,11 +175,11 @@ const App = () => {
   };
 
   const handlePrivate = () => {
-    navigate('/private');
+    navigateToAllowedRoute('/private');
   };
 
   const handleHost = () => {
-    navigate('/host');
+    navigateToAllowedRoute('/host');
   };
 
   const handleStartButtonClick = () => {
@@ -189,22 +191,22 @@ const App = () => {
   const handleDisconnect = () => {
     stompClient && stompClient.disconnect();
     connectWebSocket(setStompClient);
-    navigate('/login');
+    navigateToAllowedRoute('/login');
   };
 
   useEffect(() => {
     console.log(gameState);
-    if (gameState == "Imposter wins" || gameState == "Crewmates win") {
-      navigate('/end');
-    }else if (gameState == "Game waiting"){
-      navigate('/game');
+    if (gameState === "Imposter wins" || gameState === "Crewmates win") {
+      navigateToAllowedRoute('/end');
+    } else if (gameState === "Game waiting") {
+      navigateToAllowedRoute('/game');
     }
   }, [gameState, navigate]);
 
   useEffect(() => {
-    if (redirectToSpaceShip && gameState == "Game running") {
-      navigate('/spaceship');
-      //TODO: Add Info about Roles animation here before navigating
+    if (redirectToSpaceShip && gameState === "Game running") {
+      navigateToAllowedRoute('/spaceship');
+      // TODO: Add Info about Roles animation here before navigating
     }
   }, [redirectToSpaceShip, gameState, navigate]);
 
@@ -234,7 +236,7 @@ const App = () => {
         setPlayerSpawned(true);
         setInputName('');
 
-        navigate('/game');
+        navigateToAllowedRoute('/game');
       } else if (response.status === 'NAME_TAKEN') {
         alert('Failed to join game: This name is already in use! Please choose another. ');
       } else if (response.status === 'NO_SUCH_ROOM') {
@@ -246,6 +248,14 @@ const App = () => {
       }// Unsubscribe after receiving the response
       subscription.unsubscribe();
     });
+  }
+
+  const navigateToAllowedRoute = (path) => {
+    if (allowedRoutes.includes(path)) {
+      navigate(path);
+    } else {
+      alert('The destination is not trusted.');
+    }
   }
 
   return (
@@ -307,8 +317,6 @@ const App = () => {
       <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} roomCode={roomCode} />} />
       <Route path="/end" element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />
       <Route path="/" element={<Navigate replace to="/login" />} />
-
-
     </Routes>
   );
 };
