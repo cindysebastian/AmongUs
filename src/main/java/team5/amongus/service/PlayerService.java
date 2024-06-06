@@ -3,6 +3,7 @@ package team5.amongus.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import team5.amongus.model.*;
+import team5.amongus.model.Position.Direction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,7 +41,12 @@ public class PlayerService implements IPlayerService {
             } else {
                 for (String directionStr : directions) {
                     Position.Direction direction = Position.Direction.valueOf(directionStr.toUpperCase());
-                    if (!collidesWithMask(existingPlayer, direction, collisionMask)) {
+                    if (existingPlayer.getisAlive()) {
+                        if (!collidesWithMask(existingPlayer, direction, collisionMask)) {
+                            existingPlayer.handleMovementRequest(direction);
+                            existingPlayer.setIsMoving(true);
+                        }
+                    } else if(!escapingBoundaries(existingPlayer, direction)){
                         existingPlayer.handleMovementRequest(direction);
                         existingPlayer.setIsMoving(true);
                     }
@@ -70,6 +76,20 @@ public class PlayerService implements IPlayerService {
         }
 
         return playersMap;
+    }
+    
+    private boolean escapingBoundaries(Player existingPlayer, Direction direction) {
+        Position nextPosition = existingPlayer.getPosition().getNextPosition(direction, existingPlayer.getStep());
+
+        int maxX = 3900;
+        int maxY = 2100;
+        int minX = 340;
+        int minY = 90;
+
+        if(nextPosition.getX()> maxX || nextPosition.getX()<minX || nextPosition.getY()> maxY || nextPosition.getY()<minY){
+            return true;
+        }
+        return false;
     }
 
     private boolean collidesWithMask(Player player, Position.Direction direction, CollisionMask collisionMask) {

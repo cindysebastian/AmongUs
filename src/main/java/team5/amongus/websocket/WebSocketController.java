@@ -319,7 +319,7 @@ public class WebSocketController {
         positions.add(new Position(900, 500));
         positions.add(new Position(1000, 600));
         positions.add(new Position(1100, 600));
-        positions.add(new Position(1200, 500));
+        positions.add(new Position(900, 500));
 
         int index = 0;
         for (Map.Entry<String, Player> entry : room.getPlayersMap().entrySet()) {
