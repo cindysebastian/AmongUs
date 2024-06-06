@@ -62,8 +62,8 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     killPlayer(stompClient, currentPlayer, roomCode);
   };
 
-  const completedTasks = interactibles.filter(interactible => interactible.completed).length;
-  const totalTasks = interactibles.length;
+  const completedTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).filter(interactible => interactible.completed).length;
+  const totalTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).length;
   const progressPercentage = (completedTasks / totalTasks) * 100;
 
   const mapWidth = 4000;

@@ -46,7 +46,7 @@ public class PlayerService implements IPlayerService {
                             existingPlayer.handleMovementRequest(direction);
                             existingPlayer.setIsMoving(true);
                         }
-                    } else if(!escapingBoundaries(existingPlayer, direction)){
+                    } else if (!escapingBoundaries(existingPlayer, direction)) {
                         existingPlayer.handleMovementRequest(direction);
                         existingPlayer.setIsMoving(true);
                     }
@@ -77,7 +77,7 @@ public class PlayerService implements IPlayerService {
 
         return playersMap;
     }
-    
+
     private boolean escapingBoundaries(Player existingPlayer, Direction direction) {
         Position nextPosition = existingPlayer.getPosition().getNextPosition(direction, existingPlayer.getStep());
 
@@ -86,7 +86,8 @@ public class PlayerService implements IPlayerService {
         int minX = 340;
         int minY = 90;
 
-        if(nextPosition.getX()> maxX || nextPosition.getX()<minX || nextPosition.getY()> maxY || nextPosition.getY()<minY){
+        if (nextPosition.getX() > maxX || nextPosition.getX() < minX || nextPosition.getY() > maxY
+                || nextPosition.getY() < minY) {
             return true;
         }
         return false;
@@ -105,7 +106,15 @@ public class PlayerService implements IPlayerService {
 
     @Override
     public Interactible getPlayerInteractableObject(ArrayList<Interactible> interactibles, Player player) {
+        
+        for (Interactible object : interactibles) {
+            if (object instanceof DeadBody) {
+                if (player.collidesWith(object)) {
 
+                    return object;
+                }
+            }
+        }
         for (Interactible object : interactibles) {
             if (object instanceof Task) {
                 if (((Task) object).getAssignedPlayer().equals(player.getName())) {
@@ -114,13 +123,9 @@ public class PlayerService implements IPlayerService {
                         return object;
                     }
                 }
-            } else if (object instanceof DeadBody) {
-                if (player.collidesWith(object)) {
-
-                    return object;
-                }
             }
         }
+
         return null;
     }
 
