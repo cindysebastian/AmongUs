@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Stomp from "stompjs";
-import styles from './MiniGame.module.css'; // Import CSS module
+import styles from '../Minigames/MiniGame.module.css'; // Import CSS module
 import SabotageTask from '../interfaces/SabotageTask';
 import { completeSabotageMiniGame } from '../../service (Frontend)/SabotageTaskService';
 

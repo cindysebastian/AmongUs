@@ -301,18 +301,15 @@ public class WebSocketController {
     public void enableSabotage(String sabotageName, @DestinationVariable String roomCode){
         Room room = activeRooms.get(roomCode);
         ArrayList<Sabotage> sabotages = room.getSabotages();
-        Sabotage sabotage = new Sabotage(null);
         for (Sabotage sab : sabotages) {
             if (sab.getName().equals(sabotageName)) {
-                sabotage = sab;
+                System.out.println("Enabling Sabotage: " + sab.getName());
+                ArrayList<Interactible> updatedInteractibles = sabotageService.enableSabotageTasks(room.getSabotageTasks(), sab);
+                room.setSabotageTasks(updatedInteractibles);
+                sab.setInProgress(true);           
             }
         }
-
-        System.out.println("Enabling Sabotage: " + sabotage.getName());
-
-        ArrayList<Interactible> updatedInteractibles = sabotageService.enableSabotageTasks(room.getSabotageTasks(), sabotage);
-        room.setSabotageTasks(updatedInteractibles);
-        System.out.println(updatedInteractibles.toString());
+        room.setSabotages(sabotages);
         room.broadCastSabotageTasksUpdate(messagingTemplate);
     }
 

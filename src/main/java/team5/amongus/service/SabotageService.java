@@ -75,6 +75,7 @@ public class SabotageService implements ISabotageService {
             if (!sabotage.getInProgress()) {
                 if (interactible instanceof SabotageTask && (((SabotageTask)interactible).getSabotage()).equals(sabotage)) {
                     SabotageTask task = (SabotageTask) interactible;
+                    task.getSabotage().setInProgress(true);
                     task.setCompleted(false);
                 }                
             } else {

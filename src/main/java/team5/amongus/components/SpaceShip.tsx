@@ -11,8 +11,8 @@ import KillButton from './KillButton';
 import Space from './Space';
 import { CSSProperties } from 'react';
 import SabotageTask from './interfaces/SabotageTask';
-import SabotageButton from './Sabotage';
-import Sabotage from './Sabotage';
+import SabotageButton from './Sabotage/Sabotage';
+import Sabotage from './Sabotage/Sabotage';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -71,7 +71,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     if (!stompClient || !currentPlayer || !roomCode) return;
     enableSabotage(stompClient, sabotageType, roomCode);
   };
-  
+
   const completedTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).filter(interactible => interactible.completed).length;
   const totalTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).length;
   const progressPercentage = (completedTasks / totalTasks) * 100;
@@ -109,7 +109,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
                 isAlive={currAlive}
               />
             </div>
-
           ))}
           <div>
             {
@@ -124,7 +123,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             }
           </div>
 
-
           <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
           <Sabotage stompClient={stompClient} sabotages={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
         </div>
@@ -133,10 +131,18 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
       )}
+      {showSabotageGif && !isImposter &&
+      <>
+        <div></div>
+      </>
+      }
       {isImposter && <KillButton onKill={handleKill} />}
-      {isImposter && (
-        <><div onClick={() => handleSabotage("EndGameSabotage")} style={{ position: 'absolute', top: '50px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>End Game Sabotage</div><div onClick={() => handleSabotage("AnnoySabotage")} style={{ position: 'absolute', top: '100px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>Annoy Sabotage</div></>
-      )}
+      {isImposter && 
+        <>
+          <div onClick={() => handleSabotage("EndGameSabotage")} style={{ position: 'absolute', top: '50px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>End Game Sabotage</div> 
+          <div onClick={() => handleSabotage("AnnoySabotage")} style={{ position: 'absolute', top: '100px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>Annoy Sabotage</div>
+        </>     
+      }
     </div>
   );
 };

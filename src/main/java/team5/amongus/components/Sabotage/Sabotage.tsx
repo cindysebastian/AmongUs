@@ -1,15 +1,15 @@
 // Task.tsx
 
 import React from 'react';
-import Sabotage from './interfaces/SabotageTask';
-import MineMinigame from './Minigames/MineMinigame';
+import Sabotage from '../interfaces/SabotageTask';
+import MineMinigame from '../Minigames/MineMinigame';
 import Stomp from "stompjs";
-import SwipeMinigame from './Minigames/SwipeMinigame';
-import ScanMinigame from './Minigames/ScanMinigame';
+import SwipeMinigame from '../Minigames/SwipeMinigame';
+import ScanMinigame from '../Minigames/ScanMinigame';
 
 import { CSSProperties } from 'react';
-import { enableSabotage } from '../service (Frontend)/WebsocketService';
-import SabotageMiniGame from './Minigames/SabotageMiniGame';
+import { enableSabotage } from '../../service (Frontend)/WebsocketService';
+import SabotageMiniGame from './SabotageMiniGame';
 
 
 interface Props {
@@ -51,6 +51,7 @@ const Task: React.FC<Props> = ({ stompClient, sabotages, currentPlayer, offsetX,
                         zIndex: 6,
                     }}
                 />
+                
             ))}
             {sabotages.map(sabotage => {
                 if(sabotage.inProgress && currentPlayer){
