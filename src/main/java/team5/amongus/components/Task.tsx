@@ -35,7 +35,7 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offs
     return (
         <div style={{ position: 'fixed' }}>
             {/* Render images at the coordinates of interactibles */}
-            {interactibles.map(interactible => (
+            {interactibles.filter(interactible => interactible.assignedPlayer).map(interactible => (
                 <img
                     key={interactible.id}
                     src={`src/main/resources/${interactible.type.toLowerCase()}.png`} // Assuming you have images named after interactible types

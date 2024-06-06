@@ -1,12 +1,13 @@
 interface Interactible {
-  completed: boolean;
+  found?: boolean;
+  completed?: boolean;
   id: number;
   position: { x: number; y: number };
   width: number;
   height: number;
-  inProgress: boolean;
-  type: TaskType;
-  assignedPlayer: String;
+  inProgress?: boolean;
+  type?: TaskType;
+  assignedPlayer?: String;
 }
 
 enum TaskType {

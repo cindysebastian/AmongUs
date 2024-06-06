@@ -148,7 +148,7 @@ export const subscribetoInteractions = (stompClient, setInteractibles, roomCode)
     const updatedInteractibles = JSON.parse(message.body);
     setInteractibles(updatedInteractibles);
     handleReceivedInteractibles(updatedInteractibles, setInteractibles);
-
+    
   });
 };
 

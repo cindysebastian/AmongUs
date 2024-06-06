@@ -107,6 +107,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
                 player={player}
                 facing={player.facing !== undefined ? player.facing : 'RIGHT'}
                 isMoving={isMoving}
+                isAlive={true}
               />
             </div>
           );

@@ -1,9 +1,11 @@
 package team5.amongus.service;
 
+import team5.amongus.model.DeadBody;
 import team5.amongus.model.Imposter;
 import team5.amongus.model.Interactible;
 import team5.amongus.model.Player;
 import team5.amongus.model.Position;
+import team5.amongus.model.Room;
 import team5.amongus.model.Task;
 import team5.amongus.model.TaskType;
 
@@ -267,5 +269,10 @@ public class TaskService implements ITaskService {
         }
         System.out.println("Task Completion Error");
         return interactibles;
+    }
+
+    @Override
+    public void generateDeadBody(Imposter imposter, Room room) {
+        room.getInteractibles().add(new DeadBody(imposter.getPosition()));
     }
 }

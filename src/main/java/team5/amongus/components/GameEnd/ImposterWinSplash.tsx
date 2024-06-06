@@ -15,20 +15,20 @@ const ImposterWinSplash = ({ imposterName, onLeave, onWait }) => {
             <h1 className="win-text">Victory!</h1>
             <p className="win-text">The not-dwarf <span className="imposter-name">{imposterName}</span> has triumphed!</p>
             <p className="win-text">The dwarfs have been outwitted!</p><br /> <br />
-            <PlayerSprite player={{ 
-    name: imposterName, 
-    position: { x: 0, y: 0 }, 
-    step: 0, 
-    width: 0, 
-    height: 0, 
-    canInteract: false, 
-    isAlive: false, 
-    lastActivityTime: 0, 
-    sessionId: '', 
-    isHost: false, 
-    isImposter: false, 
-    canKill: false 
-}} facing="RIGHT" isMoving={false} />
+            <PlayerSprite player={{
+                    name: imposterName,
+                    position: { x: 0, y: 0 },
+                    step: 0,
+                    width: 0,
+                    height: 0,
+                    canInteract: false,
+                    isAlive: true,
+                    lastActivityTime: 0,
+                    sessionId: '',
+                    isHost: false,
+                    isImposter: false,
+                    canKill: false
+                }} facing="RIGHT" isMoving={false} isAlive={true} />
  {/* Render PlayerSprite */}
             {waitingForHost ? (
                 <p className="waiting-text">Waiting for host...</p>
