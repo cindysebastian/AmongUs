@@ -105,7 +105,7 @@ public class WebSocketController {
             Position position = new Position(900, 500);
             if (room.getInGamePlayersMap().get(request.getPlayerName()) == null) {
                 if (room.getInGamePlayersMap().size() < room.getMaxPlayers()) {
-                    
+
                     room.addPlayer(new Player(request.getPlayerName(), position));
                     room.broadcastPlayerUpdate(messagingTemplate);
                     response.put("status", "OK");
@@ -171,6 +171,20 @@ public class WebSocketController {
                         room.getInteractibles(), player, (Task) interactableObject);
 
                 room.setInteractibles(updatedInteractables);
+            } else if (interactableObject instanceof DeadBody) {
+                ((DeadBody) interactableObject).setFound(true);
+                Iterator<Interactible> iterator = room.getInteractibles().iterator();
+                while (iterator.hasNext()) {
+                    Interactible interactible = iterator.next();
+                    if (interactible instanceof DeadBody) {
+                        iterator.remove(); // Safe removal using iterator
+                    }
+                }
+
+                System.out.println("Triggering Emergency Meeting, dead body found");
+                // TODO FOR MARTINA: add proper trigger for Emergency Meeting, dead body
+                // behaviour is fully handled (When found, disappears), only need to add
+                // functionality here to start the meeting
             }
         }
         room.broadcastInteractiblesUpdate(messagingTemplate);
@@ -224,9 +238,11 @@ public class WebSocketController {
         if (imposter == null || !imposter.getName().equals(playerName)) {
             System.err.println("Imposter not found or mismatch");
         }
+        taskService.generateDeadBody(imposter, room);
 
         playerService.handleKill(imposter, room.getPlayersMap(), roomCode, messagingTemplate);
         room.broadcastPlayerUpdate(messagingTemplate);
+        room.broadcastInteractiblesUpdate(messagingTemplate);
     }
 
     @MessageMapping("/completeTask/{roomCode}")
@@ -323,7 +339,7 @@ public class WebSocketController {
         room.getInteractibles().clear();
         room.getChatMessages().clear();
         room.setGameState("Game waiting");
-        
+
         room.broadcastInteractiblesUpdate(messagingTemplate);
         room.broadcastPlayerUpdate(messagingTemplate);
     }

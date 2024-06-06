@@ -92,11 +92,20 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
               </div>
             )
           ))}
-          {killedPlayers.map(killedPlayerName => (
-            <div key={killedPlayerName} style={{ position: 'absolute', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x }}>
-              <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
-            </div>
-          ))}
+          <div>
+            {
+              interactibles
+              .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
+                .map(interactible => (
+                  <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y, left: interactible.position.x }}>
+                    {/* Render your component based on the interactible */}
+                    <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
+                  </div>
+                ))
+            }
+          </div>
+
+
           <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
         </div>
       </div>

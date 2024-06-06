@@ -40,7 +40,7 @@ const App = () => {
   const [gameState, setGameState] = useState('');
   const [inGamePlayers, setInGamePlayers] = useState({});
   const [roomCode, setRoomCode] = useState('');
-  const [selectedPlayerCount, setSelectedPlayerCount] = useState(3); // Add state for selected player count
+  const [selectedPlayerCount, setSelectedPlayerCount] = useState(10); // Add state for selected player count
 
   const navigate = useNavigate();
 
@@ -69,6 +69,7 @@ const App = () => {
       subscribeToGameStatus(stompClient, setRedirectToSpaceShip, roomCode);
       subscribetoInteractions(stompClient, setInteractibles, roomCode);
       subscribetoGameFinishing(stompClient, setGameState, roomCode);
+      console.log(interactibles);
     }
   }, [roomCode, playerName]);
 
@@ -196,7 +197,7 @@ const App = () => {
     console.log(gameState);
     if (gameState == "Imposter wins" || gameState == "Crewmates win") {
       navigate('/end');
-    }else if (gameState == "Game waiting"){
+    } else if (gameState == "Game waiting") {
       setInteractionInProgress(false);
       navigate('/game');
     }
@@ -281,6 +282,7 @@ const App = () => {
                 <option key={i + 3} value={i + 3}>{i + 3}</option>
               ))}
             </select>
+
             <button onClick={handleHostGame} className={styles.button}>Host Game</button>
           </div></div>
       </div>} />
