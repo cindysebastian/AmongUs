@@ -2,7 +2,6 @@ package team5.amongus.model;
 
 import java.io.Serializable;
 
-
 public class Player implements Serializable, Cloneable {
     private String name;
     private Position position;
@@ -23,7 +22,7 @@ public class Player implements Serializable, Cloneable {
         this.lastActivityTime = System.currentTimeMillis();
     }
 
-    public Player(Imposter imposter){
+    public Player(Imposter imposter) {
         this.name = imposter.getName();
         this.position = imposter.getPosition();
         this.lastActivityTime = imposter.getLastActivityTime();
@@ -86,7 +85,6 @@ public class Player implements Serializable, Cloneable {
         this.position = position;
     }
 
-
     public String getFacing() {
         return facing;
     }
@@ -132,7 +130,10 @@ public class Player implements Serializable, Cloneable {
     }
 
     public boolean collidesWith(Player otherPlayer) {
-        return this.getBounds().intersects(otherPlayer.getBounds());
+        if(otherPlayer.getisAlive()){
+            return this.getBounds().intersects(otherPlayer.getBounds());
+        }
+        return false;
     }
 
     // Method to check collision with an Interactable thing

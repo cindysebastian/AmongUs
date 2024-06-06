@@ -26,12 +26,20 @@ interface Props {
 const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabotageTasks, currentPlayer, roomCode }) => {
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
+  const [currAlive, setCurrAlive] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
   const [showSabotageGif, setShowSabotageGif] = useState(false);
 
   useEffect(() => {
     if (!currentPlayer || !players) return;
     const currentPlayerObj = players[currentPlayer] as Player | undefined;
+    if (currentPlayerObj) {
+      if (currentPlayerObj.isAlive) {
+        setCurrAlive(true);
+      } else {
+        setCurrAlive(false);
+      }
+    }
     if (currentPlayerObj && currentPlayerObj.isImposter) {
       setIsImposter(true);
     }
@@ -63,9 +71,9 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     if (!stompClient || !currentPlayer || !roomCode) return;
     enableSabotage(stompClient, sabotageType, roomCode);
   };
-
-  const completedTasks = interactibles.filter(interactible => interactible.completed).length;
-  const totalTasks = interactibles.length;
+  
+  const completedTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).filter(interactible => interactible.completed).length;
+  const totalTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).length;
   const progressPercentage = (completedTasks / totalTasks) * 100;
 
   const mapWidth = 4000;
@@ -92,21 +100,31 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
         <div className={styles.gifBackground}></div>
         <div className={styles.spaceShipBackground}>
           {Object.values(players).map(player => (
-            !killedPlayers.includes(player.name) && (
-              <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
-                <PlayerSprite
-                  player={player}
-                  facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-                  isMoving={player.isMoving !== undefined ? player.isMoving : false}
-                />
-              </div>
-            )
-          ))}
-          {killedPlayers.map(killedPlayerName => (
-            <div key={killedPlayerName} style={{ position: 'absolute', top: players[killedPlayerName].position.y, left: players[killedPlayerName].position.x }}>
-              <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
+
+            <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
+              <PlayerSprite
+                player={player}
+                facing={player.facing !== undefined ? player.facing : 'RIGHT'}
+                isMoving={player.isMoving !== undefined ? player.isMoving : false}
+                isAlive={currAlive}
+              />
             </div>
+
           ))}
+          <div>
+            {
+              interactibles
+                .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
+                .map(interactible => (
+                  <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y+30, left: interactible.position.x+30}}>
+                    {/* Render your component based on the interactible */}
+                    <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
+                  </div>
+                ))
+            }
+          </div>
+
+
           <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
           <Sabotage stompClient={stompClient} sabotages={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
         </div>

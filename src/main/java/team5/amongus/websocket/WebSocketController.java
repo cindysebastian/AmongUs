@@ -108,7 +108,7 @@ public class WebSocketController {
             Position position = new Position(900, 500);
             if (room.getInGamePlayersMap().get(request.getPlayerName()) == null) {
                 if (room.getInGamePlayersMap().size() < room.getMaxPlayers()) {
-                    
+
                     room.addPlayer(new Player(request.getPlayerName(), position));
                     room.broadcastPlayerUpdate(messagingTemplate);
                     response.put("status", "OK");
@@ -174,6 +174,25 @@ public class WebSocketController {
                         room.getInteractibles(), player, (Task) interactableObject);
 
                 room.setInteractibles(updatedInteractables);
+            } else if (interactableObject instanceof DeadBody) {
+                if (room.getPlayersMap().get(playerName).getisAlive()) {
+                    ((DeadBody) interactableObject).setFound(true);
+                    Iterator<Interactible> iterator = room.getInteractibles().iterator();
+                    while (iterator.hasNext()) {
+                        Interactible interactible = iterator.next();
+                        if (interactible instanceof DeadBody) {
+                            iterator.remove(); // Safe removal using iterator
+                        }
+                    }
+
+                    System.out.println("Triggering Emergency Meeting, dead body found");
+                }
+                else{
+                    System.out.println("Dead Players cannot report bodies.");
+                }
+                // TODO FOR MARTINA: add proper trigger for Emergency Meeting, dead body
+                // behaviour is fully handled (When found, disappears), only need to add
+                // functionality here to start the meeting
             }
         }
         room.broadcastInteractiblesUpdate(messagingTemplate);
@@ -252,9 +271,12 @@ public class WebSocketController {
         if (imposter == null || !imposter.getName().equals(playerName)) {
             System.err.println("Imposter not found or mismatch");
         }
-
         playerService.handleKill(imposter, room.getPlayersMap(), roomCode, messagingTemplate);
+        taskService.generateDeadBody(imposter, room);
+
+        
         room.broadcastPlayerUpdate(messagingTemplate);
+        room.broadcastInteractiblesUpdate(messagingTemplate);
     }
 
     @MessageMapping("/completeTask/{roomCode}")
@@ -358,7 +380,7 @@ public class WebSocketController {
         positions.add(new Position(900, 500));
         positions.add(new Position(1000, 600));
         positions.add(new Position(1100, 600));
-        positions.add(new Position(1200, 500));
+        positions.add(new Position(900, 500));
 
         int index = 0;
         for (Map.Entry<String, Player> entry : room.getPlayersMap().entrySet()) {
@@ -383,7 +405,7 @@ public class WebSocketController {
         room.getInteractibles().clear();
         room.getChatMessages().clear();
         room.setGameState("Game waiting");
-        
+
         room.broadcastInteractiblesUpdate(messagingTemplate);
         room.broadcastPlayerUpdate(messagingTemplate);
     }

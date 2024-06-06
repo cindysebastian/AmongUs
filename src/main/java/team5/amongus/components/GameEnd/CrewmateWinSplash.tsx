@@ -17,20 +17,20 @@ const CrewmateWinSplash = ({ imposterName, onLeave, onWait }) => {
             <p className="win-text">The not-dwarf has been defeated! All hail the team work of the dwarven folk!</p>
             <p className="win-text">The not-dwarf was:</p><br /><br />
             <div className="player-sprite-wrapper">
-            <PlayerSprite player={{ 
-    name: imposterName, 
-    position: { x: 0, y: 0 }, 
-    step: 0, 
-    width: 0, 
-    height: 0, 
-    canInteract: false, 
-    isAlive: false, 
-    lastActivityTime: 0, 
-    sessionId: '', 
-    isHost: false, 
-    isImposter: false, 
-    canKill: false 
-}} facing="RIGHT" isMoving={false} />
+            <PlayerSprite player={{
+                    name: imposterName,
+                    position: { x: 0, y: 0 },
+                    step: 0,
+                    width: 0,
+                    height: 0,
+                    canInteract: false,
+                    isAlive: true,
+                    lastActivityTime: 0,
+                    sessionId: '',
+                    isHost: false,
+                    isImposter: false,
+                    canKill: false
+                }} facing="RIGHT" isMoving={false} isAlive={true} />
  {/* Render PlayerSprite */}
             </div>
             {waitingForHost ? (
