@@ -106,12 +106,13 @@ public class PlayerService implements IPlayerService {
 
     @Override
     public Interactible getPlayerInteractableObject(ArrayList<Interactible> interactibles, Player player) {
-        
-        for (Interactible object : interactibles) {
-            if (object instanceof DeadBody) {
-                if (player.collidesWith(object)) {
+        if (player.getisAlive()) {
+            for (Interactible object : interactibles) {
+                if (object instanceof DeadBody) {
+                    if (player.collidesWith(object)) {
 
-                    return object;
+                        return object;
+                    }
                 }
             }
         }
