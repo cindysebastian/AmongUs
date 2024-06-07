@@ -193,6 +193,8 @@ public class WebSocketController {
                 else{
                     System.out.println("Dead Players cannot report bodies.");
                 }
+                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), roomCode);
+                messagingTemplate.convertAndSend("/topic/emergencyMeeting/"+ roomCode, playerName);
                 // TODO FOR MARTINA: add proper trigger for Emergency Meeting, dead body
                 // behaviour is fully handled (When found, disappears), only need to add
                 // functionality here to start the meeting
