@@ -38,7 +38,7 @@ body {
   font-size: 20px;
   border-radius: 4px;
   border: 1px solid #ccc;
-  height: 30px;
+  height: max-content;
   font-family: 'Lucida Console';
   bottom: 0px;
 }

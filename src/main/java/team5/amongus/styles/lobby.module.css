@@ -10,7 +10,7 @@
     background-position: center;
 }
 
-img {
+.image {
     position: fixed;
     top: 0;
     left: 0;
@@ -20,6 +20,20 @@ img {
     background-position: center;
 }
 
+
+.playerCountContainer {
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+}
+
+.startButtonContainer {
+    align-items: baseline;
+    justify-content: space-around;
+}
+
 .startButtonIcon {
     width: 100px;
     height: auto;
@@ -27,21 +41,11 @@ img {
     background-color: transparent;
     opacity: 1;
     transition: opacity 0.3s ease;
+    z-index: 999;
 }
 
 .startButtonIcon.clicked {
     opacity: 0.8 !important;
-}
-
-.playerCountContainer {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
 }
 
 .playerCountIcon {
@@ -50,6 +54,7 @@ img {
     margin-right: 8px;
 }
 
+
 .playerCount {
     background-color: rgba(0, 0, 0, 0.3);
     color: white;
@@ -57,15 +62,106 @@ img {
     padding: 8px 12px;
     border-radius: 4px;
     display: flex;
-    align-items: center;
+    align-items: baseline;
+    justify-content: space-around;
 }
 
-.startButtonContainer {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-    position: fixed;
-    bottom: 75px;
-    left: 51%;
-    transform: translateX(-50%);
+
+
+.gameCode {
+    font-size: 1.2em;
+    font-family: monospace;
+    cursor: pointer;
+    color: white;
+    justify-content: space-around;
+    z-index: 10;
 }
+
+
+.collisionMask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 1220px;
+    height: 992px;
+    background-size: cover;
+    z-index: -1;
+    /* Overlay it above the background but below other elements */
+    background-position: center;
+    opacity: 0.5;
+    /* Make it semi-transparent */
+}
+
+
+.input{
+    margin-right: 10px; 
+    padding: 8px 20px;
+    font-size: 20px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    height: 30px;
+    font-family: 'Lucida Console';
+    bottom: 0px;
+  }
+  
+  .chatBox {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 5000px;
+    width: 80%;
+    height: 50%;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 10;
+  }
+  
+  .button {
+    position: relative;
+    right: 0px;
+    margin-right: 10px;
+    padding: 8px 20px;
+    font-size: 16px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Lucida Console';
+    
+  }
+  
+  .cursor {
+    position: relative;
+    margin-top: 20px;
+    margin-left: 20px;
+    width: 40px;
+    padding: 8px 16px;
+    font-size: 16px;
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer; 
+    font-family: 'Lucida Console';
+    z-index: 10;
+  }
+
+  .iconContainer{
+    height: 10vh;
+    top: 90vh;
+    width: 80vw;
+    left: 10vw;
+    margin: auto;
+    position: absolute;
+    bottom: 0;
+    display: flex;
+    z-index: 99;
+    justify-content: space-around;
+    align-items: baseline;
+  }
+  

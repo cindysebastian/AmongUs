@@ -8,9 +8,10 @@ import Task from "../interfaces/Interactible";
 interface Props {
     stompClient: Stomp.Client | null;
     interactible: Task;
+    roomCode: String;
 }
 
-const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
+const ScanMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode }) => {
     const [isCompleted, setIsCompleted] = useState(false);
     const [progress, setProgress] = useState(0);
     const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
@@ -41,9 +42,9 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible }) => {
                 const newProgress = Math.min(prevProgress + 10, 100); // Increment progress by 10% every second
                 if (newProgress >= 100 && !isCompleted) {
                     if (stompClient) {
-                        completeMiniGame(stompClient, interactible.id);
+                        completeMiniGame(stompClient, interactible.id, roomCode);
                         setIsCompleted(true);
-                      
+
                     }
                     setIsSoundPlaying(false); // Stop continuous sound when task completed
                     playSound(); // Play sound when completion reached

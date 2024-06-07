@@ -5,11 +5,11 @@ import { markTaskAsCompleted } from './WebsocketService';
 import Task from '../components/interfaces/Interactible';
 
 
-export const completeMiniGame = (stompClient, interactibleId: number) => {
+export const completeMiniGame = (stompClient, interactibleId: number, roomCode) => {
   if (!stompClient) return;
 
   // Call function to send completed state to backend
-  markTaskAsCompleted(stompClient, interactibleId);
+  markTaskAsCompleted(stompClient, interactibleId, roomCode);
 };
 
 export const getRequiredButtonClicks = (interactible: Task): number => {

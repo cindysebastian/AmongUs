@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import styles from './../styles/spaceship.module.css';
-import { subscribeToImposter } from './../service (Frontend)/WebsocketService';
-
 
 const KillButton = ({ onKill }) => {
   
