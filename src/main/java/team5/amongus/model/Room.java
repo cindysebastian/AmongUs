@@ -2,6 +2,7 @@ package team5.amongus.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -291,6 +292,16 @@ public class Room {
         }
 
         return result;
+    }
+
+    public void removeAllDeadBodies() {
+        Iterator<Interactible> iterator = this.interactibles.iterator();
+        while (iterator.hasNext()) {
+            Interactible interactible = iterator.next();
+            if (interactible instanceof DeadBody) {
+                iterator.remove(); // Safe removal using iterator
+            }
+        }
     }
 
 }

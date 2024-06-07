@@ -361,6 +361,8 @@ public class WebSocketController {
     @MessageMapping("/emergencyMeeting/{roomCode}")
     public void emergencyMeeting(String playerName, @DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
+        room.removeAllDeadBodies();
+        room.broadcastInteractiblesUpdate(messagingTemplate);
         emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), roomCode);
         messagingTemplate.convertAndSend("/topic/emergencyMeeting/"+ roomCode, playerName);
     }
