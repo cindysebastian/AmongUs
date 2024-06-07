@@ -5,7 +5,7 @@ const MessageInput = ({ sendMessage, chatVisible, playerName, killedPlayers }) =
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (inputValue.trim() !== '') {
+    if (inputValue.trim() !== '' && !killedPlayers.includes(playerName)) { // Ensure dead players cannot send
       sendMessage(inputValue);
       setInputValue('');
     }

@@ -61,18 +61,26 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   }, [stompClient]);
 
   const handlePlayerKilled = (killedPlayer: Player) => {
+    console.log("Killed player:", killedPlayer);
+    console.log("Current player:", currentPlayer);
     if (!killedPlayer || !killedPlayer.name || !currentPlayer) return;
     if (killedPlayer.name === currentPlayer) {
       setShowKillGif(true);
       setTimeout(() => setShowKillGif(false), 2500);
     }
-    setKilledPlayers(prevKilledPlayers => [...prevKilledPlayers, killedPlayer.name]);
-  };
+    console.log("Adding killed player to killedPlayers:", killedPlayer.name);
+    setKilledPlayers(prevKilledPlayers => {
+      const newKilledPlayers = [...prevKilledPlayers, killedPlayer.name];
+      console.log("KilledPlayersList:", newKilledPlayers);
+      return newKilledPlayers;
+  });
+};
 
   const handleKill = () => {
     if (!stompClient || !currentPlayer || !roomCode) return;
     killPlayer(stompClient, currentPlayer, roomCode);
   };
+
   const handleEmergencyMeeting = () => {
     setShowEmergencyMeeting(true);
     setTimeout(() => setShowEmergencyMeeting(false), 30000); // Show overlay for 30 seconds

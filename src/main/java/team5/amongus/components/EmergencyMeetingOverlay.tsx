@@ -23,6 +23,10 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
   const [showEjectedGif, setShowEjectedGif] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
 
+  // Determine if the player is dead
+  const isPlayerAlive = !killedPlayers.includes(playerName);
+ 
+
   useEffect(() => {
     if (stompClient) {
       const unsubscribeMessages = subscribeToMessages(stompClient, setMessages, roomCode);
@@ -39,8 +43,10 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
   }, [stompClient]);
 
   const sendMessage = (messageContent: string) => {
-    if (stompClient) {
+    if (stompClient && isPlayerAlive) {
       sendChatMessage(stompClient, playerName, messageContent, roomCode);
+      console.log("Killed Players:" + killedPlayers)
+      console.log("isPlayerAlive" + isPlayerAlive);
     }
   };
 
@@ -58,7 +64,6 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
   const handlePlayerEjected = (ejectedPlayer: Player) => {
     setShowEjectedGif(true);
     setTimeout(() => setShowEjectedGif(false), 2500);
-
   }
 
   const half = Math.ceil(playerNames.length / 2);
@@ -97,7 +102,10 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
           <button onClick={() => handleVote(playerName, 'skip')} disabled={hasVoted}>Skip</button>
         </div>
       </div>
-      <button onClick={handleToggleChat} className={styles.chatButton}>
+      <button 
+        onClick={handleToggleChat} 
+        className={styles.chatButton}
+      >
         {isChatVisible ? 'Close Chat' : 'Open Chat'}
       </button>
       {isChatVisible && (
@@ -106,13 +114,18 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
             <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
           </div>
           <button className={styles.closeChatButton} onClick={handleToggleChat}>Exit</button>
-          <MessageInput sendMessage={sendMessage} chatVisible={isChatVisible} playerName={playerName} killedPlayers={killedPlayers} />
+          <MessageInput 
+            sendMessage={sendMessage} 
+            chatVisible={isChatVisible} 
+            playerName={playerName} 
+            killedPlayers={killedPlayers} 
+          />
           <ChatRoom messages={messages} />
         </div>
       )}
       {showEjectedGif && (
         <div className={styles.ejectedGifContainer}>
-          <img src="src/main/resources//ejected.gif" alt="Ejected" className={styles.ejectedGif} />
+          <img src="src/main/resources/ejected.gif" alt="Ejected" className={styles.ejectedGif} />
         </div>
       )}
     </div>
