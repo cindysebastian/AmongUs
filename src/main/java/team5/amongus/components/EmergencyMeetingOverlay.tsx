@@ -12,9 +12,10 @@ interface EmergencyMeetingOverlayProps {
   stompClient: Stomp.Client | null;
   playerName: string;
   killedPlayers: string[];
+  roomCode: string;
 }
 
-const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playerNames, stompClient, playerName, killedPlayers }) => {
+const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playerNames, stompClient, playerName, killedPlayers, roomCode }) => {
   const [messages, setMessages] = useState([]);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [votes, setVotes] = useState<{ [key: string]: { vote: number; skip: number } }>({});
@@ -24,8 +25,8 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
 
   useEffect(() => {
     if (stompClient) {
-      const unsubscribeMessages = subscribeToMessages(stompClient, setMessages);
-      const unsubscribeEjectedPlayer = subscribeToEjectedPlayer(stompClient, (player) => {
+      const unsubscribeMessages = subscribeToMessages(stompClient, setMessages, roomCode);
+      const unsubscribeEjectedPlayer = subscribeToEjectedPlayer(stompClient, roomCode, (player) => {
         setEjectedPlayer(player.name);
         setShowEjectedGif(true);
         setTimeout(() => setShowEjectedGif(false), 2500); // Adjust the duration as needed
@@ -39,7 +40,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
 
   const sendMessage = (messageContent: string) => {
     if (stompClient) {
-      sendChatMessage(stompClient, playerName, messageContent);
+      sendChatMessage(stompClient, playerName, messageContent, roomCode);
     }
   };
 
@@ -49,7 +50,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
 
   const handleVote = (votedPlayer: string, vote: 'vote' | 'skip') => {
     if (stompClient && playerName) {
-      sendVote(stompClient, playerName, votedPlayer, vote);
+      sendVote(stompClient, playerName, votedPlayer, vote, roomCode);
     }
     setHasVoted(true);
   };

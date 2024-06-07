@@ -177,15 +177,15 @@ export const killPlayer = (stompClient, playerName, roomCode) => {
 };
 
 
-export const sendEmergencyMeeting = (stompClient, playerName) => {
+export const sendEmergencyMeeting = (stompClient, playerName, roomCode) => {
   if (!stompClient || !playerName) return;
-  stompClient.send('/app/emergencyMeeting', {}, playerName);
+  stompClient.send(`/app/emergencyMeeting/${roomCode}`, {}, playerName);
 };
 
-export const subscribeToEmergencyMeeting = (stompClient, handleEmergencyMeeting) => {
+export const subscribeToEmergencyMeeting = (stompClient, handleEmergencyMeeting, roomCode) => {
   if (!stompClient) return;
 
-  const subscription = stompClient.subscribe('/topic/emergencyMeeting', () => {
+  const subscription = stompClient.subscribe(`/topic/emergencyMeeting/${roomCode}`, () => {
     handleEmergencyMeeting();
   });
 
@@ -194,18 +194,18 @@ export const subscribeToEmergencyMeeting = (stompClient, handleEmergencyMeeting)
   };
 };
 
-export const subscribeToEjectedPlayer = (stompClient, playerName) => {
+export const subscribeToEjectedPlayer = (stompClient,roomCode, playerName ) => {
     if(!stompClient) return;
 
-    const subscription = stompClient.subscribe("/topic/ejectedPlayer", playerName);
+    const subscription = stompClient.subscribe(`/topic/ejectedPlayer/${roomCode}`, playerName);
     return () => {
       subscription.unsubscribe();
     };
 };
 
-export const sendVote = (stompClient, playerName, votedPlayer, vote) => {
+export const sendVote = (stompClient, playerName, votedPlayer, vote, roomCode) => {
   if (!stompClient || !playerName || !votedPlayer) return;
 
   const payload = `${playerName},${votedPlayer},${vote}`;
-  stompClient.send('/app/vote', {}, payload);
+  stompClient.send(`/app/vote/${roomCode}`, {}, payload);
 };

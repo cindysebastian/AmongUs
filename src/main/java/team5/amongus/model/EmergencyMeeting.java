@@ -18,7 +18,7 @@ public class EmergencyMeeting {
         this.messagingTemplate = messagingTemplate;
     }
 
-    public void handleVoting(String playerName, String votedPlayer, String vote, Map<String, Player> playersMap) {
+    public void handleVoting(String playerName, String votedPlayer, String vote, Map<String, Player> playersMap, String roomCode) {
         int totalVotes = playersMap.size();
         System.out.println(vote);
         System.out.println(playerName + " voted for: " + votedPlayer);
@@ -39,11 +39,11 @@ public class EmergencyMeeting {
         //System.out.println(playersMap);
         if (votesCast == totalVotes) {
             System.out.println("VOTES HAVE BEEN CAST UwU");
-            submitVotes(playersMap); 
+            submitVotes(playersMap, roomCode); 
         }
     }
 
-    public void submitVotes(Map<String, Player> playersMap) {
+    public void submitVotes(Map<String, Player> playersMap, String roomCode) {
         String playerWithMostVotes = null;
         int maxVotes = 0;
         int skipVotes = votes.getOrDefault("skip", 0);
@@ -60,7 +60,7 @@ public class EmergencyMeeting {
                 System.out.println(maxVotes);
                 ejectedPlayer.setAlive(false);
                 System.out.println("Ejected player:" + ejectedPlayer);
-                messagingTemplate.convertAndSend("topic/ejectedPlayer", ejectedPlayer);
+                messagingTemplate.convertAndSend("topic/ejectedPlayer/" + roomCode, ejectedPlayer);
             }
         } else {
             System.out.println("No player has been ejected.");
@@ -68,8 +68,8 @@ public class EmergencyMeeting {
         votes.clear();
     }
 
-    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap) {
-        messagingTemplate.convertAndSend("/topic/emergencyMeeting", playerName);
+    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap, String roomCode) {
+        messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
     }
 
 }

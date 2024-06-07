@@ -6,7 +6,7 @@ import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import ProgressBar from './ProgressBar';
-import { killPlayer, subscribeToPlayerKilled, subscribeToImposter, subscribeToEmergencyMeeting, sendEmergencyMeeting } from '../service (Frontend)/WebsocketService';
+import { killPlayer, subscribeToPlayerKilled, subscribeToEmergencyMeeting, sendEmergencyMeeting } from '../service (Frontend)/WebsocketService';
 import KillButton from './KillButton';
 import EmergencyButton from './EmergencyMeetingButton';
 import EmergencyMeetingOverlay from './EmergencyMeetingOverlay';
@@ -30,16 +30,12 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   const [playerPositions, setPlayerPositions] = useState(players);
 
   useEffect(() => {
-    const unsubscribeImposter = subscribeToImposter(stompClient, (imposterName: string) => {
-      // handle imposter subscription if necessary
-    });
-    const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, handleEmergencyMeeting);
+    const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, handleEmergencyMeeting, roomCode);
 
     return () => {
-      unsubscribeImposter();
       unsubscribeEmergencyMeeting();
     };
-  }, [stompClient, currentPlayer]);
+  }, [stompClient, currentPlayer, roomCode]);
 
   useEffect(() => {
     if (!currentPlayer || !players) return;
@@ -110,7 +106,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
         <div className={styles.gifBackground}></div>
         <div className={styles.spaceShipBackground}>
           {Object.values(players).map(player => (
-
             <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
               <PlayerSprite
                 player={player}
@@ -119,10 +114,8 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
                 isAlive={currAlive}
               />
             </div>
-
           ))}
-
-          <EmergencyButton stompClient={stompClient} playerName={currentPlayer} onEmergencyMeeting={() => sendEmergencyMeeting(stompClient, currentPlayer)} />
+          <EmergencyButton stompClient={stompClient} playerName={currentPlayer} onEmergencyMeeting={() => sendEmergencyMeeting(stompClient, currentPlayer, roomCode)} />
           <div>
             {
               interactibles
@@ -135,8 +128,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
                 ))
             }
           </div>
-
-
           <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
         </div>
       </div>
@@ -146,6 +137,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
             killedPlayers={killedPlayers}
             stompClient={stompClient}
             playerName={currentPlayer}
+            roomCode={roomCode}
           />
         )}
       <ProgressBar progress={progressPercentage} />

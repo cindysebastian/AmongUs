@@ -16,8 +16,8 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         this.emergencyMeeting = emergencyMeeting;
     }
 
-    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap) {
-        emergencyMeeting.handleEmergencyMeeting(playerName, playersMap);
+    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap, String roomCode) {
+        emergencyMeeting.handleEmergencyMeeting(playerName, playersMap, roomCode);
         int x = 2000;
         int y = 550;
         for (Map.Entry<String,Player> entry : playersMap.entrySet()) {

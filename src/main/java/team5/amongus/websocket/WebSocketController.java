@@ -356,15 +356,17 @@ public class WebSocketController {
         room.broadcastPlayerUpdate(messagingTemplate);
     }
 
-    @MessageMapping("/emergencyMeeting")
-    public void emergencyMeeting(String playerName) {
-        emergencyMeetingService.handleEmergencyMeeting(playerName, playersMap);
-        messagingTemplate.convertAndSend("/topic/emergencyMeeting", playerName);
+    @MessageMapping("/emergencyMeeting/{roomCode}")
+    public void emergencyMeeting(String playerName, @DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
+        emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), roomCode);
+        messagingTemplate.convertAndSend("/topic/emergencyMeeting/"+ roomCode, playerName);
     }
 
-    @MessageMapping("/vote")
-    public void handleVote(String payload) {
+    @MessageMapping("/vote/{roomCode}")
+    public void handleVote(String payload, @DestinationVariable String roomCode) {
         // Assuming payload contains playerName and votedPlayer separated by a comma
+        Room room = activeRooms.get(roomCode);
         String[] parts = payload.split(",");
         System.out.println("parts lenght: " + parts.length);
         System.out.println("payload: " + payload);
@@ -372,7 +374,7 @@ public class WebSocketController {
             String playerName = parts[0].trim();
             String votedPlayer = parts[1].trim();
             String vote = parts[2].trim();
-            emergencyMeeting.handleVoting(playerName, votedPlayer, vote, playersMap);
+            emergencyMeeting.handleVoting(playerName, votedPlayer, vote, room.getPlayersMap(), roomCode);
         }
     }
     
