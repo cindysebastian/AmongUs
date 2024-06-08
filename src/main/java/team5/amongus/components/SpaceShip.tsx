@@ -78,20 +78,25 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
 
   const mapWidth = 4000;
   const mapHeight = 2316;
-
+  
   const playerX = players && players[currentPlayer] ? players[currentPlayer].position.x : 0;
   const playerY = players && players[currentPlayer] ? players[currentPlayer].position.y : 0;
-  const offsetX = Math.max(0, Math.min(playerX - window.innerWidth / 2, mapWidth - window.innerWidth));
-  const offsetY = Math.max(0, Math.min(playerY - window.innerHeight / 2, mapHeight - window.innerHeight));
-
+  const zoomLevel = 1.5; // Adjust this value to control the zoom level
+  const playerAdjust = 40; // half of the player width and height
+  
+  const offsetX = Math.max(0, Math.min(playerX + playerAdjust - (window.innerWidth / zoomLevel) / 2, mapWidth - window.innerWidth / zoomLevel));
+  const offsetY = Math.max(0, Math.min(playerY + playerAdjust - (window.innerHeight / zoomLevel) / 2, mapHeight - window.innerHeight / zoomLevel));
+  
   const cameraStyle: CSSProperties = {
-    transform: `translate(-${offsetX}px, -${offsetY}px)`,
+    transform: `scale(${zoomLevel}) translate(-${offsetX}px, -${offsetY}px)`,
+    transformOrigin: 'top left',
     position: 'absolute',
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
+    width: `${mapWidth}px`,
+    height: `${mapHeight}px`,
   };
+  
 
   return (
     <div>
