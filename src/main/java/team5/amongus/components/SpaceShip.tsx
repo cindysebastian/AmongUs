@@ -28,6 +28,8 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const [isImposter, setIsImposter] = useState(false);
   const [currAlive, setCurrAlive] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
+  const [sabotageCooldown, setSabotageCooldown] = useState(false);
+  const [cooldownTime, setCooldownTime] = useState(120); // 2 minutes in seconds
 
   useEffect(() => {
     if (!currentPlayer || !players) return;
@@ -66,10 +68,52 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     killPlayer(stompClient, currentPlayer, roomCode);
   };
 
+  useEffect(() => {
+    let cooldownTimer: NodeJS.Timeout;  
+    // Function to handle cooldown reset
+    const resetCooldown = () => {
+      setCooldownTime(120); // Reset cooldown time to 2 minutes
+      setSabotageCooldown(false); // Reset the sabotage cooldown
+    };  
+    // Check if the cooldown is active and start the timer
+    if (sabotageCooldown) {
+      cooldownTimer = setTimeout(resetCooldown, cooldownTime * 1000);
+    }  
+    // Cleanup function to clear the timer if the component unmounts or cooldown is reset
+    return () => {
+      clearTimeout(cooldownTimer);
+    };
+  }, [sabotageCooldown]); // Run this effect whenever sabotageCooldown changes
+  
+  // Function to handle sabotage button click
   const handleSabotage = (sabotageType: string) => {
-    if (!stompClient || !currentPlayer || !roomCode) return;
-    enableSabotage(stompClient, sabotageType, roomCode);
+    if (!stompClient || !currentPlayer || !roomCode || sabotageCooldown) return;  
+    // Activate the sabotage
+    enableSabotage(stompClient, sabotageType, roomCode); 
+    // Set sabotage cooldown
+    setSabotageCooldown(true);
   };
+
+  useEffect(() => {
+    let countdown: NodeJS.Timeout | null = null;
+    if (sabotageCooldown) {
+      countdown = setInterval(() => {
+        setCooldownTime(prevTime => {
+          if (prevTime === 0) {
+            clearInterval(countdown);
+            setSabotageCooldown(false);
+            return cooldownTime;
+          } else {
+            return prevTime - 1;
+          }
+        });
+      }, 1000); // Update every second
+    }  
+    return () => {
+      if (countdown) clearInterval(countdown);
+    };
+  }, [sabotageCooldown]);
+  
 
   const completedTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).filter(interactible => interactible.completed).length;
   const totalTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).length;
@@ -140,12 +184,13 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
         )
       ))}
       {isImposter && <KillButton onKill={handleKill} />}
-      {isImposter && 
+      {isImposter && !sabotageCooldown && !sabotageTasks.some(task => task.sabotage.inProgress) &&
         <>
           <div onClick={() => handleSabotage("EndGameSabotage")} style={{ position: 'absolute', top: '50px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>End Game Sabotage</div> 
           <div onClick={() => handleSabotage("AnnoySabotage")} style={{ position: 'absolute', top: '80px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>Annoy Sabotage</div>
         </>
       }
+      {isImposter && sabotageCooldown && <div style={{zIndex: 10, top: "10px", right: "10px", backgroundColor: 'white', position: "absolute"}}>Sabotage Cooldown: {cooldownTime} seconds</div>}
     </div>
   );
 };
