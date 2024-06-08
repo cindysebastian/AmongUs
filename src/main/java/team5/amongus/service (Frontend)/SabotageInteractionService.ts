@@ -10,6 +10,7 @@ export const handleReceivedSabotageTasks = (sabotageTasksData, setSabotageTasks)
       height: data.height,
       inProgress: data.inProgress,
       sabotage: data.sabotage,
+      triggeredBy: data.triggeredBy,
     };
   });
 

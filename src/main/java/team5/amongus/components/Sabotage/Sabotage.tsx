@@ -16,8 +16,6 @@ interface Props {
     roomCode: String;
 }
 
-
-
 const Sabotage: React.FC<Props> = ({ stompClient, sabotageTasks, currentPlayer, offsetX, offsetY, roomCode }) => {
     const cameraStyle: CSSProperties = {
         transform: `translate(${offsetX}px, ${offsetY}px)`,
@@ -50,7 +48,7 @@ const Sabotage: React.FC<Props> = ({ stompClient, sabotageTasks, currentPlayer, 
                 
             )))}
             {sabotageTasks.map(sabotage => {
-                if(sabotage.inProgress && currentPlayer){
+                if(sabotage.inProgress && sabotage.triggeredBy == currentPlayer){
                     return <div style={cameraStyle}><SabotageMiniGame key={sabotage.id} stompClient={stompClient} sabotageTask={sabotage} roomCode={roomCode} /> </div>
                 }
             })}

@@ -11,7 +11,6 @@ import KillButton from './KillButton';
 import Space from './Space';
 import { CSSProperties } from 'react';
 import SabotageTask from './interfaces/SabotageTask';
-import SabotageButton from './Sabotage/Sabotage';
 import Sabotage from './Sabotage/Sabotage';
 import SabotageGif from './Sabotage/SabotageGif';
 
@@ -81,7 +80,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   
   const playerX = players && players[currentPlayer] ? players[currentPlayer].position.x : 0;
   const playerY = players && players[currentPlayer] ? players[currentPlayer].position.y : 0;
-  const zoomLevel = 1.5; // Adjust this value to control the zoom level
+  const zoomLevel = 1; // Adjust this value to control the zoom level
   const playerAdjust = 40; // half of the player width and height
   
   const offsetX = Math.max(0, Math.min(playerX + playerAdjust - (window.innerWidth / zoomLevel) / 2, mapWidth - window.innerWidth / zoomLevel));
@@ -96,7 +95,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     width: `${mapWidth}px`,
     height: `${mapHeight}px`,
   };
-  
 
   return (
     <div>
@@ -105,7 +103,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
         <div className={styles.gifBackground}></div>
         <div className={styles.spaceShipBackground}>
           {Object.values(players).map(player => (
-
             <div key={player.name} style={{ position: 'absolute', top: player.position.y, left: player.position.x }}>
               <PlayerSprite
                 player={player}
@@ -116,15 +113,14 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             </div>
           ))}
           <div>
-            {
-              interactibles
-                .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
-                .map(interactible => (
-                  <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y+30, left: interactible.position.x+30}}>
-                    {/* Render your component based on the interactible */}
-                    <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
-                  </div>
-                ))
+            {interactibles
+              .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
+              .map(interactible => (
+                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y+30, left: interactible.position.x+30}}>
+                  {/* Render your component based on the interactible */}
+                  <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
+                </div>
+              ))
             }
           </div>
 
@@ -137,9 +133,9 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
         <div className={styles.killGifContainer}></div>
       )}
       {sabotageTasks.map(task => (
-        task.sabotage.inProgress && (
+        (!isImposter && task.sabotage.inProgress) && (
           <>
-            {/*<SabotageGif stompClient={stompClient} sabotage={task.sabotage} roomCode={roomCode} />*/}
+            <SabotageGif key={task.id} stompClient={stompClient} sabotage={task.sabotage} roomCode={roomCode} />
           </>
         )
       ))}

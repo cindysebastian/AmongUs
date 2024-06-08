@@ -8,6 +8,7 @@ interface SabotageTask {
   height: number,
   position: {x: number, y: number};
   sabotage: Sabotage;
+  triggeredBy?: string;
 }  
 
 export default SabotageTask

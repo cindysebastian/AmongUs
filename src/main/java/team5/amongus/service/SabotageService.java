@@ -59,7 +59,8 @@ public class SabotageService implements ISabotageService {
                     if (!((SabotageTask) obj).getCompleted()) {
                         task.setInProgress(true);
                         ((SabotageTask) obj).setInProgress(true);
-                        System.out.println("SabotageTask in progress: " + ((SabotageTask) obj).getId());
+                        ((SabotageTask) obj).setTriggeredBy(player.getName());
+                        System.out.println("SabotageTask in progress: " + ((SabotageTask) obj).getId() + ", triggered by " + player.getName());
                     } else {
                         System.out.println("There is no sabotage going on.");
                     }
