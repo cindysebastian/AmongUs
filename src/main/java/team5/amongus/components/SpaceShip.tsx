@@ -13,6 +13,7 @@ import { CSSProperties } from 'react';
 import SabotageTask from './interfaces/SabotageTask';
 import SabotageButton from './Sabotage/Sabotage';
 import Sabotage from './Sabotage/Sabotage';
+import SabotageGif from './Sabotage/SabotageGif';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -28,7 +29,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const [isImposter, setIsImposter] = useState(false);
   const [currAlive, setCurrAlive] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
-  const [showSabotageGif, setShowSabotageGif] = useState(false);
 
   useEffect(() => {
     if (!currentPlayer || !players) return;
@@ -124,24 +124,26 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
           </div>
 
           <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
-          <Sabotage stompClient={stompClient} sabotages={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
+          <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
         </div>
       </div>
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
       )}
-      {showSabotageGif && !isImposter &&
-      <>
-        <div></div>
-      </>
-      }
+      {sabotageTasks.map(task => (
+        task.sabotage.inProgress && (
+          <>
+            {/*<SabotageGif stompClient={stompClient} sabotage={task.sabotage} roomCode={roomCode} />*/}
+          </>
+        )
+      ))}
       {isImposter && <KillButton onKill={handleKill} />}
       {isImposter && 
         <>
           <div onClick={() => handleSabotage("EndGameSabotage")} style={{ position: 'absolute', top: '50px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>End Game Sabotage</div> 
-          <div onClick={() => handleSabotage("AnnoySabotage")} style={{ position: 'absolute', top: '100px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>Annoy Sabotage</div>
-        </>     
+          <div onClick={() => handleSabotage("AnnoySabotage")} style={{ position: 'absolute', top: '80px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>Annoy Sabotage</div>
+        </>
       }
     </div>
   );

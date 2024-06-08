@@ -301,12 +301,20 @@ public class WebSocketController {
     public void enableSabotage(String sabotageName, @DestinationVariable String roomCode){
         Room room = activeRooms.get(roomCode);
         ArrayList<Sabotage> sabotages = room.getSabotages();
-        for (Sabotage sab : sabotages) {
-            if (sab.getName().equals(sabotageName)) {
-                System.out.println("Enabling Sabotage: " + sab.getName());
-                ArrayList<Interactible> updatedInteractibles = sabotageService.enableSabotageTasks(room.getSabotageTasks(), sab);
-                room.setSabotageTasks(updatedInteractibles);
-                sab.setInProgress(true);           
+        boolean inProgress = false;
+        for (Sabotage sabotage : sabotages) {
+            if (sabotage.getInProgress()) {
+                inProgress = true;  
+            }
+        }
+        if (!inProgress) {
+            for (Sabotage sab : sabotages) {   
+                if (sab.getName().equals(sabotageName)) {
+                    System.out.println("Enabling Sabotage: " + sab.getName());
+                    ArrayList<Interactible> updatedInteractibles = sabotageService.enableSabotageTasks(room.getSabotageTasks(), sab);
+                    room.setSabotageTasks(updatedInteractibles);
+                    sab.setInProgress(true);           
+                }
             }
         }
         room.setSabotages(sabotages);

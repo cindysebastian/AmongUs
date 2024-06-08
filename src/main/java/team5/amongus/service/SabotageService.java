@@ -31,8 +31,8 @@ public class SabotageService implements ISabotageService {
         Sabotage endGameSabotage = new Sabotage("EndGameSabotage");
         Sabotage annoySabotage = new Sabotage("AnnoySabotage");
         ArrayList<Sabotage> sabotages = new ArrayList<>();
-        sabotages.add(annoySabotage);
         sabotages.add(endGameSabotage);
+        sabotages.add(annoySabotage);
         return sabotages;
     }
 
@@ -71,15 +71,22 @@ public class SabotageService implements ISabotageService {
 
     @Override
     public ArrayList<Interactible> enableSabotageTasks(ArrayList<Interactible> interactibles, Sabotage sabotage) {
+        boolean inProgress = false;
         for (Interactible interactible : interactibles) {
-            if (!sabotage.getInProgress()) {
-                if (interactible instanceof SabotageTask && (((SabotageTask)interactible).getSabotage()).equals(sabotage)) {
-                    SabotageTask task = (SabotageTask) interactible;
+            if (((SabotageTask)interactible).getSabotage().getInProgress()) {
+                inProgress = true;
+                System.out.println("Sabotage already in progress!");
+            }
+        }
+        
+        if (!inProgress) {
+            for (Interactible sab : interactibles) {
+                if (sab instanceof SabotageTask && (((SabotageTask)sab).getSabotage()).equals(sabotage)) {
+                    System.out.println("Activating Sabotage");
+                    SabotageTask task = (SabotageTask) sab;
                     task.getSabotage().setInProgress(true);
                     task.setCompleted(false);
-                }                
-            } else {
-                System.out.println("Sabotage already in progress!");
+                }  
             }
         }
         return interactibles;

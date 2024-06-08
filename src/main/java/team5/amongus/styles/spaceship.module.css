@@ -1,3 +1,7 @@
+body {
+    overflow: hidden;
+}
+
 .spaceShipBackground {
     position: fixed;
     top: 0;

@@ -1,11 +1,6 @@
-// Task.tsx
-
 import React from 'react';
-import Sabotage from '../interfaces/SabotageTask';
-import MineMinigame from '../Minigames/MineMinigame';
+import SabotageTasks from '../interfaces/SabotageTask';
 import Stomp from "stompjs";
-import SwipeMinigame from '../Minigames/SwipeMinigame';
-import ScanMinigame from '../Minigames/ScanMinigame';
 
 import { CSSProperties } from 'react';
 import { enableSabotage } from '../../service (Frontend)/WebsocketService';
@@ -14,7 +9,7 @@ import SabotageMiniGame from './SabotageMiniGame';
 
 interface Props {
     stompClient: Stomp.Client | null; // Add stompClient to props
-    sabotages: Sabotage[];
+    sabotageTasks: SabotageTasks[];
     currentPlayer: String;
     offsetX: number;
     offsetY: number;
@@ -23,7 +18,7 @@ interface Props {
 
 
 
-const Task: React.FC<Props> = ({ stompClient, sabotages, currentPlayer, offsetX, offsetY, roomCode }) => {
+const Sabotage: React.FC<Props> = ({ stompClient, sabotageTasks, currentPlayer, offsetX, offsetY, roomCode }) => {
     const cameraStyle: CSSProperties = {
         transform: `translate(${offsetX}px, ${offsetY}px)`,
         position: 'absolute',
@@ -37,23 +32,24 @@ const Task: React.FC<Props> = ({ stompClient, sabotages, currentPlayer, offsetX,
     return (
         <div style={{ position: 'fixed' }}>
             {/* Render images at the coordinates of sabotage tasks */}
-            {sabotages.map(sabotage => (
+            {sabotageTasks.map(task => (
+                (task.sabotage.inProgress &&
                 <img
-                    key={sabotage.id}
-                    src={`src/main/resources/EndGameSabotage.png`} // Assuming you have images named after interactible types
-                    alt={"Sabotage: "+ sabotage.id}
+                    key={task.id}
+                    src={`src/main/resources/${task.sabotage.name}Task.png`} // Assuming you have images named after interactible types
+                    alt={"Sabotage: "+ task.sabotage.name}
                     style={{
                         position: 'absolute',
-                        top: sabotage.position.y,
-                        left: sabotage.position.x,
+                        top: task.position.y,
+                        left: task.position.x,
                         width: '150px', // Adjust the width as needed
                         height: '150px', // Adjust the height as neededa
                         zIndex: 6,
                     }}
                 />
                 
-            ))}
-            {sabotages.map(sabotage => {
+            )))}
+            {sabotageTasks.map(sabotage => {
                 if(sabotage.inProgress && currentPlayer){
                     return <div style={cameraStyle}><SabotageMiniGame key={sabotage.id} stompClient={stompClient} sabotageTask={sabotage} roomCode={roomCode} /> </div>
                 }
@@ -62,4 +58,4 @@ const Task: React.FC<Props> = ({ stompClient, sabotages, currentPlayer, offsetX,
     );
 };
 
-export default Task;
+export default Sabotage;
