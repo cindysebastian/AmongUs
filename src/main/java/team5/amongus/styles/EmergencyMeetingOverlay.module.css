@@ -91,3 +91,9 @@
   transform: translate(-50%, -50%);
   z-index: 1000;
 }
+
+.deadButton {
+  color: #666; /* Gray text */
+  background-color: #f0f0f0; /* Light gray background */
+  cursor: not-allowed; /* Not allowed cursor */
+}

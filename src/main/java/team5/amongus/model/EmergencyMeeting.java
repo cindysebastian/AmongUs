@@ -23,7 +23,6 @@ public class EmergencyMeeting {
         System.out.println(vote);
         System.out.println(playerName + " voted for: " + votedPlayer);
         if (vote.equals("vote")) {
-            //System.out.println("vote is being added to array");
             votes.put(votedPlayer, votes.getOrDefault(votedPlayer, 0) +1 );
         }
         if (vote.equals("skip")) {
@@ -33,10 +32,7 @@ public class EmergencyMeeting {
         for (int voteCount : votes.values()) {
             votesCast += voteCount;
         }
-        //System.out.println("Total votes: " + totalVotes);
-        //System.out.println("Votes size: " + votes.size()); // y this zero?
         System.out.println("votes array: " + votes);
-        //System.out.println(playersMap);
         if (votesCast == totalVotes) {
             System.out.println("VOTES HAVE BEEN CAST UwU");
             submitVotes(playersMap, roomCode); 
@@ -47,6 +43,15 @@ public class EmergencyMeeting {
         String playerWithMostVotes = null;
         int maxVotes = 0;
         int skipVotes = votes.getOrDefault("skip", 0);
+        int totalVotes = playersMap.size();
+        int remainingVotes = totalVotes - skipVotes; // Calculate the remaining votes
+    
+        // Check if all players have voted or if the 30-second timer has elapsed
+        if (remainingVotes != 0) {
+            // If not all players have voted, count remaining votes as "skip"
+            votes.put("skip", skipVotes + remainingVotes);
+        }
+    
         for (Map.Entry<String, Integer> entry : votes.entrySet()) {
             if (entry.getValue() > maxVotes) {
                 maxVotes = entry.getValue();
@@ -56,10 +61,7 @@ public class EmergencyMeeting {
         if (maxVotes > skipVotes) {
             Player ejectedPlayer = playersMap.get(playerWithMostVotes);
             if (ejectedPlayer != null) {
-                System.out.println(skipVotes);
-                System.out.println(maxVotes);
                 ejectedPlayer.setAlive(false);
-                System.out.println("Ejected player:" + ejectedPlayer);
                 messagingTemplate.convertAndSend("topic/ejectedPlayer/" + roomCode, ejectedPlayer);
             }
         } else {

@@ -85,6 +85,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     setShowEmergencyMeeting(true);
     setTimeout(() => setShowEmergencyMeeting(false), 30000); // Show overlay for 30 seconds
   };
+  
   const completedTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).filter(interactible => interactible.completed).length;
   const totalTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).length;
   const progressPercentage = (completedTasks / totalTasks) * 100;
@@ -141,11 +142,11 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
       </div>
         {showEmergencyMeeting && (
           <EmergencyMeetingOverlay
-            playerNames={playerNamesforMeeting}
-            killedPlayers={killedPlayers}
-            stompClient={stompClient}
-            playerName={currentPlayer}
-            roomCode={roomCode}
+          playerNames={playerNamesforMeeting}
+          stompClient={stompClient}
+          playerName={currentPlayer}
+          roomCode={roomCode}
+          players={players}
           />
         )}
       <ProgressBar progress={progressPercentage} />
