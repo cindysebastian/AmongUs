@@ -19,7 +19,14 @@ public class EmergencyMeeting {
     }
 
     public void handleVoting(String playerName, String votedPlayer, String vote, Map<String, Player> playersMap, String roomCode) {
-        int totalVotes = playersMap.size();
+        int totalVotes = 0;
+        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+            Player player = entry.getValue();
+            if (player.getisAlive()) {
+                totalVotes++;
+            }
+        }
+
         System.out.println(vote);
         System.out.println(playerName + " voted for: " + votedPlayer);
         if (vote.equals("vote")) {

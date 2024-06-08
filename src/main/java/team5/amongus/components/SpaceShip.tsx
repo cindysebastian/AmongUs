@@ -124,7 +124,9 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
               />
             </div>
           ))}
-          <EmergencyButton stompClient={stompClient} playerName={currentPlayer} onEmergencyMeeting={() => sendEmergencyMeeting(stompClient, currentPlayer, roomCode)} />
+          {currAlive && 
+            <EmergencyButton stompClient={stompClient} playerName={currentPlayer} onEmergencyMeeting={() => sendEmergencyMeeting(stompClient, currentPlayer, roomCode)} />
+          }
           <div>
             {
               interactibles
