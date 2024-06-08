@@ -21,6 +21,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
   const [ejectedPlayer, setEjectedPlayer] = useState<string | null>(null);
   const [showEjectedGif, setShowEjectedGif] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(30); // Initial countdown time
 
   useEffect(() => {
     if (stompClient) {
@@ -30,9 +31,14 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
         setShowEjectedGif(true);
         setTimeout(() => setShowEjectedGif(false), 2500); // Adjust the duration as needed
       });
+      const countdownInterval = setInterval(() => {
+        setTimeRemaining(prevTime => (prevTime > 0 ? prevTime - 1 : 0));
+      }, 1000); // Update countdown every second
+
       return () => {
         unsubscribeMessages();
         unsubscribeEjectedPlayer();
+        clearInterval(countdownInterval); // Clear interval on component unmount
       };
     }
   }, [stompClient]);
@@ -66,7 +72,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
         <h2>Player Names</h2>
         <div className={styles.columns}>
           <ul className={styles.column}>
-          {leftColumnNames.map(name => (
+            {leftColumnNames.map(name => (
               <li key={name} className={styles.playerName}>
                 {name} {!players[name].isAlive && <span>(DEAD)</span>}
                 {players[name].isAlive && (
@@ -82,24 +88,24 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
             ))}
           </ul>
           <ul className={styles.column}>
-          {rightColumnNames.map(name => (
-        <li key={name} className={styles.playerName}>
-          {name} {!players[name].isAlive && <span>(DEAD)</span>}
-          {players[name].isAlive && (
-            <div>
-              Vote: {votes[name]?.vote ?? 0}
-              <button
-                onClick={() => handleVote(name, 'vote')}
-                disabled={hasVoted || !isPlayerAlive}
-                className={!players[name].isAlive ? styles.deadButton : ''}>Vote</button>
-            </div>
-          )}
-        </li>
-      ))}
+            {rightColumnNames.map(name => (
+              <li key={name} className={styles.playerName}>
+                {name} {!players[name].isAlive && <span>(DEAD)</span>}
+                {players[name].isAlive && (
+                  <div>
+                    Vote: {votes[name]?.vote ?? 0}
+                    <button
+                      onClick={() => handleVote(name, 'vote')}
+                      disabled={hasVoted || !isPlayerAlive}
+                      className={!players[name].isAlive ? styles.deadButton : ''}>Vote</button>
+                  </div>
+                )}
+              </li>
+            ))}
           </ul>
         </div>
         <div className={styles.skipButtonContainer}>
-          <button onClick={() => handleVote(playerName, 'skip')} disabled={hasVoted || isPlayerAlive}>Skip</button>
+          <button onClick={() => handleVote(playerName, 'skip')} disabled={hasVoted || !isPlayerAlive}>Skip</button>
         </div>
       </div>
       <button onClick={handleToggleChat} className={styles.chatButton}>
@@ -111,10 +117,10 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
             <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
           </div>
           <button className={styles.closeChatButton} onClick={handleToggleChat}>Exit</button>
-          <MessageInput 
-            sendMessage={sendMessage} 
-            chatVisible={isChatVisible} 
-            playerName={playerName} 
+          <MessageInput
+            sendMessage={sendMessage}
+            chatVisible={isChatVisible}
+            playerName={playerName}
             players={players}
           />
           <ChatRoom messages={messages} />
@@ -125,6 +131,9 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
           <img src="src/main/resources/ejected.gif" alt="Ejected" className={styles.ejectedGif} />
         </div>
       )}
+      <div className={styles.countdown}>
+        <h2>Time Remaining: {timeRemaining} seconds</h2>
+      </div>
     </div>
   );
 };
