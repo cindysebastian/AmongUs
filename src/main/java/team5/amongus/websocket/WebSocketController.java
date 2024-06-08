@@ -361,7 +361,7 @@ public class WebSocketController {
 
         room.chooseImposter();
         room.getInGamePlayersMap().clear();
-        // TODO: set Sabotages correctly
+
         room.setSabotages(sabotageService.createSabotages());
         room.setSabotageTasks(sabotageService.createSabotageTasks(room.getSabotages()));
 
@@ -409,9 +409,11 @@ public class WebSocketController {
         room.getPlayersMap().clear();
         room.getInteractibles().clear();
         room.getChatMessages().clear();
+        room.getSabotageTasks().clear();
         room.setGameState("Game waiting");
 
         room.broadcastInteractiblesUpdate(messagingTemplate);
+        room.broadCastSabotageTasksUpdate(messagingTemplate);
         room.broadcastPlayerUpdate(messagingTemplate);
     }
 

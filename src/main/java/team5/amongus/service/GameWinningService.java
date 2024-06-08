@@ -14,6 +14,7 @@ import team5.amongus.model.Task;
 public class GameWinningService implements IGameWinningService {
     boolean allTasksCompleted = false;
     boolean imposterDead = false;
+    boolean sabotageWin = false;
 
     @Override
     public boolean allTasksCompleted(ArrayList<Interactible> interactibles) {
@@ -62,6 +63,10 @@ public class GameWinningService implements IGameWinningService {
         }
         
         return playercount <= imposterCount;
+    }
+
+    public boolean sabotageWin(){
+        return sabotageWin;
     }
 
 }

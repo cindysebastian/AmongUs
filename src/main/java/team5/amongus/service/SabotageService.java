@@ -1,12 +1,17 @@
 package team5.amongus.service;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimerTask;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,6 +26,7 @@ import team5.amongus.model.SabotageTask;
 @Service
 public class SabotageService implements ISabotageService {
     private final ObjectMapper objectMapper;
+    private List<Interactible> interactibles = new ArrayList<>();
 
     public SabotageService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -47,6 +53,7 @@ public class SabotageService implements ISabotageService {
         annoySabTask.setId(51);
         interactibles.add(annoySabTask);
         System.out.println(interactibles);
+        this.interactibles = interactibles;
 
         return interactibles;
     }
@@ -67,6 +74,7 @@ public class SabotageService implements ISabotageService {
                 }
             }
         }
+        this.interactibles = interactibles;
         return interactibles;
     }
 
@@ -74,7 +82,7 @@ public class SabotageService implements ISabotageService {
     public ArrayList<Interactible> enableSabotageTasks(ArrayList<Interactible> interactibles, Sabotage sabotage) {
         boolean inProgress = false;
         for (Interactible interactible : interactibles) {
-            if (((SabotageTask)interactible).getSabotage().getInProgress()) {
+            if (((SabotageTask) interactible).getSabotage().getInProgress()) {
                 inProgress = true;
                 System.out.println("Sabotage already in progress!");
             }
@@ -82,7 +90,7 @@ public class SabotageService implements ISabotageService {
         
         if (!inProgress) {
             for (Interactible sab : interactibles) {
-                if (sab instanceof SabotageTask && (((SabotageTask)sab).getSabotage()).equals(sabotage)) {
+                if (sab instanceof SabotageTask && ((SabotageTask) sab).getSabotage().equals(sabotage)) {
                     System.out.println("Activating Sabotage");
                     SabotageTask task = (SabotageTask) sab;
                     task.getSabotage().setInProgress(true);
@@ -90,6 +98,7 @@ public class SabotageService implements ISabotageService {
                 }  
             }
         }
+        this.interactibles = interactibles;
         return interactibles;
     }
 
@@ -115,4 +124,53 @@ public class SabotageService implements ISabotageService {
         }
         return interactibles;
     }    
+
+    @Scheduled(fixedRate = 1000) // Adjust the fixed rate as needed (e.g., every 10 seconds)
+    public void checkSabotageTimers() {
+        if (!interactibles.isEmpty()) {            
+            for (Interactible interactible : interactibles) {
+                if (interactible instanceof SabotageTask && ((SabotageTask) interactible).getSabotage().getName().equals("EndGameSabotage")) {
+                    Sabotage endGameSabotage = ((SabotageTask) interactible).getSabotage();
+                    if (isSabotageTimerExpired(endGameSabotage)) {
+                        handleSabotageTimerExpiry(interactibles);
+                    }
+                }
+            }
+        }
+    }
+
+    // Method to check if the sabotage timer has expired
+    public boolean isSabotageTimerExpired(Sabotage sabotage) {
+        if (sabotage.getInProgress() && sabotage.getName().equals("EndGameSabotage")) {
+            LocalDateTime activationTime = sabotage.getActivationTime();
+            if (activationTime != null) {
+                LocalDateTime currentTime = LocalDateTime.now();
+                Duration duration = Duration.between(activationTime, currentTime);
+                // Check if 30 seconds have passed
+                return duration.getSeconds() >= 30;
+            }
+        }
+        return false;
+    }
+
+    // Method to handle ending the game if the sabotage timer expires
+    public void handleSabotageTimerExpiry(List<Interactible> interactibles /* , List<Player> players*/) {
+        Sabotage endGameSabotage = null;
+        for (Interactible interactible : interactibles) {
+            if (interactible instanceof SabotageTask && 
+                (((SabotageTask)interactible).getSabotage()).getName().equals("EndGameSabotage") && 
+                ((SabotageTask) interactible).getSabotage().getInProgress()) 
+                {
+                endGameSabotage = ((SabotageTask) interactible).getSabotage();
+                break;
+            }
+        }
+        if (endGameSabotage != null && isSabotageTimerExpired(endGameSabotage)) {
+            System.out.println("Game end because of sabotage");
+            // End the game, e.g., by broadcasting a message to all players
+            // and stopping further interactions
+            // You might want to call some method in the WebSocketController to handle this
+            // For example: messagingTemplate.convertAndSend("/topic/gameEnd", "Game Over!");
+        }
+    }
 }

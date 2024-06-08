@@ -287,6 +287,9 @@ public class Room {
             previousSabotageTasks.clear();
             previousSabotageTasks.addAll(clonedSabotageTasks);
         }
+        if (this.gameState.equals("Game running")) {
+            finishGame(messagingTemplate);
+        }
     }
 
     private List<Interactible> cloneInteractibles(List<Interactible> original) {
@@ -307,6 +310,8 @@ public class Room {
                 this.gameState = "Imposter wins";
             } else if (gameWinningService.imposterDead(this.playersMap)) {
                 this.gameState = "Crewmates win";
+            } else if (gameWinningService.sabotageWin(this.sabotageTasks)) {
+                this.gameState = "Imposter wins";
             }
         }
         // Check if the result has changed
