@@ -23,18 +23,26 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
   const [hasVoted, setHasVoted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(30); // Initial countdown time
 
+
   useEffect(() => {
     if (stompClient) {
       const unsubscribeMessages = subscribeToMessages(stompClient, setMessages, roomCode);
-      const unsubscribeEjectedPlayer = subscribeToEjectedPlayer(stompClient, roomCode, (player) => {
-        setEjectedPlayer(player.name);
-        setShowEjectedGif(true);
-        setTimeout(() => setShowEjectedGif(false), 2500); // Adjust the duration as needed
-      });
+      const unsubscribeEjectedPlayer = subscribeToEjectedPlayer(
+        stompClient,
+        roomCode,
+        setEjectedPlayer,
+        setShowEjectedGif // Pass setShowEjectedGif as the fourth argument
+      );
       const countdownInterval = setInterval(() => {
-        setTimeRemaining(prevTime => (prevTime > 0 ? prevTime - 1 : 0));
+        setTimeRemaining(prevTime => {
+          if (prevTime === 25) {
+            // Send a message to trigger vote submission at 25 seconds
+            sendVoteSubmissionMessage();
+          }
+          return prevTime > 0 ? prevTime - 1 : 0;
+        });
       }, 1000); // Update countdown every second
-
+  
       return () => {
         unsubscribeMessages();
         unsubscribeEjectedPlayer();
@@ -42,6 +50,13 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
       };
     }
   }, [stompClient]);
+
+  const sendVoteSubmissionMessage = () => {
+    if (stompClient) {
+      // Send a message to trigger vote submission
+      stompClient.send(`/app/submitTimoutVotes/${roomCode}`);
+    }
+  };
 
   const sendMessage = (messageContent: string) => {
     if (stompClient && players[playerName].isAlive) {
@@ -78,10 +93,12 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
                 {players[name].isAlive && (
                   <div>
                     Vote: {votes[name]?.vote ?? 0}
-                    <button
+                    <img
+                      src="src/main/resources/yesVote.png" // Update the path to point to your GIF file
+                      alt="Vote"
                       onClick={() => handleVote(name, 'vote')}
-                      disabled={hasVoted || !isPlayerAlive}
-                      className={!players[name].isAlive ? styles.deadButton : ''}>Vote</button>
+                      className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+                    />
                   </div>
                 )}
               </li>
@@ -93,11 +110,13 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
                 {name} {!players[name].isAlive && <span>(DEAD)</span>}
                 {players[name].isAlive && (
                   <div>
-                    Vote: {votes[name]?.vote ?? 0}
-                    <button
+                    Votes: {votes[name]?.vote ?? 0}
+                    <img
+                      src="src/main/resources/yesVote.png" // Update the path to point to your GIF file
+                      alt="Vote"
                       onClick={() => handleVote(name, 'vote')}
-                      disabled={hasVoted || !isPlayerAlive}
-                      className={!players[name].isAlive ? styles.deadButton : ''}>Vote</button>
+                      className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+                    />
                   </div>
                 )}
               </li>
@@ -105,7 +124,12 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
           </ul>
         </div>
         <div className={styles.skipButtonContainer}>
-          <button onClick={() => handleVote(playerName, 'skip')} disabled={hasVoted || !isPlayerAlive}>Skip</button>
+          <img
+            src="src/main/resources/skipVote.png" // Update the path to point to your PNG file
+            alt="Skip"
+            onClick={() => handleVote(playerName, 'skip')}
+            className={`${styles.skipButton} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+          />
         </div>
       </div>
       <button onClick={handleToggleChat} className={styles.chatButton}>

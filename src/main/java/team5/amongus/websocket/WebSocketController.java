@@ -199,6 +199,9 @@ public class WebSocketController {
                 // behaviour is fully handled (When found, disappears), only need to add
                 // functionality here to start the meeting
             }
+            else if (interactableObject instanceof EmergencyMeetingButton) {
+                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), roomCode);
+            }
         }
         room.broadcastInteractiblesUpdate(messagingTemplate);
         return room.getInteractibles();
@@ -380,6 +383,12 @@ public class WebSocketController {
             String vote = parts[2].trim();
             emergencyMeeting.handleVoting(playerName, votedPlayer, vote, room.getPlayersMap(), roomCode);
         }
+    }
+
+    @MessageMapping("/voteTimout/{roomCode}")
+    public void handleVoteTimout(@DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
+        emergencyMeeting.submitVotes(room.getPlayersMap(), roomCode);
     }
     
     /*

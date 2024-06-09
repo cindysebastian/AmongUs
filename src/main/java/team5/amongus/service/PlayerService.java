@@ -126,6 +126,13 @@ public class PlayerService implements IPlayerService {
                 }
             }
         }
+        for (Interactible object : interactibles) {
+            if (object instanceof EmergencyMeetingButton) {
+                if(player.collidesWith(object)) {
+                    return object;
+                }
+            }
+        }
 
         return null;
     }

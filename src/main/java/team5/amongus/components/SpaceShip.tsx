@@ -61,6 +61,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
   }, [stompClient]);
 
   const handlePlayerKilled = (killedPlayer: Player) => {
+    console.log("Interactibles:", interactibles);
     console.log("Killed player:", killedPlayer);
     console.log("Current player:", currentPlayer);
     if (!killedPlayer || !killedPlayer.name || !currentPlayer) return;

@@ -97,3 +97,14 @@
   background-color: #f0f0f0; /* Light gray background */
   cursor: not-allowed; /* Not allowed cursor */
 }
+
+.disabled {
+  pointer-events: none; /* Prevent click events */
+  opacity: 0.5; /* Reduce opacity to indicate disabled state */
+  /* Add any other styles to visually indicate the disabled state */
+}
+
+.voteButton {
+  width: 50px; /* Set the desired width */
+  height: 50px; /* Set the desired height */
+}
