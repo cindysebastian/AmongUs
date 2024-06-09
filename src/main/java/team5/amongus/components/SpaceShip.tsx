@@ -124,7 +124,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   
   const playerX = players && players[currentPlayer] ? players[currentPlayer].position.x : 0;
   const playerY = players && players[currentPlayer] ? players[currentPlayer].position.y : 0;
-  const zoomLevel = 1; // Adjust this value to control the zoom level
+  const zoomLevel = 1.5; // Adjust this value to control the zoom level
   const playerAdjust = 40; // half of the player width and height
   
   const offsetX = Math.max(0, Math.min(playerX + playerAdjust - (window.innerWidth / zoomLevel) / 2, mapWidth - window.innerWidth / zoomLevel));

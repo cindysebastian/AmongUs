@@ -1,7 +1,7 @@
 import React from 'react';
 import Player from './interfaces/Player';
 import styled, { css, keyframes } from 'styled-components';
-import SpritePage from '../../../../resources/playerSpriteSheet.jpg';
+import SpritePage from '../../../../resources/playerSpriteSheet.png';
 
 type PlayerProps = {
   player: Player;

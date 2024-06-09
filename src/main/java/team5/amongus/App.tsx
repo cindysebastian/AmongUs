@@ -87,12 +87,17 @@ const App = () => {
         interactible.inProgress && interactible.assignedPlayer === playerName
       );
       setInteractionInProgress(playerInteracting);
-    } else if (sabotageTasks){
-      const playerInteracting = sabotageTasks.some(task => 
-        task.inProgress
-      );
     }
   }, [interactibles, playerName]);
+
+  useEffect(() => {
+    if (sabotageTasks && playerName){
+      const playerInteracting = sabotageTasks.some(task => 
+        task.inProgress && task.triggeredBy == playerName
+      );
+      setInteractionInProgress(playerInteracting);
+    }
+  }, [sabotageTasks, playerName]);
 
   useEffect(() => {
     if (stompClient && playerSpawned) {

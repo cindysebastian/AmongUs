@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Stomp from "stompjs";
-import styles from '../Minigames/MiniGame.module.css'; // Import CSS module
+import styles from '../Sabotage/Sabotage.module.css'; // Import CSS module
 import SabotageTask from '../interfaces/SabotageTask';
 import { completeSabotageMiniGame } from '../../service (Frontend)/SabotageTaskService';
 
@@ -10,7 +10,7 @@ interface Props {
   roomCode: String;
 }
 
-const SabotageMiniGame: React.FC<Props> = ({ stompClient, sabotageTask: sabotageTask, roomCode }) => {
+const SabotageMiniGame: React.FC<Props> = ({ stompClient, sabotageTask, roomCode }) => {
   const [clickCount, setClickCount] = useState(0);
   const [isShaking, setIsShaking] = useState(false); // State to control animation
 
@@ -58,19 +58,15 @@ const SabotageMiniGame: React.FC<Props> = ({ stompClient, sabotageTask: sabotage
 
   return (
     <div className={styles.overlay}>
-      <div className={styles.popup}>
-        <div className={styles.popupContent}>
           <div className={styles.imageWrapper}>
             <img
-              src="src/main/resources/mine.png"
-              alt="TaskMine"
+              src={`/src/main/resources/sabotage/${sabotageTask.sabotage.name}Task.png`}
+              alt="TaskSabotage"
               onClick={handleClick}
               className={`${styles.mineInteract} ${isShaking ? styles.shake : ''}`}
               onAnimationEnd={handleAnimationEnd}
             />
           </div>
-        </div>
-      </div>
     </div>
   );
 };
