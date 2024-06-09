@@ -5,7 +5,8 @@ import java.time.LocalDateTime;
 public class Sabotage {
     private String name; 
     private boolean inProgress = false;
-    private LocalDateTime activationTime; // Add this field
+    private LocalDateTime activationTime;
+    private boolean gameEnd = false;
 
     public Sabotage(String name) {
         this.name = name;
@@ -34,5 +35,13 @@ public class Sabotage {
 
     public LocalDateTime getActivationTime() {
         return activationTime;
+    }
+
+    public void setGameEnd(boolean gameEnd){
+        this.gameEnd = gameEnd;
+    }
+
+    public boolean getGameEnd(){
+        return gameEnd;
     }
 }

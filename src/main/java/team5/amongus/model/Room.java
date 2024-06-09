@@ -310,7 +310,7 @@ public class Room {
                 this.gameState = "Imposter wins";
             } else if (gameWinningService.imposterDead(this.playersMap)) {
                 this.gameState = "Crewmates win";
-            } else if (gameWinningService.sabotageWin(this.sabotageTasks)) {
+            } else if (gameWinningService.sabotageWin(this.sabotages)) {
                 this.gameState = "Imposter wins";
             }
         }

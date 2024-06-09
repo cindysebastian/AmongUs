@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import team5.amongus.model.Imposter;
 import team5.amongus.model.Interactible;
 import team5.amongus.model.Player;
+import team5.amongus.model.Sabotage;
 import team5.amongus.model.Task;
 
 @Service
@@ -65,7 +66,12 @@ public class GameWinningService implements IGameWinningService {
         return playercount <= imposterCount;
     }
 
-    public boolean sabotageWin(){
+    public boolean sabotageWin(ArrayList<Sabotage> sabotages){
+        for (Sabotage sab : sabotages) {
+            if (sab.getGameEnd()) {
+                sabotageWin = true;
+            }
+        }
         return sabotageWin;
     }
 
