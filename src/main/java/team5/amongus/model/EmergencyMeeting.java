@@ -23,14 +23,14 @@ public class EmergencyMeeting {
     }
 
     public void handleVoting(String playerName, String votedPlayer, String vote, Map<String, Player> playersMap, String roomCode) {
-        int totalAlivePlayers = 0;
-        for (Player player : playersMap.values()) {
+        int totalVotes = 0;
+        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+            Player player = entry.getValue();
             if (player.getisAlive()) {
-                totalAlivePlayers++;
+                totalVotes++;
             }
         }
-        
-        int totalVotes = playersMap.size();
+
         System.out.println(vote);
         System.out.println(playerName + " voted for: " + votedPlayer);
         if (vote.equals("vote")) {
@@ -43,9 +43,9 @@ public class EmergencyMeeting {
         for (int voteCount : votes.values()) {
             votesCast += voteCount;
         }
-        System.out.println("totalAlivePlayer:" + totalAlivePlayers);
+        System.out.println("totalAlivePlayer:" + totalVotes);
         System.out.println("votes array: " + votes);
-        if (votesCast == totalAlivePlayers) {
+        if (votesCast == totalVotes) {
             System.out.println("VOTES HAVE BEEN CAST UwU");
             submitVotes(playersMap, roomCode); 
         }
