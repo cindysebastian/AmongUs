@@ -129,6 +129,9 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   
   const offsetX = Math.max(0, Math.min(playerX + playerAdjust - (window.innerWidth / zoomLevel) / 2, mapWidth - window.innerWidth / zoomLevel));
   const offsetY = Math.max(0, Math.min(playerY + playerAdjust - (window.innerHeight / zoomLevel) / 2, mapHeight - window.innerHeight / zoomLevel));
+
+  const offsetXWithoutZoom = Math.max(0, Math.min(playerX + playerAdjust - (window.innerWidth) / 2, mapWidth - window.innerWidth));
+  const offsetYWithoutZoom = Math.max(0, Math.min(playerY + playerAdjust - (window.innerHeight) / 2, mapHeight - window.innerHeight));
   
   const cameraStyle: CSSProperties = {
     transform: `scale(${zoomLevel}) translate(-${offsetX}px, -${offsetY}px)`,
@@ -168,8 +171,8 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             }
           </div>
 
-          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
-          <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
+          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
+          <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
         </div>
       </div>
       <ProgressBar progress={progressPercentage} />

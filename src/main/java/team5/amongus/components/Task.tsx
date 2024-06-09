@@ -23,7 +23,7 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offs
 
 
     const cameraStyle: CSSProperties = {
-        transform: `scale(0.8) translate(${offsetX}px, ${offsetY}px)`,
+        transform: `translate(${offsetX}px, ${offsetY}px)`,
         position: 'absolute',
         top: 0,
         left: 0,
