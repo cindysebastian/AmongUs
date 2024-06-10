@@ -10,13 +10,9 @@ import { enableSabotage, killPlayer, subscribeToPlayerKilled } from '../service 
 import KillButton from './KillButton';
 import Space from './Space';
 import { CSSProperties } from 'react';
-<<<<<<< HEAD
-import styled from 'styled-components';
-=======
 import SabotageTask from './interfaces/SabotageTask';
 import Sabotage from './Sabotage/Sabotage';
 import SabotageGif from './Sabotage/SabotageGif';
->>>>>>> main
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -27,15 +23,7 @@ interface Props {
   roomCode: string;
 }
 
-<<<<<<< HEAD
-const DisabledKillButton = styled(KillButton)`
-opacity: 0.5;
-`;
-
-const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, currentPlayer, roomCode }) => {
-=======
 const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabotageTasks, currentPlayer, roomCode }) => {
->>>>>>> main
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
   const [currAlive, setCurrAlive] = useState(false);
@@ -155,8 +143,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     height: `${mapHeight}px`,
   };
 
- 
-
   return (
     <div>
       <Space />
@@ -174,22 +160,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             </div>
           ))}
           <div>
-<<<<<<< HEAD
-            {
-              interactibles
-                .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
-                .map(interactible => (
-                  <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 30, left: interactible.position.x + 30 }}>
-                    {/* Render your component based on the interactible */}
-                    <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
-                  </div>
-                ))
-            }
-          </div>
-
-
-          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} canInteract={players[currentPlayer].canInteract}/>
-=======
             {interactibles
               .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
               .map(interactible => (
@@ -201,18 +171,14 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             }
           </div>
 
-          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
+          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} canInteract={players[currentPlayer].canInteract}/>
           <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
->>>>>>> main
         </div>
       </div>
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
       )}
-<<<<<<< HEAD
-      {isImposter && <KillButton onKill={null} canKill={players[currentPlayer].canKill}/>}
-=======
       {sabotageTasks.map(task => (
         (!isImposter && task.sabotage.inProgress) && (
           <>
@@ -220,7 +186,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
           </>
         )
       ))}
-      {isImposter && <KillButton onKill={handleKill} />}
+      {isImposter && <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill}/>}
       {isImposter && !sabotageCooldown && !sabotageTasks.some(task => task.sabotage.inProgress) &&
         <>
           <div onClick={() => handleSabotage("EndGameSabotage")} style={{ position: 'absolute', top: '50px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>End Game Sabotage</div> 
@@ -228,7 +194,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
         </>
       }
       {isImposter && sabotageCooldown && <div style={{zIndex: 10, top: "10px", right: "10px", backgroundColor: 'white', position: "absolute"}}>Sabotage Cooldown: {cooldownTime} seconds</div>}
->>>>>>> main
     </div>
   );
 };

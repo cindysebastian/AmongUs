@@ -18,73 +18,82 @@ import org.springframework.stereotype.Service;
 public class PlayerService implements IPlayerService {
 
     @Override
-public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask, ArrayList<Interactible> interactibles) {
-    try {
-        final ObjectMapper objectMapper = new ObjectMapper();
+    public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask,
+            ArrayList<Interactible> interactibles) {
+        try {
+            final ObjectMapper objectMapper = new ObjectMapper();
 
-        PlayerMoveRequest moveRequest = objectMapper.readValue(payload, PlayerMoveRequest.class);
+            PlayerMoveRequest moveRequest = objectMapper.readValue(payload, PlayerMoveRequest.class);
 
-        String playerName = moveRequest.getPlayerName();
-        List<String> directions = moveRequest.getDirections();
+            String playerName = moveRequest.getPlayerName();
+            List<String> directions = moveRequest.getDirections();
 
-        if (playerName == null || playerName.isEmpty() || directions == null) {
-            return playersMap; // Ignore move requests without player name or directions
-        }
+            if (playerName == null || playerName.isEmpty() || directions == null) {
+                return playersMap; // Ignore move requests without player name or directions
+            }
 
-        Player existingPlayer = playersMap.get(playerName);
-        if (existingPlayer == null) {
-            return playersMap; // Player not found
-        }
+            Player existingPlayer = playersMap.get(playerName);
+            if (existingPlayer == null) {
+                return playersMap; // Player not found
+            }
 
-        if (directions.isEmpty()) {
-            existingPlayer.setIsMoving(false);
-        } else {
-            for (String directionStr : directions) {
-                Position.Direction direction = Position.Direction.valueOf(directionStr.toUpperCase());
-                if (existingPlayer.getisAlive()) {
-                    if (!collidesWithMask(existingPlayer, direction, collisionMask)) {
+            if (directions.isEmpty()) {
+                existingPlayer.setIsMoving(false);
+            } else {
+                for (String directionStr : directions) {
+                    Position.Direction direction = Position.Direction.valueOf(directionStr.toUpperCase());
+                    if (existingPlayer.getisAlive()) {
+                        if (!collidesWithMask(existingPlayer, direction, collisionMask)) {
+                            existingPlayer.handleMovementRequest(direction);
+                            existingPlayer.setIsMoving(true);
+                        }
+                    } else if (!escapingBoundaries(existingPlayer, direction)) {
                         existingPlayer.handleMovementRequest(direction);
                         existingPlayer.setIsMoving(true);
                     }
-                } else if (!escapingBoundaries(existingPlayer, direction)) {
-                    existingPlayer.handleMovementRequest(direction);
-                    existingPlayer.setIsMoving(true);
                 }
             }
-        }
-        playersMap.put(playerName, existingPlayer);
+            playersMap.put(playerName, existingPlayer);
 
-        for (Player player : playersMap.values()) {
-            boolean canInteract = false;
+            for (Player player : playersMap.values()) {
+                boolean canInteract = false;
 
-            for (Player otherPlayer : playersMap.values()) {
-                if (!player.getName().equals(otherPlayer.getName()) && player.collidesWith(otherPlayer)) {
-                    if (player instanceof Imposter) {
-                        ((Imposter) player).setCanKill(true);
+                for (Player otherPlayer : playersMap.values()) {
+                    if (!player.getName().equals(otherPlayer.getName())) {
+                        if (player.collidesWith(otherPlayer)) {
+                            if (player instanceof Imposter) {
+                                ((Imposter) player).setCanKill(true);
+                            }
+                            break;
+                        } else {
+                            if (player instanceof Imposter) {
+                                ((Imposter) player).setCanKill(false);
+                            }
+                        }
                     }
-                } else if (player instanceof Imposter) {
-                    ((Imposter) player).setCanKill(false);
                 }
+
+                // Check collision with interactibles
+                for (Interactible interactible : interactibles) {
+                    if (interactible instanceof Task) {
+                        if (player.getName().equals(((Task) interactible).getAssignedPlayer())) {
+                            if (player.collidesWith(interactible)) {
+                                canInteract = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                player.setCanInteract(canInteract);
             }
 
-            // Check collision with interactibles
-            for (Interactible interactible : interactibles) {
-                if (player.collidesWith(interactible)) {
-                    canInteract = true;
-                    break;
-                }
-            }
-
-            player.setCanInteract(canInteract);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-    } catch (IOException e) {
-        e.printStackTrace();
+        return playersMap;
     }
-
-    return playersMap;
-}
-
 
     private boolean escapingBoundaries(Player existingPlayer, Direction direction) {
         Position nextPosition = existingPlayer.getPosition().getNextPosition(direction, existingPlayer.getStep());
@@ -121,8 +130,7 @@ public Map<String, Player> movePlayer(Map<String, Player> playersMap, String pay
 
                         return object;
                     }
-                }
-                else if (object instanceof SabotageTask) {
+                } else if (object instanceof SabotageTask) {
                     if (player.collidesWith(object)) {
                         return object;
                     }
