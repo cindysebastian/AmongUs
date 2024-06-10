@@ -23,6 +23,7 @@ import team5.amongus.model.*;
 import team5.amongus.service.EmergencyMeetingService;
 import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
+import team5.amongus.service.ISabotageService;
 import team5.amongus.service.ITaskService;
 import team5.amongus.service.ICollisionMaskService;
 import team5.amongus.service.IGameWinningService;
@@ -47,6 +48,7 @@ public class WebSocketController {
     private final IPlayerService playerService;
     private final ITaskService taskService;
     private final ICollisionMaskService collisionMaskService;
+    private final ISabotageService sabotageService;
     private CollisionMask collisionMaskLobby;
     private CollisionMask collisionMaskGame;
     private final IChatService chatService;
@@ -56,9 +58,12 @@ public class WebSocketController {
     private Set<String> usedRoomCodes = new HashSet<>();
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
-            ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService, EmergencyMeetingService emergencyMeetingService, EmergencyMeeting emergencyMeeting) {
+            ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService,
+            ISabotageService sabotageService, EmergencyMeetingService emergencyMeetingService,
+            EmergencyMeeting emergencyMeeting) {
         this.playerService = playerService;
         this.taskService = taskService;
+        this.sabotageService = sabotageService;
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
         this.collisionMaskService = collisionMaskService;
@@ -189,22 +194,47 @@ public class WebSocketController {
                     }
 
                     System.out.println("Triggering Emergency Meeting, dead body found");
-                }
-                else{
+                } else {
                     System.out.println("Dead Players cannot report bodies.");
                 }
                 emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), roomCode);
-                messagingTemplate.convertAndSend("/topic/emergencyMeeting/"+ roomCode, playerName);
+                messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
                 // TODO FOR MARTINA: add proper trigger for Emergency Meeting, dead body
                 // behaviour is fully handled (When found, disappears), only need to add
                 // functionality here to start the meeting
-            }
-            else if (interactableObject instanceof EmergencyMeetingButton) {
+            } else if (interactableObject instanceof EmergencyMeetingButton) {
                 emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), roomCode);
             }
         }
         room.broadcastInteractiblesUpdate(messagingTemplate);
         return room.getInteractibles();
+    }
+
+    @MessageMapping("/interactWithSabotage/{roomCode}")
+    @SendTo("/topic/sabotages/{roomCode}")
+    public ArrayList<Interactible> handleSabotageTaskInteract(@Payload String playerName,
+            @DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
+        if (room == null) {
+            return new ArrayList<>();
+        }
+
+        Player player = room.getPlayersMap().get(playerName);
+        if (player == null) {
+            return new ArrayList<>();
+        }
+
+        Interactible obj = playerService.getPlayerInteractableObject(room.getSabotageTasks(), player);
+
+        if (obj != null) {
+            if (obj instanceof SabotageTask) {
+                ArrayList<Interactible> updatedSabTasks = sabotageService
+                        .updateSabotageTaskInteractions(room.getSabotageTasks(), player, (SabotageTask) obj);
+                room.setSabotageTasks(updatedSabTasks);
+            }
+        }
+        room.broadCastSabotageTasksUpdate(messagingTemplate);
+        return room.getSabotageTasks();
     }
 
     @MessageMapping("/move/{roomCode}")
@@ -257,7 +287,6 @@ public class WebSocketController {
         playerService.handleKill(imposter, room.getPlayersMap(), roomCode, messagingTemplate);
         taskService.generateDeadBody(imposter, room);
 
-        
         room.broadcastPlayerUpdate(messagingTemplate);
         room.broadcastInteractiblesUpdate(messagingTemplate);
     }
@@ -269,6 +298,41 @@ public class WebSocketController {
         ArrayList<Interactible> updatedInteractables = taskService.completeTask(payload, room.getInteractibles());
         room.setInteractibles(updatedInteractables);
         room.broadcastInteractiblesUpdate(messagingTemplate);
+    }
+
+    @MessageMapping("/completeSabotageTask/{roomCode}")
+    public void completeSabotageTask(String payload, @DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
+
+        ArrayList<Interactible> updatedSabotageTasks = sabotageService.completeSabotageTask(payload,
+                room.getSabotageTasks());
+        room.setSabotageTasks(updatedSabotageTasks);
+        room.broadCastSabotageTasksUpdate(messagingTemplate);
+    }
+
+    @MessageMapping("/enableSabotage/{roomCode}")
+    public void enableSabotage(String sabotageName, @DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
+        ArrayList<Sabotage> sabotages = room.getSabotages();
+        boolean inProgress = false;
+        for (Sabotage sabotage : sabotages) {
+            if (sabotage.getInProgress()) {
+                inProgress = true;
+            }
+        }
+        if (!inProgress) {
+            for (Sabotage sab : sabotages) {
+                if (sab.getName().equals(sabotageName)) {
+                    System.out.println("Enabling Sabotage: " + sab.getName());
+                    ArrayList<Interactible> updatedInteractibles = sabotageService
+                            .enableSabotageTasks(room.getSabotageTasks(), sab);
+                    room.setSabotageTasks(updatedInteractibles);
+                    sab.setInProgress(true);
+                }
+            }
+        }
+        room.setSabotages(sabotages);
+        room.broadCastSabotageTasksUpdate(messagingTemplate);
     }
 
     @MessageMapping("/wait/{roomCode}")
@@ -312,7 +376,11 @@ public class WebSocketController {
         room.chooseImposter();
         room.getInGamePlayersMap().clear();
 
+        room.setSabotages(sabotageService.createSabotages());
+        room.setSabotageTasks(sabotageService.createSabotageTasks(room.getSabotages()));
+
         room.setInteractibles(taskService.createTasks(room.getPlayersMap()));
+
         room.setGameState("Game running");
         String destination = "/topic/finishGame/" + room.getRoomCode();
         messagingTemplate.convertAndSend(destination, room.getGameStarted());
@@ -355,9 +423,11 @@ public class WebSocketController {
         room.getPlayersMap().clear();
         room.getInteractibles().clear();
         room.getChatMessages().clear();
+        room.getSabotageTasks().clear();
         room.setGameState("Game waiting");
 
         room.broadcastInteractiblesUpdate(messagingTemplate);
+        room.broadCastSabotageTasksUpdate(messagingTemplate);
         room.broadcastPlayerUpdate(messagingTemplate);
     }
 
@@ -367,7 +437,7 @@ public class WebSocketController {
         room.removeAllDeadBodies();
         room.broadcastInteractiblesUpdate(messagingTemplate);
         emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), roomCode);
-        messagingTemplate.convertAndSend("/topic/emergencyMeeting/"+ roomCode, playerName);
+        messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
     }
 
     @MessageMapping("/vote/{roomCode}")
@@ -390,7 +460,7 @@ public class WebSocketController {
         Room room = activeRooms.get(roomCode);
         emergencyMeeting.submitVotes(room.getPlayersMap(), roomCode);
     }
-    
+
     /*
      * @EventListener
      * public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {

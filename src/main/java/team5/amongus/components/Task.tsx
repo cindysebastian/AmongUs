@@ -29,7 +29,7 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offs
         left: 0,
         width: '100%',
         height: '100%',
-        zIndex: 10 // Ensure the popup is on top
+        zIndex: 10, // Ensure the popup is on top
     };
 
     return (
