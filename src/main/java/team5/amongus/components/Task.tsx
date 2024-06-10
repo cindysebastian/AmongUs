@@ -14,9 +14,10 @@ interface Props {
     roomCode: String;
     offsetX: number;
     offsetY: number;
+    canInteract: boolean;
 }
 
-const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offsetX, offsetY, roomCode }) => {
+const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offsetX, offsetY, roomCode, canInteract }) => {
 
     const cameraStyle: CSSProperties = {
         transform: `translate(${offsetX}px, ${offsetY}px)`,
@@ -34,7 +35,7 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offs
             {interactibles.filter(interactible => interactible.assignedPlayer === currentPlayer).map(interactible => (
                 <img
                     key={interactible.id}
-                    src={`src/main/resources/${interactible.type.toLowerCase()}.png`} // Assuming you have images named after interactible types
+                    src={`src/main/resources/${interactible.type.toLowerCase()}${canInteract ? 'red' : ''}.png`} // Display "red.png" if canInteract is true
                     alt={interactible.type}
                     style={{
                         position: 'absolute',

@@ -122,7 +122,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
           </div>
 
 
-          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} />
+          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetX} offsetY={offsetY} roomCode={roomCode} canInteract={players[currentPlayer].canInteract}/>
         </div>
       </div>
       <ProgressBar progress={progressPercentage} />

@@ -206,9 +206,9 @@ public class WebSocketController {
         }
 
         if (room.getGameStarted().equals("Game running")) {
-            playerService.movePlayer(room.getPlayersMap(), payload, collisionMaskGame);
+            playerService.movePlayer(room.getPlayersMap(), payload, collisionMaskGame, room.getInteractibles());
         } else if (room.getGameStarted().equals("Game waiting")) {
-            playerService.movePlayer(room.getInGamePlayersMap(), payload, collisionMaskLobby);
+            playerService.movePlayer(room.getInGamePlayersMap(), payload, collisionMaskLobby, room.getInteractibles());
         }
 
         room.broadcastPlayerUpdate(messagingTemplate);
