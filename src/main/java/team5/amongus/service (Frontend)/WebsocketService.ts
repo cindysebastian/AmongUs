@@ -26,8 +26,6 @@ export const connectWebSocket = (setStompClient) => {
   };
 };
 
-
-
 export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGamePlayers, roomCode) => {
   if (!stompClient || !playerName || !roomCode) {
     console.error("Missing required parameters for subscription:", { stompClient, playerName, roomCode });
@@ -74,18 +72,6 @@ const addImposterFlag = (playersMap) => {
     return acc;
   }, {});
 };
-
-// Player interface
-export default interface Player {
-  name: string;
-  position: {
-    x: number;
-    y: number;
-  };
-  facing?: 'LEFT' | 'RIGHT';
-  isMoving?: boolean;
-  isImposter?: boolean;
-}
 
 export const subscribeToMessages = (stompClient, setMessages, roomCode) => {
   if (!stompClient) return;

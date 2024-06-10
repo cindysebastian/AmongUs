@@ -398,6 +398,7 @@ public class WebSocketController {
             } else {
                 entry.getValue().setPosition(positions.get(index));
                 entry.getValue().setAlive(true);
+                entry.getValue().setCanInteract(false);
                 entry.getValue().setWillContinue(false);
                 room.getInGamePlayersMap().put(entry.getKey(), entry.getValue());
             }

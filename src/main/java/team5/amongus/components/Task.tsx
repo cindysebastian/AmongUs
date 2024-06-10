@@ -6,18 +6,18 @@ import SwipeMinigame from './Minigames/SwipeMinigame';
 import ScanMinigame from './Minigames/ScanMinigame';
 
 import { CSSProperties } from 'react';
+import Player from './interfaces/Player';
 
 interface Props {
     stompClient: Stomp.Client | null;
     interactibles: Interactible[];
-    currentPlayer: String;
+    currentPlayer: Player;
     roomCode: String;
     offsetX: number;
     offsetY: number;
-    canInteract: boolean;
 }
 
-const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offsetX, offsetY, roomCode, canInteract }) => {
+const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offsetX, offsetY, roomCode }) => {
 
     const cameraStyle: CSSProperties = {
         transform: `translate(${offsetX}px, ${offsetY}px)`,
@@ -32,10 +32,10 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offs
     return (
         <div style={{ position: 'fixed' }}>
             {/* Render images at the coordinates of interactibles */}
-            {interactibles.filter(interactible => interactible.assignedPlayer === currentPlayer).map(interactible => (
+            {interactibles.filter(interactible => interactible.assignedPlayer === currentPlayer.name).map(interactible => (
                 <img
                     key={interactible.id}
-                    src={`src/main/resources/${interactible.type.toLowerCase()}${canInteract ? 'red' : ''}.png`} // Display "red.png" if canInteract is true
+                    src={`src/main/resources/${interactible.type.toLowerCase()}${currentPlayer.canInteract ? 'red' : ''}.png`} // Display "red.png" if canInteract is true
                     alt={interactible.type}
                     style={{
                         position: 'absolute',
@@ -50,7 +50,7 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offs
             {/* Render minigame components for each interactible */}
             {interactibles.map(interactible => {
                 // Check if the player assigned to the task is the current player and if the task is in progress
-                if (interactible.assignedPlayer === currentPlayer && interactible.inProgress) {
+                if (interactible.assignedPlayer === currentPlayer.name && interactible.inProgress) {
                     switch (interactible.type) {
                         case 'MINE':
                             return <div key={interactible.id} style={cameraStyle}><MineMinigame stompClient={stompClient} interactible={interactible} roomCode={roomCode}/></div>;

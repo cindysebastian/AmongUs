@@ -170,8 +170,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
               ))
             }
           </div>
-
-          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} canInteract={players[currentPlayer].canInteract}/>
+          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={players[currentPlayer]} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode}/>          
           <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
         </div>
       </div>
