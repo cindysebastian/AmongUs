@@ -61,10 +61,15 @@ public class PlayerService implements IPlayerService {
                     if (!player.getName().equals(otherPlayer.getName())) {
                         if (player.collidesWith(otherPlayer)) {
                             if (player instanceof Imposter) {
-                                // TODO: make kill button visible
+                                ((Imposter)player).setCanKill(true);
                             }
                             break;
+                        }else{
+                            if (player instanceof Imposter) {
+                                ((Imposter)player).setCanKill(false);
+                            }
                         }
+                    
                     }
                 }
 

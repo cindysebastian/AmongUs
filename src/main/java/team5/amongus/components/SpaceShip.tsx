@@ -10,6 +10,7 @@ import { killPlayer, subscribeToPlayerKilled } from '../service (Frontend)/Webso
 import KillButton from './KillButton';
 import Space from './Space';
 import { CSSProperties } from 'react';
+import styled from 'styled-components';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -18,6 +19,10 @@ interface Props {
   currentPlayer: string;
   roomCode: string;
 }
+
+const DisabledKillButton = styled(KillButton)`
+opacity: 0.5;
+`;
 
 const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, currentPlayer, roomCode }) => {
   const [showKillGif, setShowKillGif] = useState(false);
@@ -83,6 +88,8 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
     height: '100%',
   };
 
+ 
+
   return (
     <div>
       <Space />
@@ -106,7 +113,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
               interactibles
                 .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
                 .map(interactible => (
-                  <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y+30, left: interactible.position.x+30}}>
+                  <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 30, left: interactible.position.x + 30 }}>
                     {/* Render your component based on the interactible */}
                     <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
                   </div>
@@ -122,7 +129,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, curre
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
       )}
-      {isImposter && <KillButton onKill={handleKill} />}
+      {isImposter && <KillButton onKill={null} canKill={players[currentPlayer].canKill}/>}
     </div>
   );
 };
