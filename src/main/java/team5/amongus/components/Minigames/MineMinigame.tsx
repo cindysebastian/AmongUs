@@ -47,7 +47,6 @@ const MineMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode }) 
     });
   };
   
-
   const playDingSound = () => {
     const audio = new Audio('/scan_completed.mp3'); // Path relative to the public directory
     audio.volume = 1.0; // Ensure volume is set to 100%

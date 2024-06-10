@@ -122,6 +122,11 @@ public Map<String, Player> movePlayer(Map<String, Player> playersMap, String pay
                         return object;
                     }
                 }
+                else if (object instanceof SabotageTask) {
+                    if (player.collidesWith(object)) {
+                        return object;
+                    }
+                }
             }
         }
         for (Interactible object : interactibles) {

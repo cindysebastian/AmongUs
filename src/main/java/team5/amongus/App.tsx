@@ -8,7 +8,7 @@ import Lobby from './components/Lobby';
 import SpaceShip from './components/SpaceShip';
 import styles from './styles/index.module.css';
 import { subscribeToGameStatus } from './service (Frontend)/GameStartingService';
-import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, subscribetoInteractions, subscribetoGameFinishing } from './service (Frontend)/WebsocketService';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, subscribetoInteractions, subscribetoGameFinishing, subscribeToInteractionWithSabotage, sendInteractionWithSabotageTask } from './service (Frontend)/WebsocketService';
 import { movePlayer } from './service (Frontend)/PlayerMovementService';
 import KillButton from './components/KillButton';
 import GameEndHandler from './components/GameEnd/GameEndHandler';
@@ -30,6 +30,7 @@ const App = () => {
   const [playerSpawned, setPlayerSpawned] = useState(false);
   const [interactibles, setInteractibles] = useState([]);
   const [interactionInProgress, setInteractionInProgress] = useState(false);
+  const [sabotageTasks, setSabotageTasks] = useState([]);
   const keysPressed = useRef({
     w: false,
     a: false,
@@ -69,6 +70,7 @@ const App = () => {
       subscribeToGameStatus(stompClient, setRedirectToSpaceShip, roomCode);
       subscribetoInteractions(stompClient, setInteractibles, roomCode);
       subscribetoGameFinishing(stompClient, setGameState, roomCode);
+      subscribeToInteractionWithSabotage(stompClient, setSabotageTasks, roomCode);
       console.log(interactibles);
     }
   }, [roomCode, playerName]);
@@ -87,6 +89,15 @@ const App = () => {
       setInteractionInProgress(playerInteracting);
     }
   }, [interactibles, playerName]);
+
+  useEffect(() => {
+    if (sabotageTasks && playerName){
+      const playerInteracting = sabotageTasks.some(task => 
+        task.inProgress && task.triggeredBy == playerName
+      );
+      setInteractionInProgress(playerInteracting);
+    }
+  }, [sabotageTasks, playerName]);
 
   useEffect(() => {
     if (stompClient && playerSpawned) {
@@ -123,6 +134,7 @@ const App = () => {
   const handleInteractionKeyPress = (e) => {
     if (e.key === 'e' && !interactionInProgress) {
       sendInteraction(stompClient, playerName, roomCode);
+      sendInteractionWithSabotageTask(stompClient, playerName, roomCode);
     }
   };
 
@@ -307,7 +319,7 @@ const App = () => {
           </div></div>
       </div>} />
       <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage} />} />
-      <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} currentPlayer={playerName} roomCode={roomCode} />} />
+      <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} sabotageTasks={sabotageTasks} currentPlayer={playerName} roomCode={roomCode} />} />
       <Route path="/end" element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />
       <Route path="/" element={<Navigate replace to="/login" />} />
 
