@@ -3,10 +3,14 @@ package team5.amongus.service;
 import team5.amongus.model.CollisionMask;
 
 import javax.imageio.ImageIO;
+
+import org.springframework.stereotype.Service;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 
+@Service
 public class CollisionMaskService implements ICollisionMaskService {
 
     @Override
