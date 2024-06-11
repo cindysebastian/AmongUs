@@ -41,8 +41,8 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offs
                         position: 'absolute',
                         top: interactible.position.y,
                         left: interactible.position.x,
-                        width: '150px', // Adjust the width as needed
-                        height: '150px', // Adjust the height as needed
+                        width: '100px', // Adjust the width as needed
+                        height: '100px', // Adjust the height as needed
                         zIndex: 6,
                     }}
                 />
