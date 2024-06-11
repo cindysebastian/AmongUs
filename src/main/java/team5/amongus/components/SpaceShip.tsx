@@ -152,9 +152,9 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     // Set the arrow at a fixed distance from the player
-    const arrowDistance = 50; // Adjust as necessary
-    const x = playerX + (dx / distance) * arrowDistance+50;
-    const y = playerY + (dy / distance) * arrowDistance+50;
+    const arrowDistance = 100; // Adjust as necessary
+    const x = playerX + (dx / distance) * arrowDistance+40;
+    const y = playerY + (dy / distance) * arrowDistance+40;
 
     return { x, y, angle };
   };
