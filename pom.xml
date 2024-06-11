@@ -15,6 +15,7 @@
     <name>amongus</name>
     <description>being sus in among us</description>
     <properties>
+        <java.version>21</java.version>
         <jackson.version>2.16.2</jackson.version>
         <start-class>team5.amongus.AmongusApplication</start-class>
     </properties>
