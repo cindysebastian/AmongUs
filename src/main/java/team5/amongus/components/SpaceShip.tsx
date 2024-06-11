@@ -13,6 +13,7 @@ import SabotageTask from './interfaces/SabotageTask';
 import Sabotage from './Sabotage/Sabotage';
 import SabotageGif from './Sabotage/SabotageGif';
 import Arrow from './Arrow';
+import SabotageArrow from './SabotageArrow';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -153,8 +154,8 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
 
     // Set the arrow at a fixed distance from the player
     const arrowDistance = 100; // Adjust as necessary
-    const x = playerX + (dx / distance) * arrowDistance+40;
-    const y = playerY + (dy / distance) * arrowDistance+40;
+    const x = playerX + (dx / distance) * arrowDistance + 40;
+    const y = playerY + (dy / distance) * arrowDistance + 40;
 
     return { x, y, angle };
   };
@@ -194,6 +195,15 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
               const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
               return <Arrow key={task.id} x={x} y={y} angle={angle} />;
             })}
+          {/* Arrows for Sabotage */}
+          {sabotageTasks.filter(task => !task.completed).map(task => {
+            if (task.sabotage.inProgress) {
+              const { x: taskX, y: taskY } = task.position;
+              const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
+              return <SabotageArrow key={task.id} x={x} y={y} angle={angle} />;
+            }
+            return null;
+          })}
         </div>
       </div>
       <ProgressBar progress={progressPercentage} />
@@ -207,6 +217,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
           </>
         )
       ))}
+
       {isImposter && <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill} />}
       {isImposter && !sabotageCooldown && !sabotageTasks.some(task => task.sabotage.inProgress) &&
         <>
