@@ -12,7 +12,7 @@ import java.util.Map;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 public interface IPlayerService {
-    Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask);
+    Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask, ArrayList<Interactible> interactibles);
 
     Interactible getPlayerInteractableObject(ArrayList<Interactible> interactibles, Player player);
 

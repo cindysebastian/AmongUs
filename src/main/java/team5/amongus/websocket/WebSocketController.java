@@ -234,9 +234,9 @@ public class WebSocketController {
         }
 
         if (room.getGameStarted().equals("Game running")) {
-            playerService.movePlayer(room.getPlayersMap(), payload, collisionMaskGame);
+            playerService.movePlayer(room.getPlayersMap(), payload, collisionMaskGame, room.getInteractibles());
         } else if (room.getGameStarted().equals("Game waiting")) {
-            playerService.movePlayer(room.getInGamePlayersMap(), payload, collisionMaskLobby);
+            playerService.movePlayer(room.getInGamePlayersMap(), payload, collisionMaskLobby, room.getInteractibles());
         }
 
         room.broadcastPlayerUpdate(messagingTemplate);
@@ -398,6 +398,7 @@ public class WebSocketController {
             } else {
                 entry.getValue().setPosition(positions.get(index));
                 entry.getValue().setAlive(true);
+                entry.getValue().setCanInteract(false);
                 entry.getValue().setWillContinue(false);
                 room.getInGamePlayersMap().put(entry.getKey(), entry.getValue());
             }
