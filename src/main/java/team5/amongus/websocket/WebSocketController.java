@@ -26,6 +26,7 @@ import team5.amongus.service.IPlayerService;
 import team5.amongus.service.ISabotageService;
 import team5.amongus.service.ITaskService;
 import team5.amongus.service.ICollisionMaskService;
+import team5.amongus.service.IEmergencyMeetingService;
 import team5.amongus.service.IGameWinningService;
 
 import java.io.IOException;
@@ -52,15 +53,13 @@ public class WebSocketController {
     private CollisionMask collisionMaskLobby;
     private CollisionMask collisionMaskGame;
     private final IChatService chatService;
-    private EmergencyMeetingService emergencyMeetingService;
+    private IEmergencyMeetingService emergencyMeetingService;
     private Map<String, Integer> voteCounts = new HashMap<>();
-    private EmergencyMeeting emergencyMeeting;
     private Set<String> usedRoomCodes = new HashSet<>();
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
             ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService,
-            ISabotageService sabotageService, EmergencyMeetingService emergencyMeetingService,
-            EmergencyMeeting emergencyMeeting) {
+            ISabotageService sabotageService, IEmergencyMeetingService emergencyMeetingService) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.sabotageService = sabotageService;
@@ -70,7 +69,6 @@ public class WebSocketController {
         this.collisionMaskLobby = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
         this.collisionMaskGame = this.collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
         this.emergencyMeetingService = emergencyMeetingService;
-        this.emergencyMeeting = emergencyMeeting;
     }
 
     @MessageMapping("/hostGame")
@@ -436,6 +434,8 @@ public class WebSocketController {
     public void emergencyMeeting(String playerName, @DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
         room.removeAllDeadBodies();
+        room.setPlayerVotesToZero();
+        room.broadcastPlayerUpdate(messagingTemplate);
         room.broadcastInteractiblesUpdate(messagingTemplate);
         emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), roomCode);
         messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
@@ -451,15 +451,15 @@ public class WebSocketController {
         if (parts.length == 3) {
             String playerName = parts[0].trim();
             String votedPlayer = parts[1].trim();
-            String vote = parts[2].trim();
-            emergencyMeeting.handleVoting(playerName, votedPlayer, vote, room.getPlayersMap(), roomCode);
+            emergencyMeetingService.handleVoting(playerName, votedPlayer, room.getPlayersMap(), roomCode);
         }
     }
 
     @MessageMapping("/voteTimout/{roomCode}")
     public void handleVoteTimout(@DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
-        emergencyMeeting.submitVotes(room.getPlayersMap(), roomCode);
+        Player ejectedPlayer = emergencyMeetingService.submitVotes(room.getPlayersMap(), roomCode);
+        room.ejectPlayer(messagingTemplate, ejectedPlayer);
     }
 
     /*

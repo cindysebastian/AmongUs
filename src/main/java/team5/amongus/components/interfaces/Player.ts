@@ -18,6 +18,7 @@ export default interface Player {
   isHost?: boolean;
   isImposter?: boolean;
   canKill?: boolean;
+  hasVotes?: number;
 }
 
 export interface PlayersMap {

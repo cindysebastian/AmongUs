@@ -68,9 +68,9 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
     setIsChatVisible(!isChatVisible);
   };
 
-  const handleVote = (votedPlayer: string, vote: 'vote' | 'skip') => {
+  const handleVote = (votedPlayer: string) => {
     if (stompClient && playerName) {
-      sendVote(stompClient, playerName, votedPlayer, vote, roomCode);
+      sendVote(stompClient, playerName, votedPlayer, roomCode);
     }
     setHasVoted(true);
   };
@@ -96,7 +96,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
                     <img
                       src="src/main/resources/yesVote.png" // Update the path to point to your GIF file
                       alt="Vote"
-                      onClick={() => handleVote(name, 'vote')}
+                      onClick={() => handleVote(name)}
                       className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
                     />
                   </div>
@@ -114,7 +114,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
                     <img
                       src="src/main/resources/yesVote.png" // Update the path to point to your GIF file
                       alt="Vote"
-                      onClick={() => handleVote(name, 'vote')}
+                      onClick={() => handleVote(name)}
                       className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
                     />
                   </div>
@@ -127,7 +127,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
           <img
             src="src/main/resources/skipVote.png" // Update the path to point to your PNG file
             alt="Skip"
-            onClick={() => handleVote(playerName, 'skip')}
+            onClick={() => handleVote("skip")}
             className={`${styles.skipButton} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
           />
         </div>

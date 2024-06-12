@@ -327,6 +327,12 @@ public class Room {
         return result;
     }
 
+    public void ejectPlayer(SimpMessagingTemplate messagingTemplate, Player ejectedPlayer){
+        if (ejectedPlayer != null) {            
+        messagingTemplate.convertAndSend("topic/ejectedPlayer/" + roomCode, ejectedPlayer);
+        }
+    }
+
     public void removeAllDeadBodies() {
         Iterator<Interactible> iterator = this.interactibles.iterator();
         while (iterator.hasNext()) {
@@ -334,6 +340,12 @@ public class Room {
             if (interactible instanceof DeadBody) {
                 iterator.remove(); // Safe removal using iterator
             }
+        }
+    }
+
+    public void setPlayerVotesToZero(){
+        for (Player player : playersMap.values()) {
+            player.setHasVotes(0);
         }
     }
 

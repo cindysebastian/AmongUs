@@ -15,6 +15,7 @@ public class Player implements Serializable, Cloneable {
     private boolean willContinue = false;
     private long lastActivityTime;
     private boolean isHost = false;
+    private int hasVotes = 0;
 
     public Player(String name, Position position) {
         this.name = name;
@@ -115,6 +116,14 @@ public class Player implements Serializable, Cloneable {
 
     public void setAlive(boolean isAlive) {
         this.isAlive = isAlive;
+    }
+
+    public int getHasVotes(){
+        return hasVotes;
+    }
+
+    public void setHasVotes(int hasVotes){
+        this.hasVotes = hasVotes;
     }
 
     public void handleMovementRequest(Position.Direction direction) {

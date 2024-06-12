@@ -223,10 +223,10 @@ export const subscribeToEjectedPlayer = (stompClient, roomCode, setEjectedPlayer
   };
 };
 
-export const sendVote = (stompClient, playerName, votedPlayer, vote, roomCode) => {
+export const sendVote = (stompClient, playerName, votedPlayer, roomCode) => {
   if (!stompClient || !playerName || !votedPlayer) return;
 
-  const payload = `${playerName},${votedPlayer},${vote}`;
+  const payload = `${playerName},${votedPlayer}`;
   stompClient.send(`/app/vote/${roomCode}`, {}, payload);
 };
 
