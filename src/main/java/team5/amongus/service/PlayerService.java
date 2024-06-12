@@ -18,7 +18,8 @@ import org.springframework.stereotype.Service;
 public class PlayerService implements IPlayerService {
 
     @Override
-    public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask) {
+    public Map<String, Player> movePlayer(Map<String, Player> playersMap, String payload, CollisionMask collisionMask,
+            ArrayList<Interactible> interactibles) {
         try {
             final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -61,9 +62,25 @@ public class PlayerService implements IPlayerService {
                     if (!player.getName().equals(otherPlayer.getName())) {
                         if (player.collidesWith(otherPlayer)) {
                             if (player instanceof Imposter) {
-                                // TODO: make kill button visible
+                                ((Imposter) player).setCanKill(true);
                             }
                             break;
+                        } else {
+                            if (player instanceof Imposter) {
+                                ((Imposter) player).setCanKill(false);
+                            }
+                        }
+                    }
+                }
+
+                // Check collision with interactibles
+                for (Interactible interactible : interactibles) {
+                    if (interactible instanceof Task) {
+                        if (player.getName().equals(((Task) interactible).getAssignedPlayer())) {
+                            if (player.collidesWith(interactible)) {
+                                canInteract = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -113,8 +130,7 @@ public class PlayerService implements IPlayerService {
 
                         return object;
                     }
-                }
-                else if (object instanceof SabotageTask) {
+                } else if (object instanceof SabotageTask) {
                     if (player.collidesWith(object)) {
                         return object;
                     }

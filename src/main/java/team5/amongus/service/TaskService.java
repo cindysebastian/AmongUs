@@ -188,9 +188,13 @@ public class TaskService implements ITaskService {
     private void populateMinePositions(List<Position> positions) {
         // Add your predetermined mine positions to the positions list
         // Example:
-        positions.add(new Position(2000, 100));
-        positions.add(new Position(2175, 100));
-        positions.add(new Position(2400, 100));
+        positions.add(new Position(1900, 180));
+        positions.add(new Position(850, 350));
+        positions.add(new Position(700, 1650));
+        positions.add(new Position(2100, 1340));
+        positions.add(new Position(2900, 1800));
+        positions.add(new Position(3000, 290));
+
         // Add more positions as needed
     }
 
@@ -198,9 +202,13 @@ public class TaskService implements ITaskService {
     private void populateScanPositions(List<Position> positions) {
         // Add your predetermined scan positions to the positions list
         // Example:
-        positions.add(new Position(2000, 800));
-        positions.add(new Position(2175, 750));
-        positions.add(new Position(2400, 800));
+        positions.add(new Position(650, 660));
+        positions.add(new Position(960, 1000));
+        positions.add(new Position(2300, 2000));
+        positions.add(new Position(2600, 1350));
+        positions.add(new Position(1650, 1000));
+        positions.add(new Position(1200, 820));
+
         // Add more positions as needed
     }
 
@@ -208,9 +216,13 @@ public class TaskService implements ITaskService {
     private void populateSwipePositions(List<Position> positions) {
         // Add your predetermined swipe positions to the positions list
         // Example:
-        positions.add(new Position(2000, 450));
-        positions.add(new Position(2175, 350));
-        positions.add(new Position(2400, 450));
+        positions.add(new Position(2600, 200));
+        positions.add(new Position(480, 730));
+        positions.add(new Position(750, 1400));
+        positions.add(new Position(1500, 1240));
+        positions.add(new Position(2500, 1800));
+        positions.add(new Position(3600, 830));
+
         // Add more positions as needed
     }
 

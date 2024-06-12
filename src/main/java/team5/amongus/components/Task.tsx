@@ -1,5 +1,3 @@
-// Task.tsx
-
 import React from 'react';
 import Interactible from './interfaces/Interactible';
 import MineMinigame from './Minigames/MineMinigame';
@@ -8,19 +6,18 @@ import SwipeMinigame from './Minigames/SwipeMinigame';
 import ScanMinigame from './Minigames/ScanMinigame';
 
 import { CSSProperties } from 'react';
-
+import Player from './interfaces/Player';
 
 interface Props {
-    stompClient: Stomp.Client | null; // Add stompClient to props
+    stompClient: Stomp.Client | null;
     interactibles: Interactible[];
-    currentPlayer: String;
+    currentPlayer: Player;
     roomCode: String;
     offsetX: number;
     offsetY: number;
 }
 
 const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offsetX, offsetY, roomCode }) => {
-
 
     const cameraStyle: CSSProperties = {
         transform: `translate(${offsetX}px, ${offsetY}px)`,
@@ -35,17 +32,17 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offs
     return (
         <div style={{ position: 'fixed' }}>
             {/* Render images at the coordinates of interactibles */}
-            {interactibles.filter(interactible => interactible.assignedPlayer).map(interactible => (
+            {interactibles.filter(interactible => interactible.assignedPlayer === currentPlayer.name).map(interactible => (
                 <img
                     key={interactible.id}
-                    src={`src/main/resources/${interactible.type.toLowerCase()}.png`} // Assuming you have images named after interactible types
+                    src={`src/main/resources/${interactible.type.toLowerCase()}${currentPlayer.canInteract ? 'red' : ''}.png`} // Display "red.png" if canInteract is true
                     alt={interactible.type}
                     style={{
                         position: 'absolute',
                         top: interactible.position.y,
                         left: interactible.position.x,
-                        width: '150px', // Adjust the width as needed
-                        height: '150px', // Adjust the height as needed
+                        width: '100px', // Adjust the width as needed
+                        height: '100px', // Adjust the height as needed
                         zIndex: 6,
                     }}
                 />
@@ -53,15 +50,14 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offs
             {/* Render minigame components for each interactible */}
             {interactibles.map(interactible => {
                 // Check if the player assigned to the task is the current player and if the task is in progress
-
-                if (interactible.assignedPlayer == currentPlayer && interactible.inProgress) {
+                if (interactible.assignedPlayer === currentPlayer.name && interactible.inProgress) {
                     switch (interactible.type) {
                         case 'MINE':
-                            return <div style={cameraStyle}><MineMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} roomCode={roomCode}/></div>;
+                            return <div key={interactible.id} style={cameraStyle}><MineMinigame stompClient={stompClient} interactible={interactible} roomCode={roomCode}/></div>;
                         case 'SCAN':
-                            return <div style={cameraStyle}><ScanMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} roomCode={roomCode}/></div>;
+                            return <div key={interactible.id} style={cameraStyle}><ScanMinigame stompClient={stompClient} interactible={interactible} roomCode={roomCode}/></div>;
                         case 'SWIPE':
-                            return <div style={cameraStyle}><SwipeMinigame key={interactible.id} stompClient={stompClient} interactible={interactible} roomCode={roomCode}/></div>;
+                            return <div key={interactible.id} style={cameraStyle}><SwipeMinigame stompClient={stompClient} interactible={interactible} roomCode={roomCode}/></div>;
                         default:
                             return null;
                     }

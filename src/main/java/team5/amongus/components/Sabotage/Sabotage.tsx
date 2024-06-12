@@ -40,8 +40,8 @@ const Sabotage: React.FC<Props> = ({ stompClient, sabotageTasks, currentPlayer, 
                         position: 'absolute',
                         top: task.position.y,
                         left: task.position.x,
-                        width: '150px', // Adjust the width as needed
-                        height: '150px', // Adjust the height as neededa
+                        width: '100px', // Adjust the width as needed
+                        height: '100px', // Adjust the height as neededa
                         zIndex: 6,
                     }}
                 />

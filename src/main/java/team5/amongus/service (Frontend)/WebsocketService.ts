@@ -9,7 +9,7 @@ import { PlayersMap } from '../components/interfaces/Player';
 export const connectWebSocket = (setStompClient) => {
   // Disable Stomp.js logging
 
-  const socket = new SockJS('http://localhost:8080/ws');
+  const socket = new SockJS('http://10.0.40.165:8080/ws');
   const stomp = Stomp.over(socket);
   stomp.debug = null;
 
@@ -25,8 +25,6 @@ export const connectWebSocket = (setStompClient) => {
     }
   };
 };
-
-
 
 export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGamePlayers, roomCode) => {
   if (!stompClient || !playerName || !roomCode) {
@@ -74,18 +72,6 @@ const addImposterFlag = (playersMap) => {
     return acc;
   }, {});
 };
-
-// Player interface
-export default interface Player {
-  name: string;
-  position: {
-    x: number;
-    y: number;
-  };
-  facing?: 'LEFT' | 'RIGHT';
-  isMoving?: boolean;
-  isImposter?: boolean;
-}
 
 export const subscribeToMessages = (stompClient, setMessages, roomCode) => {
   if (!stompClient) return;
