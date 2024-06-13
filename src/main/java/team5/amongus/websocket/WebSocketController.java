@@ -396,7 +396,6 @@ public class WebSocketController {
         }
         room.getPlayersMap().clear();
         room.getInteractibles().clear();
-        room.getChatMessages().clear();
         room.getSabotageTasks().clear();
         room.setGameState("Game waiting");
 

@@ -9,10 +9,8 @@ export const connectWebSocket = (setStompClient, setStompChatClient) => {
   // Disable Stomp.js logging
 
   const socket = new SockJS('http://localhost:8080/ws');
-<<<<<<< Updated upstream
-=======
   const socketChat = new SockJS('http://localhost:8082/ws')
->>>>>>> Stashed changes
+
   const stomp = Stomp.over(socket);
   stomp.debug = null;
 
@@ -194,11 +192,7 @@ export const sendChatMessage = (stompChatClient, playerName, messageContent, roo
     roomCode: roomCode
   };
 
-<<<<<<< Updated upstream
-  stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(newMessage));
-=======
   stompChatClient.send(`/topic/messages/${roomCode}`, {}, JSON.stringify(newMessage));
->>>>>>> Stashed changes
 };
 
 export const killPlayer = (stompClient, playerName, roomCode) => {

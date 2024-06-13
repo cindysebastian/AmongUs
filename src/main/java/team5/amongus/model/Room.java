@@ -25,7 +25,6 @@ public class Room {
     private ArrayList<Interactible> previousInteractibles = new ArrayList<>();
     private ArrayList<Interactible> previousSabotageTasks = new ArrayList<>();
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
-    private List<Message> chatMessages = new ArrayList<>();
     private String gameState = "stopped";
     String result = "";
 
@@ -50,14 +49,6 @@ public class Room {
 
     public Map<String, Player> getInGamePlayersMap() {
         return inGamePlayersMap;
-    }
-
-    public List<Message> getChatMessages() {
-        return chatMessages;
-    }
-
-    public void setMessages(List<Message> chatMessages) {
-        this.chatMessages = chatMessages;
     }
 
     public ArrayList<Interactible> getInteractibles() {
