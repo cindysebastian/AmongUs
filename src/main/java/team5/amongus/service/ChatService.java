@@ -1,4 +1,4 @@
-package team5.amongus.service;
+/*package team5.amongus.service;
 
 import team5.amongus.model.Message;
 import team5.amongus.model.Player;
@@ -27,3 +27,4 @@ public class ChatService implements IChatService {
         return chatMessages; // Return updated chatMessages list
     }
 }
+    */

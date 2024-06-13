@@ -20,7 +20,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.security.core.Authentication;
 
 import team5.amongus.model.*;
-import team5.amongus.service.IChatService;
 import team5.amongus.service.IPlayerService;
 import team5.amongus.service.ISabotageService;
 import team5.amongus.service.ITaskService;
@@ -50,16 +49,14 @@ public class WebSocketController {
     private final ISabotageService sabotageService;
     private CollisionMask collisionMaskLobby;
     private CollisionMask collisionMaskGame;
-    private final IChatService chatService;
     private Set<String> usedRoomCodes = new HashSet<>();
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
-            ITaskService taskService, IChatService chatService, ICollisionMaskService collisionMaskService, ISabotageService sabotageService) {
+            ITaskService taskService, ICollisionMaskService collisionMaskService, ISabotageService sabotageService) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.sabotageService = sabotageService;
         this.messagingTemplate = messagingTemplate;
-        this.chatService = chatService;
         this.collisionMaskService = collisionMaskService;
         this.collisionMaskLobby = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
         this.collisionMaskGame = this.collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
@@ -240,16 +237,6 @@ public class WebSocketController {
         }
 
         room.broadcastPlayerUpdate(messagingTemplate);
-    }
-
-    @MessageMapping("/sendMessage/{roomCode}")
-    @SendTo("/topic/messages/{roomCode}")
-    public List<Message> sendMessages(Message message, SimpMessageHeaderAccessor accessor,
-            @DestinationVariable String roomCode) {
-        Room room = activeRooms.get(roomCode);
-        List<Message> updatedChatMessages = chatService.processMessage(room.getChatMessages(), message);
-        room.setMessages(updatedChatMessages);
-        return updatedChatMessages;
     }
 
     @MessageMapping("/killPlayer/{roomCode}")

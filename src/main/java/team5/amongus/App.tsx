@@ -22,6 +22,7 @@ const directionMap = {
 
 const App = () => {
   const [stompClient, setStompClient] = useState(null);
+  const [stompChatClient, setStompChatClient] = useState(null);
   const [playerName, setPlayerName] = useState('');
   const [inputName, setInputName] = useState('');
   const [inputCode, setInputCode] = useState('');
@@ -55,7 +56,7 @@ const App = () => {
   }, [stompClient, playerName]);
 
   useEffect(() => {
-    const unsubscribeWebSocket = connectWebSocket(setStompClient);
+    const unsubscribeWebSocket = connectWebSocket(setStompClient, setStompChatClient);
     return () => unsubscribeWebSocket();
   }, []);
 
@@ -66,7 +67,7 @@ const App = () => {
 
       //All Game context Subscriptions here please, ensures RoomCode is valid and present!
       subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers, roomCode);
-      subscribeToMessages(stompClient, setMessages, roomCode);
+      subscribeToMessages(stompChatClient, setMessages, roomCode);
       subscribeToGameStatus(stompClient, setRedirectToSpaceShip, roomCode);
       subscribetoInteractions(stompClient, setInteractibles, roomCode);
       subscribetoGameFinishing(stompClient, setGameState, roomCode);
@@ -77,7 +78,7 @@ const App = () => {
 
   const sendMessage = (messageContent) => {
     if (!interactionInProgress && stompClient) {
-      sendChatMessage(stompClient, playerName, messageContent, roomCode);
+      sendChatMessage(stompChatClient, playerName, messageContent, roomCode);
     }
   };
 
@@ -201,7 +202,7 @@ const App = () => {
 
   const handleDisconnect = () => {
     stompClient && stompClient.disconnect();
-    connectWebSocket(setStompClient);
+    connectWebSocket(setStompClient, setStompChatClient);
     navigate('/login');
   };
 

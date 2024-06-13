@@ -1,27 +1,42 @@
 // WebSocketService.ts
-
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { handleReceivedInteractibles } from './InteractionService';
 import { handleReceivedSabotageTasks } from './SabotageInteractionService';
 import { PlayersMap } from '../components/interfaces/Player';
 
-export const connectWebSocket = (setStompClient) => {
+export const connectWebSocket = (setStompClient, setStompChatClient) => {
   // Disable Stomp.js logging
 
   const socket = new SockJS('http://localhost:8080/ws');
+<<<<<<< Updated upstream
+=======
+  const socketChat = new SockJS('http://localhost:8082/ws')
+>>>>>>> Stashed changes
   const stomp = Stomp.over(socket);
   stomp.debug = null;
 
+  const stompChat = Stomp.over(socketChat);
+  stompChat.debug = null;
+
   stomp.connect({}, () => {
-    console.log('Connected to WebSocket');
+    console.log('Connected to WebSocket on port 8080');
     setStompClient(stomp);
   });
 
+  stompChat.connect({}, () => {
+    console.log('Connected to WebSocket on port 8082');
+    setStompChatClient(stompChat);
+  });
+  
   return () => {
     if (stomp) {
-      stomp.disconnect(() => { }); // Provide an empty function as disconnectCallback
-      console.log('Disconnected from WebSocket');
+      stomp.disconnect(() => { });
+      console.log('Disconnected from WebSocket on port 8080');
+    }
+    if (setStompChatClient) {
+      setStompChatClient.disconnect(() => { });
+      console.log('Disconnected from WebSocket on port 8082');
     }
   };
 };
@@ -73,10 +88,10 @@ const addImposterFlag = (playersMap) => {
   }, {});
 };
 
-export const subscribeToMessages = (stompClient, setMessages, roomCode) => {
-  if (!stompClient) return;
+export const subscribeToMessages = (stompChatClient, setMessages, roomCode) => {
+  if (!stompChatClient) return;
 
-  const subscription = stompClient.subscribe(`/topic/messages/${roomCode}`, (message) => {
+  const subscription = stompChatClient.subscribe(`/topic/messages/${roomCode}`, (message) => {
     const newMessage = JSON.parse(message.body);
     setMessages((prevMessages) => [...prevMessages, newMessage]);
   });
@@ -169,8 +184,9 @@ export const sendInteractionWithSabotageTask = (stompClient, playerName, roomCod
   stompClient.send(`/app/interactWithSabotage/${roomCode}`, {}, playerName);
 }
 
-export const sendChatMessage = (stompClient, playerName, messageContent, roomCode) => {
-  if (!stompClient || !playerName) return;
+export const sendChatMessage = (stompChatClient, playerName, messageContent, roomCode) => {
+  if (!stompChatClient || !playerName) return;
+  console.log("Message arrived in Websocket");
 
   const newMessage = {
     sender: playerName,
@@ -178,7 +194,11 @@ export const sendChatMessage = (stompClient, playerName, messageContent, roomCod
     roomCode: roomCode
   };
 
+<<<<<<< Updated upstream
   stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(newMessage));
+=======
+  stompChatClient.send(`/topic/messages/${roomCode}`, {}, JSON.stringify(newMessage));
+>>>>>>> Stashed changes
 };
 
 export const killPlayer = (stompClient, playerName, roomCode) => {
@@ -192,4 +212,3 @@ export const enableSabotage = (stompClient, sabotage, roomCode) => {
 
   stompClient.send(`/app/enableSabotage/${roomCode}`, {}, sabotage)
 }
-
