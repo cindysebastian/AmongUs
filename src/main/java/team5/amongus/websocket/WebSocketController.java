@@ -195,13 +195,13 @@ public class WebSocketController {
                 } else {
                     System.out.println("Dead Players cannot report bodies.");
                 }
-                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), roomCode);
+                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
                 messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
                 // TODO FOR MARTINA: add proper trigger for Emergency Meeting, dead body
                 // behaviour is fully handled (When found, disappears), only need to add
                 // functionality here to start the meeting
             } else if (interactableObject instanceof EmergencyMeetingButton) {
-                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), roomCode);
+                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
             }
         }
         room.broadcastInteractiblesUpdate(messagingTemplate);
@@ -434,10 +434,8 @@ public class WebSocketController {
     public void emergencyMeeting(String playerName, @DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
         room.removeAllDeadBodies();
-        room.setPlayerVotesToZero();
-        room.broadcastPlayerUpdate(messagingTemplate);
         room.broadcastInteractiblesUpdate(messagingTemplate);
-        emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), roomCode);
+        emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
         messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
     }
 
@@ -448,18 +446,26 @@ public class WebSocketController {
         String[] parts = payload.split(",");
         System.out.println("parts lenght: " + parts.length);
         System.out.println("payload: " + payload);
-        if (parts.length == 3) {
+        if (parts.length == 2) {
             String playerName = parts[0].trim();
             String votedPlayer = parts[1].trim();
-            emergencyMeetingService.handleVoting(playerName, votedPlayer, room.getPlayersMap(), roomCode);
+            Map<String, Player> updatedPlayersMap = emergencyMeetingService.handleVoting(playerName, votedPlayer, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
         }
+        if (room.getEmergencyMeeting().getEjectedPlayer() != null) {
+            messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode, room.getEmergencyMeeting().getEjectedPlayer());
+        }
+        room.broadcastPlayerUpdate(messagingTemplate);
     }
 
     @MessageMapping("/voteTimout/{roomCode}")
     public void handleVoteTimout(@DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
-        Player ejectedPlayer = emergencyMeetingService.submitVotes(room.getPlayersMap(), roomCode);
-        room.ejectPlayer(messagingTemplate, ejectedPlayer);
+        Map<String, Player> updatedPlayersMap = emergencyMeetingService.submitVotes(room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+
+        if (room.getEmergencyMeeting().getEjectedPlayer() != null) {
+            messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode, room.getEmergencyMeeting().getEjectedPlayer());
+        }
+        room.broadcastPlayerUpdate(messagingTemplate);
     }
 
     /*

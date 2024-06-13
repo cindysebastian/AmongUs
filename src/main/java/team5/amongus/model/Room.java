@@ -27,6 +27,7 @@ public class Room {
     private ArrayList<Interactible> previousSabotageTasks = new ArrayList<>();
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private List<Message> chatMessages = new ArrayList<>();
+    private EmergencyMeeting emergencyMeeting = new EmergencyMeeting();
     private String gameState = "stopped";
     String result = "";
 
@@ -100,6 +101,14 @@ public class Room {
 
     public ArrayList<Interactible> getSabotageTasks(){
         return sabotageTasks;
+    }
+
+    public void setEmergencyMeeting(EmergencyMeeting emergencyMeeting){
+        this.emergencyMeeting = emergencyMeeting;
+    }
+
+    public EmergencyMeeting getEmergencyMeeting(){
+        return emergencyMeeting;
     }
 
     public String validateHost() {
@@ -327,12 +336,6 @@ public class Room {
         return result;
     }
 
-    public void ejectPlayer(SimpMessagingTemplate messagingTemplate, Player ejectedPlayer){
-        if (ejectedPlayer != null) {            
-        messagingTemplate.convertAndSend("topic/ejectedPlayer/" + roomCode, ejectedPlayer);
-        }
-    }
-
     public void removeAllDeadBodies() {
         Iterator<Interactible> iterator = this.interactibles.iterator();
         while (iterator.hasNext()) {
@@ -340,12 +343,6 @@ public class Room {
             if (interactible instanceof DeadBody) {
                 iterator.remove(); // Safe removal using iterator
             }
-        }
-    }
-
-    public void setPlayerVotesToZero(){
-        for (Player player : playersMap.values()) {
-            player.setHasVotes(0);
         }
     }
 

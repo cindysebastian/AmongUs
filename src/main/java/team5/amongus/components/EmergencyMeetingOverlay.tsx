@@ -127,7 +127,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
           <img
             src="src/main/resources/skipVote.png" // Update the path to point to your PNG file
             alt="Skip"
-            onClick={() => handleVote("skip")}
+            onClick={() => handleVote("")}
             className={`${styles.skipButton} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
           />
         </div>
