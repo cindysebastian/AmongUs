@@ -100,6 +100,7 @@
                 <version>3.8.1</version> <!-- or a later version that supports Java 21 -->
                 <configuration>
                     <source>21</source>
+                    <sourceDirectory>src/main/java</sourceDirectory>
                     <target>21</target>
                 </configuration>
             </plugin>
