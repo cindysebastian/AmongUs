@@ -346,4 +346,8 @@ public class Room {
         }
     }
 
+    public void addMeetingToInteractibles(){
+        interactibles.add(emergencyMeeting);
+    }
+
 }

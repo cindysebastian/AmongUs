@@ -8,7 +8,6 @@ import PlayerSprite from './PlayerSprite';
 import ProgressBar from './ProgressBar';
 import { enableSabotage, killPlayer, subscribeToPlayerKilled, subscribeToEmergencyMeeting, sendEmergencyMeeting } from '../service (Frontend)/WebsocketService';
 import KillButton from './KillButton';
-import EmergencyButton from './EmergencyMeetingButton';
 import EmergencyMeetingOverlay from './EmergencyMeetingOverlay';
 import Space from './Space';
 import SabotageTask from './interfaces/SabotageTask';
@@ -202,9 +201,14 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
               />
             </div>
           ))}
-          {currAlive && 
-            <EmergencyButton stompClient={stompClient} playerName={currentPlayer} onEmergencyMeeting={() => sendEmergencyMeeting(stompClient, currentPlayer, roomCode)} />
-          }
+          <div>
+            {currAlive && interactibles
+              .filter(interactible => interactible.hasOwnProperty('inMeeting')) // Filter interactibles with the "found" property
+              .map(interactible => (
+                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 90 }}>
+                  <img src="src/main/resources/bell.png" alt="Emergency bell" style={{ width: '100px', height: '100px', position: 'relative' }} />
+                </div>
+              ))}
           <div>
             {interactibles
               .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
@@ -233,17 +237,19 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             }
             return null;
           })}
-        </div>
+        </div>        
       </div>
-        {showEmergencyMeeting && (
+      <div>
+        {interactibles.some(interactible => interactible.inMeeting) && (
           <EmergencyMeetingOverlay
-          playerNames={playerNamesforMeeting}
-          stompClient={stompClient}
-          playerName={currentPlayer}
-          roomCode={roomCode}
-          players={players}
+            playerNames={playerNamesforMeeting}
+            stompClient={stompClient}
+            playerName={currentPlayer}
+            roomCode={roomCode}
+            players={players}
           />
         )}
+        </div>
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
@@ -265,6 +271,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       }
       {isImposter && sabotageCooldown && <div style={{ zIndex: 10, top: "10px", right: "10px", backgroundColor: 'white', position: "absolute" }}>Sabotage Cooldown: {cooldownTime} seconds</div>}
     </div>
+  </div>
   );
 };
 

@@ -200,8 +200,9 @@ public class WebSocketController {
                 // TODO FOR MARTINA: add proper trigger for Emergency Meeting, dead body
                 // behaviour is fully handled (When found, disappears), only need to add
                 // functionality here to start the meeting
-            } else if (interactableObject instanceof EmergencyMeetingButton) {
+            } else if (interactableObject instanceof EmergencyMeeting) {
                 emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+                messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
             }
         }
         room.broadcastInteractiblesUpdate(messagingTemplate);
@@ -378,6 +379,7 @@ public class WebSocketController {
         room.setSabotageTasks(sabotageService.createSabotageTasks(room.getSabotages()));
 
         room.setInteractibles(taskService.createTasks(room.getPlayersMap()));
+        room.addMeetingToInteractibles();
 
         room.setGameState("Game running");
         String destination = "/topic/finishGame/" + room.getRoomCode();
@@ -458,6 +460,7 @@ public class WebSocketController {
             messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode, room.getEmergencyMeeting().getEjectedPlayer());
         }
         room.broadcastPlayerUpdate(messagingTemplate);
+        room.broadcastInteractiblesUpdate(messagingTemplate);
     }
 
     @MessageMapping("/voteTimeout/{roomCode}")
@@ -470,6 +473,7 @@ public class WebSocketController {
             messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode, room.getEmergencyMeeting().getEjectedPlayer());
         }
         room.broadcastPlayerUpdate(messagingTemplate);
+        room.broadcastInteractiblesUpdate(messagingTemplate);
     }
 
     /*
