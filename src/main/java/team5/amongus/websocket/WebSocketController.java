@@ -449,7 +449,10 @@ public class WebSocketController {
         if (parts.length == 2) {
             String playerName = parts[0].trim();
             String votedPlayer = parts[1].trim();
-            Map<String, Player> updatedPlayersMap = emergencyMeetingService.handleVoting(playerName, votedPlayer, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+            emergencyMeetingService.handleVoting(playerName, votedPlayer, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+        } else if (parts.length == 1) {
+            String playerName = parts[0].trim();
+            emergencyMeetingService.handleVoting(playerName, "", room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);            
         }
         if (room.getEmergencyMeeting().getEjectedPlayer() != null) {
             messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode, room.getEmergencyMeeting().getEjectedPlayer());
@@ -457,10 +460,11 @@ public class WebSocketController {
         room.broadcastPlayerUpdate(messagingTemplate);
     }
 
-    @MessageMapping("/voteTimout/{roomCode}")
+    @MessageMapping("/voteTimeout/{roomCode}")
     public void handleVoteTimout(@DestinationVariable String roomCode) {
+        System.out.println("votetimeout");
         Room room = activeRooms.get(roomCode);
-        Map<String, Player> updatedPlayersMap = emergencyMeetingService.submitVotes(room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+        emergencyMeetingService.submitVotes(room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
 
         if (room.getEmergencyMeeting().getEjectedPlayer() != null) {
             messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode, room.getEmergencyMeeting().getEjectedPlayer());

@@ -91,7 +91,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
 
   const handleEmergencyMeeting = () => {
     setShowEmergencyMeeting(true);
-    setTimeout(() => setShowEmergencyMeeting(false), 30000); // Show overlay for 30 seconds
+    setTimeout(() => setShowEmergencyMeeting(false), 35000); // Show overlay for 35 seconds
   };
   
   useEffect(() => {

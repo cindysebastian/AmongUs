@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styles from '../styles/EmergencyMeetingOverlay.module.css';
 import ChatRoom from '../components/ChatRoom';
 import MessageInput from '../components/MessageInput';
-import { sendChatMessage, subscribeToMessages, subscribeToEjectedPlayer, sendVote } from '../service (Frontend)/WebsocketService';
+import { sendChatMessage, subscribeToMessages, subscribeToEjectedPlayer, sendVote, sendVoteTimemout } from '../service (Frontend)/WebsocketService';
 import Stomp from 'stompjs';
 import Player from './interfaces/Player';
 
@@ -35,10 +35,12 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
       );
       const countdownInterval = setInterval(() => {
         setTimeRemaining(prevTime => {
-          if (prevTime === 25) {
+          if (prevTime === 5) {
             // Send a message to trigger vote submission at 25 seconds
-            sendVoteSubmissionMessage();
+            console.log("sendvotesubmission");
+            sendVoteTimemout(stompClient, roomCode);
           }
+          console.log(prevTime);
           return prevTime > 0 ? prevTime - 1 : 0;
         });
       }, 1000); // Update countdown every second
@@ -51,13 +53,6 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
     }
   }, [stompClient]);
 
-  const sendVoteSubmissionMessage = () => {
-    if (stompClient) {
-      // Send a message to trigger vote submission
-      stompClient.send(`/app/submitTimoutVotes/${roomCode}`);
-    }
-  };
-
   const sendMessage = (messageContent: string) => {
     if (stompClient && players[playerName].isAlive) {
       sendChatMessage(stompClient, playerName, messageContent, roomCode);
@@ -68,8 +63,9 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
     setIsChatVisible(!isChatVisible);
   };
 
-  const handleVote = (votedPlayer: string) => {
+  const handleVote = (votedPlayer) => {
     if (stompClient && playerName) {
+      console.log("voted for " + votedPlayer);
       sendVote(stompClient, playerName, votedPlayer, roomCode);
     }
     setHasVoted(true);
@@ -156,7 +152,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
         </div>
       )}
       <div className={styles.countdown}>
-        <h2>Time Remaining: {timeRemaining} seconds</h2>
+        <h2>Time Remaining: {timeRemaining-5} seconds</h2>
       </div>
     </div>
   );

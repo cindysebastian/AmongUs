@@ -26,11 +26,14 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
             x += 30;
             y += 30;
         }
+        totalVotes = 0;
+        skips = 0;
+        votesCast = 0;
         emergencyMeeting.setInMeeting(true);
         emergencyMeeting.setEjectedPlayer(null);
     }
 
-    public Map<String, Player> handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode) {
+    public void handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode) {
         if (totalVotes == 0) {
             for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
                 Player player = entry.getValue();
@@ -41,55 +44,48 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         }
 
         System.out.println(playerName + " voted for: " + votedPlayer);
-        if (votedPlayer != "") {
+        if (votedPlayer != "" && votedPlayer != null && !votedPlayer.isEmpty() && !votedPlayer.isBlank()) {
             votes.put(votedPlayer, votes.getOrDefault(votedPlayer, 0)+1);
             votesCast++;
-        }
-
-        if (votedPlayer == "") {
+        } else {
+            System.out.println("skip");
             skips++;
             votesCast++;
         }
 
-        System.out.println("totalAlivePlayer:" + totalVotes);
+        System.out.println("voted player: " + votedPlayer);
+        System.out.println("votes cast: " + votesCast);
+        System.out.println("totalAlivePlayer: " + totalVotes);
         System.out.println("votes array: " + votes);
         if (votesCast == totalVotes) {
             System.out.println("VOTES HAVE BEEN CAST UwU");
-            return submitVotes(playersMap, emergencyMeeting, roomCode); 
+            submitVotes(playersMap, emergencyMeeting, roomCode); 
         }
-        return playersMap;
     }
 
-    public Map<String, Player> submitVotes(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode) {
+    public void submitVotes(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode) {
         String playerWithMostVotes = null;
         int maxVotes = 0;
-        int totalAlivePlayers = 0;
-        for (Player player : playersMap.values()) {
-            if (player.getisAlive()) {
-                totalAlivePlayers++;
+
+        for (Map.Entry<String, Integer> entry : votes.entrySet()) {
+            if (entry.getValue() > maxVotes) {
+                maxVotes = entry.getValue();
+                playerWithMostVotes = entry.getKey();
             }
         }
-
-        if (totalAlivePlayers/2 > skips) {
-            for (Map.Entry<String, Integer> entry : votes.entrySet()) {
-                if (entry.getValue() > maxVotes) {
-                    maxVotes = entry.getValue();
-                    playerWithMostVotes = entry.getKey();
-                }
+        
+        if (maxVotes > skips) {
+            Player ejectedPlayer = playersMap.get(playerWithMostVotes);
+            if (ejectedPlayer != null) {
+                playersMap.get(playerWithMostVotes).setAlive(false);
+                emergencyMeeting.setEjectedPlayer(ejectedPlayer);
+                System.out.println(ejectedPlayer.getName() + " has been ejected.");
             }
-            if (maxVotes > skips) {
-                Player ejectedPlayer = playersMap.get(playerWithMostVotes);
-                if (ejectedPlayer != null) {
-                    playersMap.get(playerWithMostVotes).setAlive(false);
-                    emergencyMeeting.setEjectedPlayer(ejectedPlayer);
-                }
-            } else {
-                System.out.println("No player has been ejected.");
-            }
+        } else {
+            System.out.println("No player has been ejected.");
         }
         emergencyMeeting.setInMeeting(false);
         votes.clear();
-        return playersMap;
     }
 }
 

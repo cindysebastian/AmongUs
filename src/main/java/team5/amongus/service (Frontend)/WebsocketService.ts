@@ -224,7 +224,7 @@ export const subscribeToEjectedPlayer = (stompClient, roomCode, setEjectedPlayer
 };
 
 export const sendVote = (stompClient, playerName, votedPlayer, roomCode) => {
-  if (!stompClient || !playerName || !votedPlayer) return;
+  if (!stompClient || !playerName) return;
 
   const payload = `${playerName},${votedPlayer}`;
   stompClient.send(`/app/vote/${roomCode}`, {}, payload);
@@ -232,5 +232,5 @@ export const sendVote = (stompClient, playerName, votedPlayer, roomCode) => {
 
 export const sendVoteTimemout = (stompClient, roomCode) => {
   if (!stompClient) return;
-  stompClient.send(`/app/voteTimout/${roomCode}`);
+  stompClient.send(`/app/voteTimeout/${roomCode}`);
 }
