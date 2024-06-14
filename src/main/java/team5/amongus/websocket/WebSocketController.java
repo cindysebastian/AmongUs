@@ -200,7 +200,7 @@ public class WebSocketController {
                 // TODO FOR MARTINA: add proper trigger for Emergency Meeting, dead body
                 // behaviour is fully handled (When found, disappears), only need to add
                 // functionality here to start the meeting
-            } else if (interactableObject instanceof EmergencyMeeting) {
+            } else if (interactableObject instanceof EmergencyMeeting && player.getisAlive()) {
                 emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
                 messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
             }

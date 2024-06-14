@@ -31,6 +31,8 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const [currAlive, setCurrAlive] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
   const [showEmergencyMeeting, setShowEmergencyMeeting] = useState(false);
+  const [emergencyCooldown, setEmergencyCooldown] = useState(false);
+  const [killCooldown, setKillCooldown] = useState(false);
   const [playerPositions, setPlayerPositions] = useState(players);
 
   useEffect(() => {
@@ -80,19 +82,23 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       const newKilledPlayers = [...prevKilledPlayers, killedPlayer.name];
       console.log("KilledPlayersList:", newKilledPlayers);
       return newKilledPlayers;
-  });
-};
+    });
+  };
 
   const handleKill = () => {
     if (!stompClient || !currentPlayer || !roomCode) return;
     killPlayer(stompClient, currentPlayer, roomCode);
+    setKillCooldown(true);
+    setTimeout(() => setKillCooldown(false), 30000);
   };
 
   const handleEmergencyMeeting = () => {
     setShowEmergencyMeeting(true);
+    setEmergencyCooldown(true);
     setTimeout(() => setShowEmergencyMeeting(false), 35000); // Show overlay for 35 seconds
+    setTimeout(() => setEmergencyCooldown(false), 60000);
   };
-  
+
   useEffect(() => {
     let cooldownTimer: NodeJS.Timeout;
     // Function to handle cooldown reset
@@ -138,7 +144,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       if (countdown) clearInterval(countdown);
     };
   }, [sabotageCooldown]);
-
 
   const completedTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).filter(interactible => interactible.completed).length;
   const totalTasks = interactibles.filter(interactible => interactible.hasOwnProperty('completed')).length;
@@ -202,42 +207,43 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             </div>
           ))}
           <div>
-            {currAlive && interactibles
+            {!emergencyCooldown && interactibles
               .filter(interactible => interactible.hasOwnProperty('inMeeting')) // Filter interactibles with the "found" property
               .map(interactible => (
                 <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 90 }}>
                   <img src="src/main/resources/bell.png" alt="Emergency bell" style={{ width: '100px', height: '100px', position: 'relative' }} />
                 </div>
               ))}
-          <div>
-            {interactibles
-              .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
-              .map(interactible => (
-                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 30, left: interactible.position.x + 30 }}>
-                  <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
-                </div>
-              ))}
-          </div>
-          <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={players[currentPlayer]} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
-          <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
+            <div>
+              {interactibles
+                .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
+                .map(interactible => (
+                  <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 30, left: interactible.position.x + 30 }}>
+                    <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
+                  </div>
+                ))}
+            </div>
+            <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={players[currentPlayer]} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
+            <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
 
-          {interactibles
-            .filter(task => task.assignedPlayer === currentPlayer).filter(task => !task.completed) // Filter tasks by assigned player
-            .map(task => {
-              const { x: taskX, y: taskY } = task.position;
-              const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
-              return <Arrow key={task.id} x={x} y={y} angle={angle} />;
+            {interactibles
+              .filter(task => task.assignedPlayer === currentPlayer).filter(task => !task.completed) // Filter tasks by assigned player
+              .map(task => {
+                const { x: taskX, y: taskY } = task.position;
+                const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
+                return <Arrow key={task.id} x={x} y={y} angle={angle} />;
+              })}
+            {/* Arrows for Sabotage */}
+            {sabotageTasks.filter(task => !task.completed).map(task => {
+              if (task.sabotage.inProgress) {
+                const { x: taskX, y: taskY } = task.position;
+                const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
+                return <SabotageArrow key={task.id} x={x} y={y} angle={angle} />;
+              }
+              return null;
             })}
-          {/* Arrows for Sabotage */}
-          {sabotageTasks.filter(task => !task.completed).map(task => {
-            if (task.sabotage.inProgress) {
-              const { x: taskX, y: taskY } = task.position;
-              const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
-              return <SabotageArrow key={task.id} x={x} y={y} angle={angle} />;
-            }
-            return null;
-          })}
-        </div>        
+          </div>
+        </div>
       </div>
       <div>
         {interactibles.some(interactible => interactible.inMeeting) && (
@@ -247,9 +253,10 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             playerName={currentPlayer}
             roomCode={roomCode}
             players={players}
+            interactible={interactibles.find(i => i.id === 60)}
           />
         )}
-        </div>
+      </div>
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
@@ -262,7 +269,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
         )
       ))}
 
-      {isImposter && <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill} />}
+      {isImposter && !killCooldown && <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill} />}
       {isImposter && !sabotageCooldown && !sabotageTasks.some(task => task.sabotage.inProgress) &&
         <>
           <div onClick={() => handleSabotage("EndGameSabotage")} style={{ position: 'absolute', top: '50px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>End Game Sabotage</div>
@@ -271,7 +278,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       }
       {isImposter && sabotageCooldown && <div style={{ zIndex: 10, top: "10px", right: "10px", backgroundColor: 'white', position: "absolute" }}>Sabotage Cooldown: {cooldownTime} seconds</div>}
     </div>
-  </div>
   );
 };
 

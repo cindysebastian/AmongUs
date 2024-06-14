@@ -31,6 +31,7 @@ export const handleReceivedInteractibles = (interactiblesData, setInteractibles)
         height: data.height,
         inMeeting: data.inMeeting,
         ejectedPlayer: data.ejectedPlayer,
+        votes: data.votes,
       }
     }
 

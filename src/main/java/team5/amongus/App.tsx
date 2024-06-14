@@ -91,6 +91,15 @@ const App = () => {
   }, [interactibles, playerName]);
 
   useEffect(() => {
+    if (interactibles && playerName) {
+      const inMeeting = interactibles.some(interactible =>
+        interactible.inMeeting
+      );
+      setInteractionInProgress(inMeeting);
+    }
+  }, [interactibles, playerName]);
+
+  useEffect(() => {
     if (sabotageTasks && playerName){
       const playerInteracting = sabotageTasks.some(task => 
         task.inProgress && task.triggeredBy == playerName

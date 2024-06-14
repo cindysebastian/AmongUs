@@ -5,6 +5,7 @@ import MessageInput from '../components/MessageInput';
 import { sendChatMessage, subscribeToMessages, subscribeToEjectedPlayer, sendVote, sendVoteTimemout } from '../service (Frontend)/WebsocketService';
 import Stomp from 'stompjs';
 import Player from './interfaces/Player';
+import Interactible from './interfaces/Interactible';
 
 interface EmergencyMeetingOverlayProps {
   playerNames: string[];
@@ -12,17 +13,16 @@ interface EmergencyMeetingOverlayProps {
   playerName: string;
   roomCode: string;
   players: Record<string, Player>;
+  interactible: Interactible;
 }
 
-const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playerNames, stompClient, playerName, roomCode, players }) => {
+const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playerNames, stompClient, playerName, roomCode, players, interactible }) => {
   const [messages, setMessages] = useState([]);
   const [isChatVisible, setIsChatVisible] = useState(false);
-  const [votes, setVotes] = useState<{ [key: string]: { vote: number; skip: number } }>({});
   const [ejectedPlayer, setEjectedPlayer] = useState<string | null>(null);
   const [showEjectedGif, setShowEjectedGif] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(30); // Initial countdown time
-
 
   useEffect(() => {
     if (stompClient) {
@@ -63,7 +63,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
     setIsChatVisible(!isChatVisible);
   };
 
-  const handleVote = (votedPlayer) => {
+  const handleVote = (votedPlayer: string) => {
     if (stompClient && playerName) {
       console.log("voted for " + votedPlayer);
       sendVote(stompClient, playerName, votedPlayer, roomCode);
@@ -79,80 +79,82 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
 
   return (
     <div className={styles.emergencyOverlay}>
-      <div className={styles.playerList}>
-        <h2>Player Names</h2>
-        <div className={styles.columns}>
-          <ul className={styles.column}>
-            {leftColumnNames.map(name => (
-              <li key={name} className={styles.playerName}>
-                {name} {!players[name].isAlive && <span>(DEAD)</span>}
-                {players[name].isAlive && (
-                  <div>
-                    Vote: {votes[name]?.vote ?? 0}
-                    <img
-                      src="src/main/resources/yesVote.png" // Update the path to point to your GIF file
-                      alt="Vote"
-                      onClick={() => handleVote(name)}
-                      className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
-                    />
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-          <ul className={styles.column}>
-            {rightColumnNames.map(name => (
-              <li key={name} className={styles.playerName}>
-                {name} {!players[name].isAlive && <span>(DEAD)</span>}
-                {players[name].isAlive && (
-                  <div>
-                    Votes: {votes[name]?.vote ?? 0}
-                    <img
-                      src="src/main/resources/yesVote.png" // Update the path to point to your GIF file
-                      alt="Vote"
-                      onClick={() => handleVote(name)}
-                      className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
-                    />
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className={styles.skipButtonContainer}>
-          <img
-            src="src/main/resources/skipVote.png" // Update the path to point to your PNG file
-            alt="Skip"
-            onClick={() => handleVote("")}
-            className={`${styles.skipButton} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
-          />
-        </div>
-      </div>
-      <button onClick={handleToggleChat} className={styles.chatButton}>
-        {isChatVisible ? 'Close Chat' : 'Open Chat'}
-      </button>
-      {isChatVisible && (
-        <div className={styles.chatContainer}>
-          <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-            <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
+      <div className={styles.emergencydiv}>
+        <div className={styles.playerList}>
+          <h2>Player Names</h2>
+          <div className={styles.columns}>
+            <ul className={styles.column}>
+              {leftColumnNames.map(name => (
+                <li key={name} className={styles.playerName}>
+                  {name} {!players[name].isAlive && <span>(DEAD)</span>}
+                  {players[name].isAlive && (
+                    <div>
+                      Vote: {interactible.votes[name] ?? 0}
+                      <img
+                        src="src/main/resources/yesVote.png" // Update the path to point to your GIF file
+                        alt="Vote"
+                        onClick={() => handleVote(name)}
+                        className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+                      />
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <ul className={styles.column}>
+              {rightColumnNames.map(name => (
+                <li key={name} className={styles.playerName}>
+                  {name} {!players[name].isAlive && <span>(DEAD)</span>}
+                  {players[name].isAlive && (
+                    <div>
+                      Votes: {interactible.votes[name] ?? 0}
+                      <img
+                        src="src/main/resources/yesVote.png" // Update the path to point to your GIF file
+                        alt="Vote"
+                        onClick={() => handleVote(name)}
+                        className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+                      />
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
-          <button className={styles.closeChatButton} onClick={handleToggleChat}>Exit</button>
-          <MessageInput
-            sendMessage={sendMessage}
-            chatVisible={isChatVisible}
-            playerName={playerName}
-            players={players}
-          />
-          <ChatRoom messages={messages} />
+          <div className={styles.skipButtonContainer}>
+            <img
+              src="src/main/resources/skipVote.png" // Update the path to point to your PNG file
+              alt="Skip"
+              onClick={() => handleVote("")}
+              className={`${styles.skipButton} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+            />
+          </div>
         </div>
-      )}
-      {showEjectedGif && (
-        <div className={styles.ejectedGifContainer}>
-          <img src="src/main/resources/ejected.gif" alt="Ejected" className={styles.ejectedGif} />
+        <button onClick={handleToggleChat} className={styles.chatButton}>
+          {isChatVisible ? 'Close Chat' : 'Open Chat'}
+        </button>
+        {isChatVisible && (
+          <div className={styles.chatContainer}>
+            <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+              <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
+            </div>
+            <button className={styles.closeChatButton} onClick={handleToggleChat}>Exit</button>
+            <MessageInput
+              sendMessage={sendMessage}
+              chatVisible={isChatVisible}
+              playerName={playerName}
+              players={players}
+            />
+            <ChatRoom messages={messages} />
+          </div>
+        )}
+        {showEjectedGif && (
+          <div className={styles.ejectedGifContainer}>
+            <img src="src/main/resources/ejected.gif" alt="Ejected" className={styles.ejectedGif} />
+          </div>
+        )}
+        <div className={styles.countdown}>
+          <h2>Time Remaining: {timeRemaining - 5} seconds</h2>
         </div>
-      )}
-      <div className={styles.countdown}>
-        <h2>Time Remaining: {timeRemaining-5} seconds</h2>
       </div>
     </div>
   );
