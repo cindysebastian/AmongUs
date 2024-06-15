@@ -14,6 +14,7 @@ import Sabotage from './Sabotage/Sabotage';
 import SabotageGif from './Sabotage/SabotageGif';
 import Arrow from './Arrow';
 import SabotageArrow from './SabotageArrow';
+import RoleAnimation from './RoleAnimation';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -22,15 +23,17 @@ interface Props {
   sabotageTasks: SabotageTask[];
   currentPlayer: string;
   roomCode: string;
+  setInteractionInProgress: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabotageTasks, currentPlayer, roomCode }) => {
+const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabotageTasks, currentPlayer, roomCode, setInteractionInProgress }) => {
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
   const [currAlive, setCurrAlive] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
   const [sabotageCooldown, setSabotageCooldown] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(120); // 2 minutes in seconds
+  const [showAnimation, setShowAnimation] = useState(true);
 
   useEffect(() => {
     if (!currentPlayer || !players) return;
@@ -45,7 +48,13 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     if (currentPlayerObj && currentPlayerObj.isImposter) {
       setIsImposter(true);
     }
-  }, [players, currentPlayer]);
+
+    if (showAnimation) {
+      setInteractionInProgress(true);
+    } else {
+      setInteractionInProgress(false);
+    }
+  }, [players, currentPlayer, setInteractionInProgress, showAnimation]);
 
   useEffect(() => {
     if (!stompClient) return;
@@ -144,6 +153,11 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     height: `${mapHeight}px`,
   };
 
+  const handleAnimationEnd = () => {
+    setShowAnimation(false);
+    setInteractionInProgress(false);
+  };
+
   const calculateArrowData = (playerX: number, playerY: number, taskX: number, taskY: number) => {
     const dx = taskX - playerX;
     const dy = taskY - playerY;
@@ -163,6 +177,9 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   return (
     <div>
       <Space />
+      {showAnimation && (
+        <RoleAnimation isImposter={isImposter} player={players[currentPlayer]}onAnimationEnd={handleAnimationEnd} />
+      )}
       <div style={cameraStyle}>
         <div className={styles.gifBackground}></div>
         <div className={styles.spaceShipBackground}>
