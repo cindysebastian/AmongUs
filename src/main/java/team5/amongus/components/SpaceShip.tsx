@@ -48,7 +48,13 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     if (currentPlayerObj && currentPlayerObj.isImposter) {
       setIsImposter(true);
     }
-  }, [players, currentPlayer]);
+
+    if (showAnimation) {
+      setInteractionInProgress(true);
+    } else {
+      setInteractionInProgress(false);
+    }
+  }, [players, currentPlayer, setInteractionInProgress, showAnimation]);
 
   useEffect(() => {
     if (!stompClient) return;
@@ -172,7 +178,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     <div>
       <Space />
       {showAnimation && (
-        <RoleAnimation isImposter={isImposter} onAnimationEnd={handleAnimationEnd} />
+        <RoleAnimation isImposter={isImposter} player={players[currentPlayer]}onAnimationEnd={handleAnimationEnd} />
       )}
       <div style={cameraStyle}>
         <div className={styles.gifBackground}></div>
