@@ -100,8 +100,8 @@ const App = () => {
   }, [interactibles, playerName]);
 
   useEffect(() => {
-    if (sabotageTasks && playerName){
-      const playerInteracting = sabotageTasks.some(task => 
+    if (sabotageTasks && playerName) {
+      const playerInteracting = sabotageTasks.some(task =>
         task.inProgress && task.triggeredBy == playerName
       );
       setInteractionInProgress(playerInteracting);
@@ -226,8 +226,9 @@ const App = () => {
 
   useEffect(() => {
     if (redirectToSpaceShip && gameState == "Game running") {
+
       navigate('/spaceship');
-      //TODO: Add Info about Roles animation here before navigating
+
     }
   }, [redirectToSpaceShip, gameState, navigate]);
 
@@ -328,11 +329,9 @@ const App = () => {
           </div></div>
       </div>} />
       <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage} />} />
-      <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} sabotageTasks={sabotageTasks} currentPlayer={playerName} roomCode={roomCode} />} />
+      <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} sabotageTasks={sabotageTasks} currentPlayer={playerName} roomCode={roomCode} setInteractionInProgress={setInteractionInProgress} />} />
       <Route path="/end" element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />
       <Route path="/" element={<Navigate replace to="/login" />} />
-
-
     </Routes>
   );
 };

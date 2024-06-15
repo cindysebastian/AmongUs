@@ -7,6 +7,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -72,9 +73,10 @@ public class WebSocketController {
     }
 
     @MessageMapping("/hostGame")
-    public void hostGame(@Payload HostGameRequest request) {
+    public void hostGame(@Payload HostGameRequest request, SimpMessageHeaderAccessor headerAccessor) {
         String roomCode;
         Room room;
+        String sessionId = headerAccessor.getSessionId();
 
         // Generate a unique room code
         synchronized (usedRoomCodes) {
@@ -86,7 +88,7 @@ public class WebSocketController {
 
         Position position = new Position(900, 500);
         activeRooms.put(roomCode, room);
-        Player host = new Player(request.getPlayerName(), position);
+        Player host = new Player(request.getPlayerName(), position, sessionId);
         host.setIsHost(true);
         room.addPlayer(host);
         HostGameResponse response = new HostGameResponse("OK", roomCode);
@@ -106,16 +108,17 @@ public class WebSocketController {
     }
 
     @MessageMapping("/joinGame/{roomCode}")
-    public void joinGame(@Payload JoinGameRequest request) {
+    public void joinGame(@Payload JoinGameRequest request, SimpMessageHeaderAccessor headerAccessor) {
         Map<String, Object> response = new HashMap<>();
+        String sessionId = headerAccessor.getSessionId();
 
         if (activeRooms.get(request.getRoomCode()) != null) {
             Room room = activeRooms.get(request.getRoomCode());
             Position position = new Position(900, 500);
             if (room.getInGamePlayersMap().get(request.getPlayerName()) == null) {
                 if (room.getInGamePlayersMap().size() < room.getMaxPlayers()) {
-
-                    room.addPlayer(new Player(request.getPlayerName(), position));
+                    Player newPlayer = new Player(request.getPlayerName(), position, sessionId);
+                    room.addPlayer(newPlayer);
                     room.broadcastPlayerUpdate(messagingTemplate);
                     response.put("status", "OK");
                     response.put("roomCode", room.getRoomCode());
@@ -476,59 +479,60 @@ public class WebSocketController {
         room.broadcastInteractiblesUpdate(messagingTemplate);
     }
 
-    /*
-     * @EventListener
-     * public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
-     * String sessionId = event.getSessionId();
-     * 
-     * boolean isFirstPlayer = false;
-     * String firstPlayerName = "";
-     * /*
-     * CHANGE THIS LOGIC:
-     * When player disconnects, fetch correct room, check which player, BEFORE
-     * removing player from the list, check whether they are host
-     * If they are, remove them and then call the validateHost function on the room,
-     * if they are not, only remove them.
-     */
-    /*
-     * if (!inGamePlayersMap.isEmpty()) {
-     * firstPlayerName = inGamePlayersMap.keySet().iterator().next();
-     * isFirstPlayer =
-     * inGamePlayersMap.get(firstPlayerName).getSessionId().equals(sessionId);
-     * }
-     * 
-     * for (Iterator<Map.Entry<String, Player>> iterator =
-     * inGamePlayersMap.entrySet().iterator(); iterator
-     * .hasNext();) {
-     * Map.Entry<String, Player> entry = iterator.next();
-     * Player player = entry.getValue();
-     * if (player.getSessionId() != null && player.getSessionId().equals(sessionId))
-     * {
-     * iterator.remove();
-     * playersMap.remove(entry.getKey());
-     * broadcastPlayerUpdate();
-     * break;
-     * }
-     * }
-     * 
-     * if (isFirstPlayer && !inGamePlayersMap.isEmpty()) {
-     * String nextPlayerName = inGamePlayersMap.keySet().iterator().next();
-     * messagingTemplate.convertAndSend("/topic/nextPlayerStartButton",
-     * nextPlayerName);
-     * }
-     * 
-     * for (Iterator<Map.Entry<String, Player>> iterator =
-     * playersMap.entrySet().iterator(); iterator.hasNext();) {
-     * Map.Entry<String, Player> entry = iterator.next();
-     * Player player = entry.getValue();
-     * if (player.getSessionId() != null && player.getSessionId().equals(sessionId))
-     * {
-     * iterator.remove();
-     * broadcastPlayerUpdate();
-     * break;
-     * }
-     * }
-     * }
-     */
+    @EventListener
+    public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+        String sessionId = headerAccessor.getSessionId();
+        System.out.println("Session Disconnect, searching for player");
+
+        // Iterate through active rooms to find the player and room
+        for (Iterator<Map.Entry<String, Room>> roomIterator = activeRooms.entrySet().iterator(); roomIterator
+                .hasNext();) {
+            Map.Entry<String, Room> roomEntry = roomIterator.next();
+            Room room = roomEntry.getValue();
+            String roomCode = roomEntry.getKey();
+
+            Player playerToRemove = null;
+            if (room.getGameStarted().equals("Game waiting")) {
+                for (Player player : room.getInGamePlayersMap().values()) {
+                    if (Objects.equals(player.getSessionId(), sessionId)) {
+                        playerToRemove = player;
+                        System.out.println("Found Player");
+                        break;
+                    }
+                }
+            } else {
+                for (Player player : room.getPlayersMap().values()) {
+                    if (Objects.equals(player.getSessionId(), sessionId)) {
+                        playerToRemove = player;
+                        System.out.println("Found Player");
+                        break;
+                    }
+                }
+            }
+
+            if (playerToRemove != null) {
+                // Remove the player from the room
+                room.removePlayer(playerToRemove.getName());
+
+                // Check if the player was the host
+                if (playerToRemove.getIsHost()) {
+                    System.out.println("Host left, reassigning Host");
+                    room.validateHost();
+                }
+
+                // If the room is now empty, remove it from active rooms
+                if (room.getPlayersMap().isEmpty()&&room.getInGamePlayersMap().isEmpty()) {
+                    roomIterator.remove();
+                    usedRoomCodes.remove(roomCode);
+                    System.out.println("Room " + roomCode + " has been removed as it is now empty.");
+                }
+
+                // Broadcast the updated player list to the room
+                room.broadcastPlayerUpdate(messagingTemplate);
+                break; // Exit the loop as we found and handled the player
+            }
+        }
+    }
 
 }

@@ -36,16 +36,26 @@ public class GameWinningService implements IGameWinningService {
     }
 
     public boolean imposterDead(Map<String, Player> playersMap) {
+        boolean imposterExists = false;
+    
         for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
             Player player = entry.getValue();
-
-            // Check if the player is an imposter and if they are dead
-            if (player instanceof Imposter && !player.getisAlive()) {
-                return true;
+    
+            // Check if the player is an imposter
+            if (player instanceof Imposter) {
+                imposterExists = true;
+    
+                // Check if the imposter is dead
+                if (!player.getisAlive()) {
+                    return true; // Imposter is found and dead
+                }
             }
         }
-        return false;
+    
+        // If no imposter object is found, return true to indicate crewmates win
+        return !imposterExists;
     }
+    
 
     @Override
     public boolean enoughCrewmatesDead(Map<String, Player> playersMap) {
