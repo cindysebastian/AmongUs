@@ -1,10 +1,10 @@
-package chat.amongus;
+package team5.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import team5.amongus.model.Message;
+import team5.model.Message;
 
 @Service
 public class ChatService implements IChatService {

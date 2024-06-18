@@ -1,11 +1,13 @@
+package team5.websocket;
+
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-import team5.amongus.service.ChatService;
-import team5.amongus.model.*;
+import team5.model.Message;
+import team5.service.ChatService;
 
 import java.util.List;
 

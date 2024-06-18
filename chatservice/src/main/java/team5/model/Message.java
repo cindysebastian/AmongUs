@@ -1,4 +1,4 @@
-package chat.amongus;
+package team5.model;
 
 public class Message {
     private String content;

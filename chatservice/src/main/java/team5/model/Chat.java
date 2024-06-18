@@ -1,4 +1,4 @@
-package chat.amongus;
+package team5.model;
 import java.util.List;
 
 public class Chat {

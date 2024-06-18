@@ -12,6 +12,10 @@
     <groupId>team5</groupId>
     <artifactId>amongus</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>chatservice</module>
+    </modules>
     <name>amongus</name>
     <description>being sus in among us</description>
     <properties>
