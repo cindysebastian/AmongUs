@@ -20,7 +20,7 @@ const KillButton = ({ onKill, canKill }) => {
       style={buttonStyle}
     >
       <img
-        src="src/main/resources/killButtonIcon.png"
+        src="gameservice/src/main/resources/killButtonIcon.png"
         alt="Kill Button"
         className={styles.killButtonIcon}
       />

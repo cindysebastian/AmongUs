@@ -34,7 +34,7 @@ const Sabotage: React.FC<Props> = ({ stompClient, sabotageTasks, currentPlayer, 
                 (task.sabotage.inProgress &&
                 <img
                     key={task.id}
-                    src={`src/main/resources/sabotage/${task.sabotage.name}Task.png`} // Assuming you have images named after interactible types
+                    src={`gameservice/src/main/resources/sabotage/${task.sabotage.name}Task.png`} // Assuming you have images named after interactible types
                     alt={"Sabotage: "+ task.sabotage.name}
                     style={{
                         position: 'absolute',

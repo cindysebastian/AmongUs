@@ -15,6 +15,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>chatservice</module>
+        <module>gameservice</module>
     </modules>
     <name>amongus</name>
     <description>being sus in among us</description>

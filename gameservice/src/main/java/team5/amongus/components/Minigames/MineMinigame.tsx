@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
+import Task from '../interfaces/Interactible';
+import { completeMiniGame } from "../../service (Frontend)/TaskService";
 import Stomp from "stompjs";
-import styles from '../Sabotage/Sabotage.module.css'; // Import CSS module
-import SabotageTask from '../interfaces/SabotageTask';
-import { completeSabotageMiniGame } from '../../service (Frontend)/SabotageTaskService';
+import styles from './MiniGame.module.css'; // Import CSS module
 
 interface Props {
   stompClient: Stomp.Client | null;
-  sabotageTask: SabotageTask;
+  interactible: Task;
   roomCode: String;
 }
 
-const SabotageMiniGame: React.FC<Props> = ({ stompClient, sabotageTask, roomCode }) => {
+const MineMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode }) => {
   const [clickCount, setClickCount] = useState(0);
   const [isShaking, setIsShaking] = useState(false); // State to control animation
 
@@ -22,7 +22,7 @@ const SabotageMiniGame: React.FC<Props> = ({ stompClient, sabotageTask, roomCode
     if (clickCount === 4) {
       // Call completeMiniGame function with stompClient
       playDingSound();
-      completeSabotageMiniGame(stompClient, sabotageTask.id, roomCode);
+      completeMiniGame(stompClient, interactible.id, roomCode);
     }
   };
 
@@ -47,7 +47,6 @@ const SabotageMiniGame: React.FC<Props> = ({ stompClient, sabotageTask, roomCode
     });
   };
   
-
   const playDingSound = () => {
     const audio = new Audio('/scan_completed.mp3'); // Path relative to the public directory
     audio.volume = 1.0; // Ensure volume is set to 100%
@@ -58,17 +57,21 @@ const SabotageMiniGame: React.FC<Props> = ({ stompClient, sabotageTask, roomCode
 
   return (
     <div className={styles.overlay}>
+      <div className={styles.popup}>
+        <div className={styles.popupContent}>
           <div className={styles.imageWrapper}>
             <img
-              src={`/src/main/resources/sabotage/${sabotageTask.sabotage.name}Task.png`}
-              alt="TaskSabotage"
+              src="gameservice/src/main/resources/mine.png"
+              alt="TaskMine"
               onClick={handleClick}
               className={`${styles.mineInteract} ${isShaking ? styles.shake : ''}`}
               onAnimationEnd={handleAnimationEnd}
             />
           </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default SabotageMiniGame;
+export default MineMinigame;

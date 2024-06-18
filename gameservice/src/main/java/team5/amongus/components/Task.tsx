@@ -35,7 +35,7 @@ const Task: React.FC<Props> = ({ stompClient, interactibles, currentPlayer, offs
             {interactibles.filter(interactible => interactible.assignedPlayer === currentPlayer.name).map(interactible => (
                 <img
                     key={interactible.id}
-                    src={`src/main/resources/${interactible.type.toLowerCase()}${currentPlayer.canInteract ? 'red' : ''}.png`} // Display "red.png" if canInteract is true
+                    src={`gameservice/src/main/resources/${interactible.type.toLowerCase()}${currentPlayer.canInteract ? 'red' : ''}.png`} // Display "red.png" if canInteract is true
                     alt={interactible.type}
                     style={{
                         position: 'absolute',
