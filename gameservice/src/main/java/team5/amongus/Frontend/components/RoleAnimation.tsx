@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import imposterVideo from '../../../../resources/Imposter.mp4';
-import crewmateVideo from '../../../../resources/Crewmate.mp4';
-import roleSound from '../../../../resources/shh.wav'; // Use the same sound for both roles
+import imposterVideo from '../../../../../resources/Imposter.mp4';
+import crewmateVideo from '../../../../../resources/Crewmate.mp4';
+import roleSound from '../../../../../resources/shh.wav'; // Use the same sound for both roles
 import styles from '../styles/RoleAnimation.module.css';
 import PlayerSprite from './PlayerSprite';
 

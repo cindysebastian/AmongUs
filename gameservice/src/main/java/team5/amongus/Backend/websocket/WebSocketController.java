@@ -455,7 +455,7 @@ public class WebSocketController {
                 if (room.getPlayersMap().isEmpty()&&room.getInGamePlayersMap().isEmpty()) {
                     roomIterator.remove();
                     usedRoomCodes.remove(roomCode);
-                    System.out.println("Room " + roomCode + " has been removed as it is now empty.");
+                    System.out.println("[Websocket Controller] Room " + roomCode + " has been removed as it is now empty.");
                 }
 
                 // Broadcast the updated player list to the room
