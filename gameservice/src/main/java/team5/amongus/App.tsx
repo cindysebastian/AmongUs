@@ -2,16 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Route, Routes, useNavigate, Navigate } from 'react-router-dom';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
-import ChatRoom from './components/ChatRoom';
-import MessageInput from './components/MessageInput';
-import Lobby from './components/Lobby';
-import SpaceShip from './components/SpaceShip';
-import styles from './styles/index.module.css';
-import { subscribeToGameStatus } from './service (Frontend)/GameStartingService';
-import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, subscribetoInteractions, subscribetoGameFinishing, subscribeToInteractionWithSabotage, sendInteractionWithSabotageTask } from './service (Frontend)/WebsocketService';
-import { movePlayer } from './service (Frontend)/PlayerMovementService';
-import KillButton from './components/KillButton';
-import GameEndHandler from './components/GameEnd/GameEndHandler';
+import ChatRoom from './Frontend/components/ChatRoom';
+import MessageInput from './Frontend/components/MessageInput';
+import Lobby from './Frontend/components/Lobby';
+import SpaceShip from './Frontend/components/SpaceShip';
+import styles from './Frontend/styles/index.module.css';
+import { subscribeToGameStatus } from './Frontend/service/GameStartingService';
+import { connectWebSocket, subscribeToPlayers, subscribeToMessages, sendInteraction, sendChatMessage, subscribetoInteractions, subscribetoGameFinishing, subscribeToInteractionWithSabotage, sendInteractionWithSabotageTask } from './Frontend/service/WebsocketService';
+import { movePlayer } from './Frontend/service/PlayerMovementService';
+import KillButton from './Frontend/components/KillButton';
+import GameEndHandler from './Frontend/components/GameEnd/GameEndHandler';
 
 const directionMap = {
   w: 'UP',
