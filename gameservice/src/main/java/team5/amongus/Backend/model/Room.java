@@ -70,6 +70,7 @@ public class Room {
 
     public void removePlayer(String playerName) {
         playersMap.remove(playerName);
+        inGamePlayersMap.remove(playerName);
     }
 
     public String getGameStarted() {
@@ -94,24 +95,47 @@ public class Room {
 
     public String validateHost() {
         boolean hostConnected = false;
-        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
-            String key = entry.getKey();
-
-            if (key.equals(this.host)) {
-                hostConnected = true;
-                break;
+        if(gameState.equals("Game waiting")){
+            for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
+                String key = entry.getKey();
+    
+                if (key.equals(this.host)) {
+                    hostConnected = true;
+                    break;
+                }
+            }
+        }else{
+            for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+                String key = entry.getKey();
+    
+                if (key.equals(this.host)) {
+                    hostConnected = true;
+                    break;
+                }
             }
         }
+       
         if (hostConnected) {
             return this.host;
         } else {
-            for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
-                String key = entry.getKey();
-                Player player = entry.getValue();
-                this.host = key;
-                player.setIsHost(true);
-                break;
+            if(gameState.equals("Game waiting")){
+                for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
+                    String key = entry.getKey();
+                    Player player = entry.getValue();
+                    this.host = key;
+                    player.setIsHost(true);
+                    break;
+                }
+            }else{
+                for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
+                    String key = entry.getKey();
+                    Player player = entry.getValue();
+                    this.host = key;
+                    player.setIsHost(true);
+                    break;
+                }
             }
+            
             System.out.println("[Room.java] Host changed! New host: " + this.host);
             return this.host;
         }
@@ -152,7 +176,7 @@ public class Room {
 
         if (!playerName.isEmpty()) {
             Player player = playersMap.get(playerName);
-            Imposter imposter = new Imposter(player.getName(), player.getPosition());
+            Imposter imposter = new Imposter(player.getName(), player.getPosition(), player.getSessionId());
             if(player.getIsHost()){
                 imposter.setIsHost(true);
             }

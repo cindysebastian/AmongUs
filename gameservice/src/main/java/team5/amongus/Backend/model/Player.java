@@ -15,11 +15,13 @@ public class Player implements Serializable, Cloneable {
     private boolean willContinue = false;
     private long lastActivityTime;
     private boolean isHost = false;
+    private String sessionId;
 
-    public Player(String name, Position position) {
+    public Player(String name, Position position, String sessionId) {
         this.name = name;
         this.position = position;
         this.lastActivityTime = System.currentTimeMillis();
+        this.sessionId = sessionId;
     }
 
     public Player(Imposter imposter) {
@@ -27,6 +29,15 @@ public class Player implements Serializable, Cloneable {
         this.position = imposter.getPosition();
         this.lastActivityTime = imposter.getLastActivityTime();
         this.isHost = imposter.getIsHost();
+        this.sessionId = imposter.getSessionId();
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
     public void setWillContinue(boolean set) {

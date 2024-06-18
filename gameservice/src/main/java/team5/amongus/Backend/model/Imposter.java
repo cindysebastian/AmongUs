@@ -7,8 +7,8 @@ public class Imposter extends Player {
 
     
 
-    public Imposter(String name, Position position) {
-        super(name, position);
+    public Imposter(String name, Position position, String sessionId) {
+        super(name, position, sessionId);
     }
 
     public void kill(Player victim) {
