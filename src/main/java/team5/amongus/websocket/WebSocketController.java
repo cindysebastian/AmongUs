@@ -190,6 +190,7 @@ public class WebSocketController {
                     while (iterator.hasNext()) {
                         Interactible interactible = iterator.next();
                         if (interactible instanceof DeadBody) {
+                            
                             iterator.remove(); // Safe removal using iterator
                         }
                     }
@@ -198,13 +199,15 @@ public class WebSocketController {
                 } else {
                     System.out.println("Dead Players cannot report bodies.");
                 }
-                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+                String meeting = "deadbody";
+                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode, meeting);
                 messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
                 // TODO FOR MARTINA: add proper trigger for Emergency Meeting, dead body
                 // behaviour is fully handled (When found, disappears), only need to add
                 // functionality here to start the meeting
             } else if (interactableObject instanceof EmergencyMeeting && player.getisAlive()) {
-                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+                String meeting = "button";
+                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode, meeting);
                 messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
             }
         }
@@ -440,7 +443,8 @@ public class WebSocketController {
         Room room = activeRooms.get(roomCode);
         room.removeAllDeadBodies();
         room.broadcastInteractiblesUpdate(messagingTemplate);
-        emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+        String meeting = "";
+        emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode, meeting);
         messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
     }
 

@@ -6,7 +6,7 @@ import team5.amongus.model.EmergencyMeeting;
 import team5.amongus.model.Player;
 
 public interface IEmergencyMeetingService {
-    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode);
+    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode, String meeting);
 
     public void handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode);
 

@@ -36,6 +36,8 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const [emergencyCooldown, setEmergencyCooldown] = useState(false);
   const [killCooldown, setKillCooldown] = useState(false);
   const [playerPositions, setPlayerPositions] = useState(players);
+  
+
 
   useEffect(() => {
     const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, handleEmergencyMeeting, roomCode);
@@ -102,10 +104,23 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   };
 
   const handleEmergencyMeeting = () => {
+    if (emergencyCooldown) return; // Prevent starting another meeting if cooldown is active
+
     setShowEmergencyMeeting(true);
     setEmergencyCooldown(true);
-    setTimeout(() => setShowEmergencyMeeting(false), 35000); // Show overlay for 35 seconds
-    setTimeout(() => setEmergencyCooldown(false), 60000);
+    setEmergencyCooldown(true); // Set the cooldown
+
+    setTimeout(() => {
+      setShowEmergencyMeeting(false);
+    }, 35000); // Show overlay for 35 seconds
+
+    setTimeout(() => {
+      setEmergencyCooldown(false);
+    }, 60000);
+
+    setTimeout(() => {
+      setEmergencyCooldown(false); // Reset cooldown after 30 seconds
+    }, 30000); // 30 seconds cooldown
   };
 
   useEffect(() => {

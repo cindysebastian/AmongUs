@@ -1,6 +1,9 @@
 package team5.amongus.service;
 
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Service;
 import team5.amongus.model.EmergencyMeeting;
 import team5.amongus.model.Player;
@@ -11,8 +14,25 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
     private int totalVotes = 0;
     private int skips = 0;
     private int votesCast = 0;
+    private boolean isCooldownActive = false;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode) {
+    public boolean isCooldownActive() {
+        return isCooldownActive;
+    }
+    public void setCooldownActive(boolean isCooldownActive) {
+        this.isCooldownActive = isCooldownActive;
+    }
+
+    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode, String meeting) {
+        if (meeting == "deadbody") {
+            setCooldownActive(false);
+        }
+        if (isCooldownActive) {
+            System.out.println("Emergency meeting cooldown is active. Cannot start a new meeting.");
+            return;
+        }
+
         int x = 2000;
         int y = 550;
         for (Map.Entry<String,Player> entry : playersMap.entrySet()) {
@@ -28,6 +48,16 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         emergencyMeeting.setInMeeting(true);
         emergencyMeeting.setEjectedPlayer(null);
         emergencyMeeting.getVotes().clear(); // Clear votes from the previous meeting
+
+        startCooldown();
+    }
+
+    private void startCooldown() {
+        isCooldownActive = true;
+        scheduler.schedule(() -> {
+            isCooldownActive = false;
+            System.out.println("Emergency meeting cooldown has ended.");
+        }, 120, TimeUnit.SECONDS); // 120 seconds cooldown
     }
 
     public void handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode) {
@@ -86,4 +116,5 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         emergencyMeeting.setInMeeting(false);
         votes.clear();
     }
+
 }
