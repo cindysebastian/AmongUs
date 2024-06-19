@@ -26,8 +26,7 @@ import team5.amongus.Backend.service.IGameWinningService;
 import team5.amongus.Backend.service.IPlayerService;
 import team5.amongus.Backend.service.ISabotageService;
 import team5.amongus.Backend.service.ITaskService;
-import team5.amongus.Backend.EmergencyMeetingService;
-import team5.amongus.Backend.IEmergencyMeetingService;
+import team5.amongus.Backend.service.IEmergencyMeetingService;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -53,9 +52,10 @@ public class WebSocketController {
     private CollisionMask collisionMaskLobby;
     private CollisionMask collisionMaskGame;
     private Set<String> usedRoomCodes = new HashSet<>();
+    private final IEmergencyMeetingService emergencyMeetingService;
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
-            ITaskService taskService, ICollisionMaskService collisionMaskService, ISabotageService sabotageService) {
+            ITaskService taskService, ICollisionMaskService collisionMaskService, ISabotageService sabotageService, IEmergencyMeetingService emergencyMeetingService) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.sabotageService = sabotageService;

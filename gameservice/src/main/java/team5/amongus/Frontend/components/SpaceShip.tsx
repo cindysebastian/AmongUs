@@ -244,7 +244,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
               .filter(interactible => interactible.hasOwnProperty('inMeeting')) // Filter interactibles with the "inMeeting" property
               .map(interactible => (
                 <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 90 }}>
-                  <img src="src/main/resources/bell.png" alt="Emergency bell" style={{ width: '100px', height: '100px', position: 'relative' }} />
+                  <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '100px', height: '100px', position: 'relative' }} />
                 </div>
               ))
             }
@@ -253,7 +253,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
                 .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
                 .map(interactible => (
                   <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 30, left: interactible.position.x + 30 }}>
-                    <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
+                    <img src="gameservice/src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
                   </div>
                 ))
               }
@@ -262,7 +262,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
                 .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
                 .map(interactible => (
                   <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 30, left: interactible.position.x + 30 }}>
-                    <img src="src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
+                    <img src="gameservice/src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
                   </div>
                 ))}
             </div>

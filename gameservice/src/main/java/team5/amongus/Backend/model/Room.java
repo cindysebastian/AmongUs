@@ -12,6 +12,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import team5.amongus.Backend.service.GameWinningService;
 import team5.amongus.Backend.service.IGameWinningService;
+import team5.amongus.Backend.service.*;
 
 public class Room {
     private final String roomCode;
@@ -28,6 +29,7 @@ public class Room {
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private String gameState = "stopped";
     String result = "";
+    private EmergencyMeeting emergencyMeeting = new EmergencyMeeting();
 
     public Room(int maxPlayers, String host) {
         this.roomCode = generateRoomCode();

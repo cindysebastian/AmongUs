@@ -1,4 +1,4 @@
-package team5.amongus.model;
+package team5.amongus.Backend.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;

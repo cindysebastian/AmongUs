@@ -1,13 +1,13 @@
-package team5.amongus.service;
+package team5.amongus.Backend.service;
 
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Service;
-import team5.amongus.model.EmergencyMeeting;
-import team5.amongus.model.Player;
-import team5.amongus.model.Position;
+import team5.amongus.Backend.model.EmergencyMeeting;
+import team5.amongus.Backend.model.Player;
+import team5.amongus.Backend.model.Position;
 
 @Service
 public class EmergencyMeetingService implements IEmergencyMeetingService {

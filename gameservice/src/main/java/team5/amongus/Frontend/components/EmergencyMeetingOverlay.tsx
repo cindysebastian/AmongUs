@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styles from '../styles/EmergencyMeetingOverlay.module.css';
 import ChatRoom from '../components/ChatRoom';
 import MessageInput from '../components/MessageInput';
-import { sendChatMessage, subscribeToMessages, subscribeToEjectedPlayer, sendVote, sendVoteTimemout } from '../service (Frontend)/WebsocketService';
+import { sendChatMessage, subscribeToMessages, subscribeToEjectedPlayer, sendVote, sendVoteTimemout } from '../service/WebsocketService';
 import Stomp from 'stompjs';
 import Player from './interfaces/Player';
 import Interactible from './interfaces/Interactible';
@@ -91,7 +91,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
                     <div>
                       Vote: {interactible.votes[name] ?? 0}
                       <img
-                        src="src/main/resources/yesVote.png" // Update the path to point to your GIF file
+                        src="gameservice/src/main/resources/yesVote.png" // Update the path to point to your GIF file
                         alt="Vote"
                         onClick={() => handleVote(name)}
                         className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
@@ -109,7 +109,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
                     <div>
                       Votes: {interactible.votes[name] ?? 0}
                       <img
-                        src="src/main/resources/yesVote.png" // Update the path to point to your GIF file
+                        src="gameservice/src/main/resources/yesVote.png" // Update the path to point to your GIF file
                         alt="Vote"
                         onClick={() => handleVote(name)}
                         className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
@@ -122,7 +122,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
           </div>
           <div className={styles.skipButtonContainer}>
             <img
-              src="src/main/resources/skipVote.png" // Update the path to point to your PNG file
+              src="gameservice/src/main/resources/skipVote.png" // Update the path to point to your PNG file
               alt="Skip"
               onClick={() => handleVote("")}
               className={`${styles.skipButton} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
@@ -149,7 +149,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
         )}
         {showEjectedGif && (
           <div className={styles.ejectedGifContainer}>
-            <img src="src/main/resources/ejected.gif" alt="Ejected" className={styles.ejectedGif} />
+            <img src="gameservice/src/main/resources/ejected.gif" alt="Ejected" className={styles.ejectedGif} />
           </div>
         )}
         <div className={styles.countdown}>
