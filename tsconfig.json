@@ -1,5 +1,5 @@
 {
-  "include": ["src"],
+  "include": ["gameservice/src"],
   "compilerOptions": {
     "outDir": "dist",
     "module": "ES2022",

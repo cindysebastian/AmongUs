@@ -1,0 +1,28 @@
+/* ProgressBar.module.css */
+
+.progressBarContainer {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+    width: 610px;
+    height: 51px;
+    background-color: #e0e0e0;
+    background-image:url("../../../../../resources/taskBar.png");
+    background-repeat: no-repeat;
+    border: 8px grey solid;
+    overflow: hidden;
+    margin-bottom: 20px; /* Adjust spacing as needed */
+    margin-top: 5%;
+    z-index: 5;
+    margin: 1%;
+    border-radius: 10px;
+  }
+  
+  .progressBar {
+    position: absolute;
+    height: 100%;
+    background-color: #05abec;
+    background-image:url("../../../../../resources/taskBar.png");
+    transition: width 0.3s ease-in-out;
+  }
+  
