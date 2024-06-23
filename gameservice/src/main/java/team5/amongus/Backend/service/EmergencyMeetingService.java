@@ -17,18 +17,8 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
     private boolean isCooldownActive = false;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    public boolean isCooldownActive() {
-        return isCooldownActive;
-    }
-    public void setCooldownActive(boolean isCooldownActive) {
-        this.isCooldownActive = isCooldownActive;
-    }
-
     public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode, String meeting) {
-        if (meeting == "deadbody") {
-            setCooldownActive(false);
-        }
-        if (isCooldownActive) {
+        if (isCooldownActive && meeting != "deadbody") {
             System.out.println("Emergency meeting cooldown is active. Cannot start a new meeting.");
             return;
         }
@@ -57,7 +47,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         scheduler.schedule(() -> {
             isCooldownActive = false;
             System.out.println("Emergency meeting cooldown has ended.");
-        }, 120, TimeUnit.SECONDS); // 120 seconds cooldown
+        }, 90, TimeUnit.SECONDS); // 120 seconds cooldown
     }
 
     public void handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode) {

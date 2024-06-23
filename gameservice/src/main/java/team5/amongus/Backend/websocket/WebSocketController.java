@@ -6,30 +6,20 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.context.event.EventListener;
-import org.springframework.security.core.Authentication;
 
 import team5.amongus.Backend.model.*;
 import team5.amongus.Backend.service.ICollisionMaskService;
-import team5.amongus.Backend.service.IGameWinningService;
 import team5.amongus.Backend.service.IPlayerService;
 import team5.amongus.Backend.service.ISabotageService;
 import team5.amongus.Backend.service.ITaskService;
 import team5.amongus.Backend.service.IEmergencyMeetingService;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 public class WebSocketController {
@@ -196,9 +185,6 @@ public class WebSocketController {
                 String meeting = "deadbody";
                 emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode, meeting);
                 messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
-                // TODO FOR MARTINA: add proper trigger for Emergency Meeting, dead body
-                // behaviour is fully handled (When found, disappears), only need to add
-                // functionality here to start the meeting
             } else if (interactableObject instanceof EmergencyMeeting && player.getisAlive()) {
                 String meeting = "button";
                 emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode, meeting);

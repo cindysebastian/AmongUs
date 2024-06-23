@@ -107,20 +107,11 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     if (emergencyCooldown) return; // Prevent starting another meeting if cooldown is active
 
     setShowEmergencyMeeting(true);
-    setEmergencyCooldown(true);
     setEmergencyCooldown(true); // Set the cooldown
 
     setTimeout(() => {
-      setShowEmergencyMeeting(false);
-    }, 35000); // Show overlay for 35 seconds
-
-    setTimeout(() => {
       setEmergencyCooldown(false);
-    }, 60000);
-
-    setTimeout(() => {
-      setEmergencyCooldown(false); // Reset cooldown after 30 seconds
-    }, 30000); // 30 seconds cooldown
+    }, 90000);
   };
 
   useEffect(() => {
@@ -257,15 +248,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
                   </div>
                 ))
               }
-            <div>
-              {interactibles
-                .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
-                .map(interactible => (
-                  <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 30, left: interactible.position.x + 30 }}>
-                    <img src="gameservice/src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
-                  </div>
-                ))}
-            </div>
             <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={players[currentPlayer]} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
             <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
 
@@ -287,6 +269,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             })}
           </div>
         </div>
+      </div>      
       </div>
       <div>
         {interactibles.some(interactible => interactible.inMeeting) && (
@@ -320,7 +303,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
         </>
       }
       {isImposter && sabotageCooldown && <div style={{ zIndex: 10, top: "10px", right: "10px", backgroundColor: 'white', position: "absolute" }}>Sabotage Cooldown: {cooldownTime} seconds</div>}
-    </div>
+
     </div>
   );
 
