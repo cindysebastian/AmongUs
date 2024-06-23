@@ -6,29 +6,20 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.context.event.EventListener;
-import org.springframework.security.core.Authentication;
 
 import team5.amongus.Backend.model.*;
 import team5.amongus.Backend.service.ICollisionMaskService;
-import team5.amongus.Backend.service.IGameWinningService;
 import team5.amongus.Backend.service.IPlayerService;
 import team5.amongus.Backend.service.ISabotageService;
 import team5.amongus.Backend.service.ITaskService;
+import team5.amongus.Backend.service.IEmergencyMeetingService;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 public class WebSocketController {
@@ -51,9 +41,10 @@ public class WebSocketController {
     private CollisionMask collisionMaskLobby;
     private CollisionMask collisionMaskGame;
     private Set<String> usedRoomCodes = new HashSet<>();
+    private final IEmergencyMeetingService emergencyMeetingService;
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
-            ITaskService taskService, ICollisionMaskService collisionMaskService, ISabotageService sabotageService) {
+            ITaskService taskService, ICollisionMaskService collisionMaskService, ISabotageService sabotageService, IEmergencyMeetingService emergencyMeetingService) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.sabotageService = sabotageService;
@@ -61,6 +52,7 @@ public class WebSocketController {
         this.collisionMaskService = collisionMaskService;
         this.collisionMaskLobby = this.collisionMaskService.loadCollisionMask("/LobbyBG_borders.png");
         this.collisionMaskGame = this.collisionMaskService.loadCollisionMask("/spaceShipBG_borders.png");
+        this.emergencyMeetingService = emergencyMeetingService;
     }
 
     @MessageMapping("/hostGame")
@@ -181,6 +173,7 @@ public class WebSocketController {
                     while (iterator.hasNext()) {
                         Interactible interactible = iterator.next();
                         if (interactible instanceof DeadBody) {
+                            
                             iterator.remove(); // Safe removal using iterator
                         }
                     }
@@ -189,9 +182,13 @@ public class WebSocketController {
                 } else {
                     System.out.println("Dead Players cannot report bodies.");
                 }
-                // TODO FOR MARTINA: add proper trigger for Emergency Meeting, dead body
-                // behaviour is fully handled (When found, disappears), only need to add
-                // functionality here to start the meeting
+                String meeting = "deadbody";
+                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode, meeting);
+                messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
+            } else if (interactableObject instanceof EmergencyMeeting && player.getisAlive()) {
+                String meeting = "button";
+                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode, meeting);
+                messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
             }
         }
         room.broadcastInteractiblesUpdate(messagingTemplate);
@@ -358,6 +355,7 @@ public class WebSocketController {
         room.setSabotageTasks(sabotageService.createSabotageTasks(room.getSabotages()));
 
         room.setInteractibles(taskService.createTasks(room.getPlayersMap()));
+        room.addMeetingToInteractibles();
 
         room.setGameState("Game running");
         String destination = "/topic/finishGame/" + room.getRoomCode();
@@ -407,6 +405,51 @@ public class WebSocketController {
         room.broadcastInteractiblesUpdate(messagingTemplate);
         room.broadCastSabotageTasksUpdate(messagingTemplate);
         room.broadcastPlayerUpdate(messagingTemplate);
+    }
+
+    @MessageMapping("/emergencyMeeting/{roomCode}")
+    public void emergencyMeeting(String playerName, @DestinationVariable String roomCode) {
+        Room room = activeRooms.get(roomCode);
+        room.removeAllDeadBodies();
+        room.broadcastInteractiblesUpdate(messagingTemplate);
+        String meeting = "";
+        emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode, meeting);
+        messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
+    }
+
+    @MessageMapping("/vote/{roomCode}")
+    public void handleVote(String payload, @DestinationVariable String roomCode) {
+        // Assuming payload contains playerName and votedPlayer separated by a comma
+        Room room = activeRooms.get(roomCode);
+        String[] parts = payload.split(",");
+        System.out.println("parts lenght: " + parts.length);
+        System.out.println("payload: " + payload);
+        if (parts.length == 2) {
+            String playerName = parts[0].trim();
+            String votedPlayer = parts[1].trim();
+            emergencyMeetingService.handleVoting(playerName, votedPlayer, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+        } else if (parts.length == 1) {
+            String playerName = parts[0].trim();
+            emergencyMeetingService.handleVoting(playerName, "", room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);            
+        }
+        if (room.getEmergencyMeeting().getEjectedPlayer() != null) {
+            messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode, room.getEmergencyMeeting().getEjectedPlayer());
+        }
+        room.broadcastPlayerUpdate(messagingTemplate);
+        room.broadcastInteractiblesUpdate(messagingTemplate);
+    }
+
+    @MessageMapping("/voteTimeout/{roomCode}")
+    public void handleVoteTimout(@DestinationVariable String roomCode) {
+        System.out.println("votetimeout");
+        Room room = activeRooms.get(roomCode);
+        emergencyMeetingService.submitVotes(room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+
+        if (room.getEmergencyMeeting().getEjectedPlayer() != null) {
+            messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode, room.getEmergencyMeeting().getEjectedPlayer());
+        }
+        room.broadcastPlayerUpdate(messagingTemplate);
+        room.broadcastInteractiblesUpdate(messagingTemplate);
     }
 
     @EventListener

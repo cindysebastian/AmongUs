@@ -23,6 +23,16 @@ export const handleReceivedInteractibles = (interactiblesData, setInteractibles)
         height: data.height,
         found: data.found,
       };
+    } else if(data.hasOwnProperty("inMeeting")){
+      interactible = {
+        id: data.id,
+        position: data.position,
+        width: data.width,
+        height: data.height,
+        inMeeting: data.inMeeting,
+        ejectedPlayer: data.ejectedPlayer,
+        votes: data.votes,
+      }
     }
 
     return interactible;

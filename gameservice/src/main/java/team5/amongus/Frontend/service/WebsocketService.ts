@@ -8,8 +8,8 @@ import { PlayersMap } from '../components/interfaces/Player';
 export const connectWebSocket = (setStompClient, setStompChatClient) => {
   // Disable Stomp.js logging
 
-  const socket = new SockJS('http://10.0.40.165:8080/ws');
-  const socketChat = new SockJS('http://10.0.40.165:8080/ws')
+  const socket = new SockJS('http://localhost:8080/ws');
+  const socketChat = new SockJS('http://localhost:8080/ws')
 
   const stomp = Stomp.over(socket);
   stomp.debug = null;
@@ -206,3 +206,46 @@ export const enableSabotage = (stompClient, sabotage, roomCode) => {
 
   stompClient.send(`/app/enableSabotage/${roomCode}`, {}, sabotage)
 }
+
+export const sendEmergencyMeeting = (stompClient, playerName, roomCode) => {
+  if (!stompClient || !playerName) return;
+  stompClient.send(`/app/emergencyMeeting/${roomCode}`, {}, playerName);
+};
+
+export const subscribeToEmergencyMeeting = (stompClient, handleEmergencyMeeting, roomCode) => {
+  if (!stompClient) return;
+
+  const subscription = stompClient.subscribe(`/topic/emergencyMeeting/${roomCode}`, () => {
+    handleEmergencyMeeting();
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
+};
+
+export const subscribeToEjectedPlayer = (stompClient, roomCode, setEjectedPlayer, setShowEjectedGif) => {
+  if (!stompClient) return;
+
+  const subscription = stompClient.subscribe(`/topic/ejectedPlayer/${roomCode}`, (message) => {
+    const ejectedPlayer = message.body;
+    setEjectedPlayer(ejectedPlayer);
+    setShowEjectedGif(true); // Set showEjectedGif to true when a player is ejected
+  });
+  return () => {
+    subscription.unsubscribe();
+  };
+};
+
+export const sendVote = (stompClient, playerName, votedPlayer, roomCode) => {
+  if (!stompClient || !playerName) return;
+
+  const payload = `${playerName},${votedPlayer}`;
+  stompClient.send(`/app/vote/${roomCode}`, {}, payload);
+};
+
+export const sendVoteTimemout = (stompClient, roomCode) => {
+  if (!stompClient) return;
+  stompClient.send(`/app/voteTimeout/${roomCode}`);
+}
+

@@ -2,6 +2,7 @@ package team5.amongus.Backend.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -11,6 +12,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import team5.amongus.Backend.service.GameWinningService;
 import team5.amongus.Backend.service.IGameWinningService;
+import team5.amongus.Backend.service.*;
 
 public class Room {
     private final String roomCode;
@@ -27,6 +29,7 @@ public class Room {
     private final Map<String, Player> inGamePlayersMap = new HashMap<>();
     private String gameState = "stopped";
     String result = "";
+    private EmergencyMeeting emergencyMeeting = new EmergencyMeeting();
 
     public Room(int maxPlayers, String host) {
         this.roomCode = generateRoomCode();
@@ -91,6 +94,14 @@ public class Room {
 
     public ArrayList<Interactible> getSabotageTasks(){
         return sabotageTasks;
+    }
+
+    public void setEmergencyMeeting(EmergencyMeeting emergencyMeeting){
+        this.emergencyMeeting = emergencyMeeting;
+    }
+
+    public EmergencyMeeting getEmergencyMeeting(){
+        return emergencyMeeting;
     }
 
     public String validateHost() {
@@ -339,6 +350,20 @@ public class Room {
         }
 
         return result;
+    }
+
+    public void removeAllDeadBodies() {
+        Iterator<Interactible> iterator = this.interactibles.iterator();
+        while (iterator.hasNext()) {
+            Interactible interactible = iterator.next();
+            if (interactible instanceof DeadBody) {
+                iterator.remove(); // Safe removal using iterator
+            }
+        }
+    }
+
+    public void addMeetingToInteractibles(){
+        interactibles.add(emergencyMeeting);
     }
 
 }
