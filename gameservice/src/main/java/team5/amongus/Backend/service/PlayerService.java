@@ -160,7 +160,7 @@ public class PlayerService implements IPlayerService {
 
     public Map<String, Player> handleKill(Imposter imposter, Map<String, Player> playersMap, String roomCode,
             SimpMessagingTemplate template) {
-        System.out.println("Trying to kill...");
+        System.out.println("[PlayerService.java] Trying to kill...");
         if (imposter != null && playersMap != null) {
             Player collidingPlayer = null;
             // Iterate through other players to find the closest one
@@ -177,17 +177,17 @@ public class PlayerService implements IPlayerService {
             }
 
             if (collidingPlayer != null && collidingPlayer.getisAlive()) {
-                System.out.println("Killing " + collidingPlayer.getName());
+                System.out.println("[PlayerService.java] Killing " + collidingPlayer.getName());
                 imposter.kill(collidingPlayer);
                 Position newPosition = new Position(collidingPlayer.getPosition().getX(),
                         collidingPlayer.getPosition().getY());
                 imposter.setPosition(newPosition);
                 notifyPlayerKilled(collidingPlayer, roomCode, template);
             } else {
-                System.out.println("No colliding non-imposter player found.");
+                System.out.println("[PlayerService.java] No colliding non-imposter player found.");
             }
         } else {
-            System.out.println("Only imposters can initiate a kill or player not found.");
+            System.out.println("[PlayerService.java] Only imposters can initiate a kill or player not found.");
             // You can optionally log a message or handle this situation accordingly
         }
         return playersMap; // Return the updated players map

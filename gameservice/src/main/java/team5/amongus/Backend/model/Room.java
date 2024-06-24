@@ -64,7 +64,7 @@ public class Room {
 
     public void addPlayer(Player player) {
         inGamePlayersMap.put(player.getName(), player);
-        System.out.println(inGamePlayersMap);
+        System.out.println("[Room.java] " + inGamePlayersMap);
     }
 
     public void removeLobbyPlayer(String playerName) {
@@ -193,10 +193,10 @@ public class Room {
             }
             playersMap.put(imposter.getName(), imposter);
 
-            System.out.println("Imposter: " + imposter.getName());
+            System.out.println("[Room.java] Imposter: " + imposter.getName());
 
         } else {
-            System.out.println("No players available to become the imposter.");
+            System.out.println("[Room.java] No players available to become the imposter.");
         }
 
         return playersMap;
@@ -346,7 +346,7 @@ public class Room {
             String destination = "/topic/finishGame/" + this.roomCode;
             messagingTemplate.convertAndSend(destination, this.gameState);
             result= this.gameState; // Update the previousResult variable
-            System.out.println("Game State changed to: " + gameState);
+            System.out.println("[Room.java] Game State changed to: " + gameState);
         }
 
         return result;

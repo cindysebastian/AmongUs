@@ -247,7 +247,7 @@ public class TaskService implements ITaskService {
                             task.setInProgress(true);
                             ((Task) currentObj).setInProgress(true);
                         } else {
-                            System.out.println("Task already Completed");
+                            System.out.println("[TaskService.java] Task already Completed");
                         }
                     }
                 }
@@ -279,7 +279,7 @@ public class TaskService implements ITaskService {
             e.printStackTrace();
             // Handle JSON parsing exception
         }
-        System.out.println("Task Completion Error");
+        System.out.println("[TaskService.java] Task Completion Error");
         return interactibles;
     }
 
