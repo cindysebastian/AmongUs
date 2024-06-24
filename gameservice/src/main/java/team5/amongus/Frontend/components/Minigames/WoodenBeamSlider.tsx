@@ -76,6 +76,12 @@ const WoodenBeamSlider: React.FC<Props> = ({ onSlide, onComplete }) => {
         };
     }, [handleMouseMove, handleMouseUp]);
 
+    useEffect(() => {
+      if (audioRef.current) {
+        audioRef.current.volume = 0.05;
+      }
+    }, []);
+
     return (
         <div
             ref={sliderRef}

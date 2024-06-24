@@ -92,10 +92,18 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
     transform: `translate(-${Math.max(0, Math.min(currentPlayerData.position.x + playerWidth / 2 - window.innerWidth / 2, mapWidth - window.innerWidth))}px, -${Math.max(0, Math.min(currentPlayerData.position.y + playerHeight / 2 - window.innerHeight / 2, mapHeight - window.innerHeight))}px)`
   } : {};
 
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.1;
+    }
+  }, []);
+
   return (
     <div style={{ position: 'relative' }}>
       <Space />
-      <audio src={backgroundMusic} autoPlay loop />
+      <audio ref={audioRef} src={backgroundMusic} autoPlay loop />
       <div style={cameraStyle}>
         <div className={styles.lobbyBackground}></div>
 

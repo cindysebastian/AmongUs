@@ -216,7 +216,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = 0.07;
+      audioRef.current.volume = 0.05;
     }
   }, []);
 

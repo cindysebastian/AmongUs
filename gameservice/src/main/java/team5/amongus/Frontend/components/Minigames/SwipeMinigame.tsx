@@ -41,7 +41,7 @@ const SwipeMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode}) 
 
     const playSound = () => {
         const audio = new Audio('/door_close.mp3'); // Path relative to the public directory
-        audio.volume = 1.0; // Ensure volume is set to 100%
+        audio.volume = 0.07; // Ensure volume is set to 100%
         audio.play().catch(error => {
             console.error('[SwipeMinigame.tsx] Error playing audio:', error);
         });
@@ -49,7 +49,7 @@ const SwipeMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode}) 
 
     const playDingSound = () => {
         const audio = new Audio('/scan_completed.mp3'); // Path relative to the public directory
-        audio.volume = 1.0; // Ensure volume is set to 100%
+        audio.volume = 0.07; // Ensure volume is set to 100%
         audio.play().catch(error => {
             console.error('[SwipeMinigame.tsx] Error playing audio:', error);
         });

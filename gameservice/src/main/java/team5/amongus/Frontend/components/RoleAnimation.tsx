@@ -12,11 +12,13 @@ const RoleAnimation = ({ isImposter, player, onAnimationEnd }) => {
 
   useEffect(() => {
     const sound = new Audio(roleSound);
+    sound.volume = 0.07;
     sound.play();
 
     const videoElement = videoRef.current;
     if (videoElement) {
       videoElement.play();
+      videoElement.volume = 0.07;
       videoElement.onended = () => {
         onAnimationEnd();
       };
