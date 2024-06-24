@@ -32,10 +32,10 @@ public class GameManager {
             Player player = playersMap.get(playerName);
             Imposter imposter = new Imposter(player.getName(), player.getPosition(), player.getSessionId());
             playersMap.put(imposter.getName(), imposter);
-            System.out.println("Imposter: " + imposter.getName());
+            System.out.println("[GameManager.java] Imposter: " + imposter.getName());
 
         } else {
-            System.out.println("No players available to become the imposter.");
+            System.out.println("[GameManager.java] No players available to become the imposter.");
         }
 
         return playersMap;

@@ -48,7 +48,6 @@ public class SabotageService implements ISabotageService {
         SabotageTask annoySabTask = new SabotageTask(3750, 1000, sabotages.get(1));
         annoySabTask.setId(51);
         interactibles.add(annoySabTask);
-        System.out.println(interactibles);
         this.interactibles = interactibles;
 
         return interactibles;
@@ -63,9 +62,9 @@ public class SabotageService implements ISabotageService {
                         task.setInProgress(true);
                         ((SabotageTask) obj).setInProgress(true);
                         ((SabotageTask) obj).setTriggeredBy(player.getName());
-                        System.out.println("SabotageTask in progress: " + ((SabotageTask) obj).getId() + ", triggered by " + player.getName());
+                        System.out.println("[SabotageService.java] SabotageTask in progress: " + ((SabotageTask) obj).getId() + ", triggered by " + player.getName());
                     } else {
-                        System.out.println("There is no sabotage going on.");
+                        System.out.println("[SabotageService.java] There is no sabotage going on.");
                     }
                 }
             }
@@ -80,14 +79,14 @@ public class SabotageService implements ISabotageService {
         for (Interactible interactible : interactibles) {
             if (((SabotageTask) interactible).getSabotage().getInProgress()) {
                 inProgress = true;
-                System.out.println("Sabotage already in progress!");
+                System.out.println("[SabotageService.java] Sabotage already in progress!");
             }
         }
         
         if (!inProgress) {
             for (Interactible sab : interactibles) {
                 if (sab instanceof SabotageTask && ((SabotageTask) sab).getSabotage().equals(sabotage)) {
-                    System.out.println("Activating Sabotage");
+                    System.out.println("[SabotageService.java] Activating Sabotage");
                     SabotageTask task = (SabotageTask) sab;
                     task.getSabotage().setInProgress(true);
                     task.setCompleted(false);
@@ -154,7 +153,7 @@ public class SabotageService implements ISabotageService {
             }
         }
         if (endGameSabotage != null && isSabotageTimerExpired(endGameSabotage)) {
-            System.out.println("Game end because of sabotage");
+            System.out.println("[SabotageService.java] Game end because of sabotage");
             endGameSabotage.setGameEnd(true);
         }
     }

@@ -14,7 +14,7 @@ public class ChatService implements IChatService {
         String sender = message.getSender();
         String content = message.getContent();
         chatMessages.add(message);
-        System.out.println("New message arrived:" + content);
+        System.out.println("[ChatService.java] New message arrived:" + content);
         return chatMessages;
     }
     

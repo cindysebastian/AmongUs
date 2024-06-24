@@ -24,7 +24,7 @@ public class WebSocketController{
     @MessageMapping("/sendMessage/{roomCode}")
     @SendTo("/topic/messages/{roomCode}")
     public List<Message> sendMessages(List<Message> chat, Message message, SimpMessagingTemplate accessor, @DestinationVariable String roomCode) {
-        System.out.println("message arrived");
+        System.out.println("[WebsocketController.java] message arrived");
         List<Message> updatedChatMessages = chatService.processMessage(chat, message);
         return updatedChatMessages;
     }
