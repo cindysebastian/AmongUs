@@ -284,20 +284,30 @@ const App = () => {
     });
   }
 
-  return (
-    <Routes>
-      <Route path="/login" element={
-        <div style={{ position: 'relative', padding: '20px' }}>
-          {!playerSpawned && (
-            <div className={styles.gifBackground}></div>
-          )}
-          {!playerSpawned && (
-            <div className={styles.loginbackground}>
-              <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '7%', bottom: '0px', left: '50%', right: '50%' }}>
-                <button onClick={handleHost} className={styles.button}>HOST</button>
-                <button onClick={handlePrivate} className={styles.button}>PRIVATE</button>
+ return (
+  <Routes>
+    <Route path="/login" element={
+      <div style={{ position: 'relative', padding: '20px' }}>
+        {!playerSpawned && (
+          <div className={styles.gifBackground}></div>
+        )}
+        {!playerSpawned && (
+          <div className={styles.loginbackground}>
+            <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '7%', bottom: '0px', left: '50%', right: '50%' }}>
+              <button onClick={handleHost} className={styles.button}>HOST</button>
+              <button onClick={handlePrivate} className={styles.button}>PRIVATE</button>
+            </div>
+            <div className={styles.controlsContainer}>
+              <div className={styles.controlItem1}>
+                <img src="gameservice/src/main/resources/e.png" alt="Image 1" height="50px" width="50px" className={styles.controlsImage} />
+                <span className={styles.controlText1}>Interact with E</span>
+              </div>
+              <div className={styles.controlItem}>
+                <img src="gameservice/src/main/resources/wasd.png" alt="Image 2" height="200px" width="200px" className={styles.controlsImage} />
+                <span className={styles.controlText}>Move your player with W, A, S, D</span>
               </div>
             </div>
+<<<<<<< Updated upstream
           )}
         </div>
       } />
@@ -346,6 +356,57 @@ const App = () => {
       <Route path="/" element={<Navigate replace to="/login" />} />
     </Routes>
   );
+=======
+          </div>
+        )}
+      </div>
+    } />
+    <Route path="/host" element={<div className={styles.gifBackground}>
+      <div className={styles.loginbackground}>
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
+          <input
+            type="text"
+            value={inputName}
+            onChange={handleInputChange}
+            placeholder="Enter your name"
+            className={styles.input}
+          />
+          <select value={selectedPlayerCount} onChange={handlePlayerCountChange} className={styles.input}>
+            {[...Array(8).keys()].map(i => (
+              <option key={i + 3} value={i + 3}>{i + 3}</option>
+            ))}
+          </select>
+
+          <button onClick={handleHostGame} className={styles.button}>Host Game</button>
+        </div></div>
+    </div>} />
+    <Route path="/private" element={<div className={styles.gifBackground}>
+      <div className={styles.loginbackground}>
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
+          <input
+            type="text"
+            value={inputName}
+            onChange={handleInputChange}
+            placeholder="Enter your name"
+            className={styles.input}
+          />
+          <input
+            type="text"
+            value={inputCode}
+            onChange={handle2InputChange}
+            placeholder="Enter your Room Code"
+            className={styles.input}
+          />
+          <button onClick={() => handleJoinGame(playerName, roomCode)} className={styles.button}>Join Private Room</button>
+        </div></div>
+    </div>} />
+    <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage} />} />
+    <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} sabotageTasks={sabotageTasks} currentPlayer={playerName} roomCode={roomCode} setInteractionInProgress={setInteractionInProgress} />} />
+    <Route path="/end" element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />
+    <Route path="/" element={<Navigate replace to="/login" />} />
+  </Routes>
+);
+>>>>>>> Stashed changes
 };
 
 export default App;
