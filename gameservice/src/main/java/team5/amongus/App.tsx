@@ -63,7 +63,7 @@ const App = () => {
   useEffect(() => {
     if (roomCode && playerName) {
       // Perform operations that depend on roomCode here
-      console.log("Room Code Updated:", roomCode);
+      console.log("[App.tsx] Room Code Updated:", roomCode);
 
       //All Game context Subscriptions here please, ensures RoomCode is valid and present!
       subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers, roomCode);
@@ -72,7 +72,7 @@ const App = () => {
       subscribetoInteractions(stompClient, setInteractibles, roomCode);
       subscribetoGameFinishing(stompClient, setGameState, roomCode);
       subscribeToInteractionWithSabotage(stompClient, setSabotageTasks, roomCode);
-      console.log(interactibles);
+      console.log('[App.tsx] ' + interactibles);
     }
   }, [roomCode, playerName]);
 
@@ -162,12 +162,12 @@ const App = () => {
 
   const handleHostGame = () => {
     const trimmedName = inputName.trim();
-    console.log("Hosting Game...");
+    console.log("[App.tsx] Hosting Game...");
 
     if (trimmedName && stompClient) {
       const subscription = stompClient.subscribe('/topic/hostResponse', (message) => {
         const response = JSON.parse(message.body);
-        console.log("Response:" + response.roomCode)
+        console.log("[App.tsx] Response:" + response.roomCode)
         if (response.status === 'OK') {
           setPlayerName(trimmedName);
           let string = response.roomCode;
@@ -216,7 +216,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    console.log(gameState);
+    console.log('[App.tsx] ' + gameState);
     if (gameState == "Imposter wins" || gameState == "Crewmates win") {
       navigate('/end');
     } else if (gameState == "Game waiting") {
@@ -238,7 +238,7 @@ const App = () => {
 
     const trimmedName = inputName ? inputName.trim() : '';
     if (!trimmedName || !stompClient || !roomCode) {
-      console.error("Missing required parameters for joining game:", { trimmedName, stompClient, roomCode });
+      console.error("[App.tsx] Missing required parameters for joining game:", { trimmedName, stompClient, roomCode });
       return;
     }
 
@@ -251,7 +251,7 @@ const App = () => {
 
     const subscription = stompClient.subscribe('/topic/joinResponse', (message) => {
       const response = JSON.parse(message.body);
-      console.log("Response:" + response.roomCode)
+      console.log("[App.tsx] Response:" + response.roomCode)
       if (response.status === 'OK') {
         setPlayerName(trimmedName);
         let string = response.roomCode;

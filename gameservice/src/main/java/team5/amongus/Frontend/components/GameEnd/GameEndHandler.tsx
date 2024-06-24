@@ -72,7 +72,7 @@ const GameEndHandler: React.FC<GameEndHandlerProps> = ({
 
     useEffect(() => {
         if (currentPlayerObj) {
-            console.log(isHost);
+            console.log('[GameEndHandler.tsx] ' + isHost);
             switch (gameStatus) {
                 case 'Imposter wins':
                     setInteractionInProgress(true);

@@ -80,18 +80,18 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   }, [stompClient]);
 
   const handlePlayerKilled = (killedPlayer: Player) => {
-    console.log("Interactibles:", interactibles);
-    console.log("Killed player:", killedPlayer);
-    console.log("Current player:", currentPlayer);
+    console.log("[SpaceShip.tsx] Interactibles:", interactibles);
+    console.log("[SpaceShip.tsx] Killed player:", killedPlayer);
+    console.log("[SpaceShip.tsx] Current player:", currentPlayer);
     if (!killedPlayer || !killedPlayer.name || !currentPlayer) return;
     if (killedPlayer.name === currentPlayer) {
       setShowKillGif(true);
       setTimeout(() => setShowKillGif(false), 2500);
     }
-    console.log("Adding killed player to killedPlayers:", killedPlayer.name);
+    console.log("[SpaceShip.tsx] Adding killed player to killedPlayers:", killedPlayer.name);
     setKilledPlayers(prevKilledPlayers => {
       const newKilledPlayers = [...prevKilledPlayers, killedPlayer.name];
-      console.log("KilledPlayersList:", newKilledPlayers);
+      console.log("[SpaceShip.tsx] KilledPlayersList:", newKilledPlayers);
       return newKilledPlayers;
     });
   };
@@ -225,7 +225,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
               <PlayerSprite
                 player={player}
                 facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-                isMoving={player.isMoving !== undefined ? player.isMoving : false}
+                ismoving={player.isMoving !== undefined ? player.isMoving : false}
                 isAlive={currAlive}
               />
             </div>

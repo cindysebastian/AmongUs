@@ -6,13 +6,13 @@ import SpritePage from '../../../../../resources/playerSpriteSheet.png';
 type PlayerProps = {
   player: Player;
   facing: 'LEFT' | 'RIGHT';
-  isMoving: boolean;
-  isAlive: boolean; // Add isAlive prop
+  ismoving: boolean;
+  isAlive: boolean;
 };
 
 type StyledPlayerProps = {
-  facing: 'LEFT' | 'RIGHT';
-  isMoving: boolean;
+  $facing: 'LEFT' | 'RIGHT';
+  $ismoving?: boolean; // Make $ismoving optional
 };
 
 const mainAnimation = keyframes`
@@ -25,27 +25,25 @@ const ghostAnimation = keyframes`
   100% { background-position: 0% 1200pc; }
 `;
 
-
 const StyledPlayer = styled.div<StyledPlayerProps>`
   height: 130px;
   width: 130px;
   position: relative;
   background: url(${SpritePage}) left top;
   box-sizing: border-box;
-  transform: ${({ facing }) => (facing === 'LEFT' ? 'scaleX(-0.6)' : 'scaleX(0.6)')} scaleY(0.6);
-  ${({ isMoving }) =>
-    isMoving &&
+  transform: ${({ $facing }) => ($facing === 'LEFT' ? 'scaleX(-0.6)' : 'scaleX(0.6)')} scaleY(0.6);
+  ${({ $ismoving }) =>
+    $ismoving &&
     css`
       animation: ${mainAnimation} 0.6s steps(8) infinite;
       animation-timing-function: steps(8);
     `}
 `;
 
-const GhostPlayer = styled(StyledPlayer) <StyledPlayerProps>`
+const GhostPlayer = styled(StyledPlayer)`
   background: url(${SpritePage}) left bottom;
   animation: ${ghostAnimation} 1.3s steps(15) infinite alternate;
 `;
-
 
 const NameTagWrapper = styled.div`
   position: absolute;
@@ -67,11 +65,11 @@ const FlippedNameTag = styled(NameTag)`
   transform: scaleX(-1);
 `;
 
-const PlayerSprite: React.FC<PlayerProps> = ({ player, facing, isMoving, isAlive }) => {
+const PlayerSprite: React.FC<PlayerProps> = ({ player, facing, ismoving, isAlive }) => {
   return (
     <>
       {isAlive && player.isAlive && (
-        <StyledPlayer facing={facing} isMoving={isMoving}>
+        <StyledPlayer $facing={facing} $ismoving={ismoving || undefined}>
           <NameTagWrapper>
             {facing === 'LEFT' ? (
               <FlippedNameTag>{player.name}</FlippedNameTag>
@@ -83,7 +81,7 @@ const PlayerSprite: React.FC<PlayerProps> = ({ player, facing, isMoving, isAlive
       )}
       {!isAlive && (
         !player.isAlive ? (
-          <GhostPlayer facing={facing} isMoving={isMoving}>
+          <GhostPlayer $facing={facing} $ismoving={ismoving || undefined}>
             <NameTagWrapper>
               {facing === 'LEFT' ? (
                 <FlippedNameTag>{player.name}</FlippedNameTag>
@@ -93,7 +91,7 @@ const PlayerSprite: React.FC<PlayerProps> = ({ player, facing, isMoving, isAlive
             </NameTagWrapper>
           </GhostPlayer>
         ) : (
-          <StyledPlayer facing={facing} isMoving={isMoving}>
+          <StyledPlayer $facing={facing} $ismoving={ismoving || undefined}>
             <NameTagWrapper>
               {facing === 'LEFT' ? (
                 <FlippedNameTag>{player.name}</FlippedNameTag>
@@ -104,10 +102,8 @@ const PlayerSprite: React.FC<PlayerProps> = ({ player, facing, isMoving, isAlive
           </StyledPlayer>
         )
       )}
-
     </>
   );
 };
-
 
 export default PlayerSprite;

@@ -47,7 +47,7 @@ const RoleAnimation = ({ isImposter, player, onAnimationEnd }) => {
       <video ref={videoRef} className={styles.video} src={isImposter ? imposterVideo : crewmateVideo} />
       {showSprite && (
         <div className={styles.playerSpriteWrapper}>
-          <PlayerSprite player={player} facing="RIGHT" isMoving={false} isAlive={true} />
+          <PlayerSprite player={player} facing="RIGHT" ismoving={false} isAlive={true} />
         </div>
       )}
     </div>

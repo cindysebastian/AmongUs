@@ -24,7 +24,7 @@ const Arrow: React.FC<ArrowProps> = ({ x, y, angle }) => {
       fill="#000000"
       style={arrowStyle}
     >
-        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" stroke="#1c2222" stroke-width="73.728"> <style type="text/css"> </style> <g> <polygon className="st0" points="358.402,195.5 358.402,0 153.598,0 153.598,195.5 18.616,195.5 255.991,512 493.384,195.5 "/> </g> </g> 
+        <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" stroke="#1c2222" strokeWidth="73.728"> <style type="text/css"> </style> <g> <polygon className="st0" points="358.402,195.5 358.402,0 153.598,0 153.598,195.5 18.616,195.5 255.991,512 493.384,195.5 "/> </g> </g> 
       <g>
         <polygon
           className="st0"

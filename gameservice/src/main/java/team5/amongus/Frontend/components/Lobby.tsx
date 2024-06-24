@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Player from './interfaces/Player';
 import Task from './interfaces/Interactible'
 import { useLocation } from 'react-router-dom';
@@ -7,6 +7,7 @@ import Space from './Space';
 import styles from '../styles/lobby.module.css';
 import MessageInput from './MessageInput';
 import ChatRoom from './ChatRoom';
+import backgroundMusic from '../../../../../resources/theRing.mp3';
 
 interface Props {
   inGamePlayers: Record<string, Player>;
@@ -40,7 +41,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
 
 
     } else {
-      console.log('inGamePlayers is empty or currentPlayer does not exist in inGamePlayers');
+      console.log('[Lobby.tsx] inGamePlayers is empty or currentPlayer does not exist in inGamePlayers');
       setIsHost(false); // Optionally set isHost to false if inGamePlayers is empty
     }
 
@@ -49,10 +50,10 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
 
   function copyToClipboard(text: string, element: HTMLElement) {
     navigator.clipboard.writeText(text).then(() => {
-      console.log(`Copied to clipboard: ${text}`);
+      console.log(`[Lobby.tsx] Copied to clipboard: ${text}`);
       showTooltip(element);
     }, (err) => {
-      console.error('Could not copy text: ', err);
+      console.error('[Lobby.tsx] Could not copy text: ', err);
     });
   }
 
@@ -94,6 +95,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
   return (
     <div style={{ position: 'relative' }}>
       <Space />
+      <audio src={backgroundMusic} autoPlay loop />
       <div style={cameraStyle}>
         <div className={styles.lobbyBackground}></div>
 
@@ -106,7 +108,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
               <PlayerSprite
                 player={player}
                 facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-                isMoving={isMoving}
+                ismoving={isMoving}
                 isAlive={true}
               />
             </div>
@@ -120,7 +122,12 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
             <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
           </div>
           <button className={styles.button} onClick={() => setChatVisible(false)}>Exit</button>
-          <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
+          <MessageInput
+              sendMessage={sendMessage}
+              chatVisible={chatVisible}
+              playerName={currentPlayer}
+              players={inGamePlayers}
+            />
           <ChatRoom messages={messages} />
         </div>
       )}

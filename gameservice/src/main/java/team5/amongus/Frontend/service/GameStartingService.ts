@@ -1,5 +1,5 @@
 export const subscribeToGameStatus = (stompClient, setRedirectToSpaceShip, roomCode) => {
-    console.log(roomCode)
+    console.log('[GameStartingService.ts] ' + roomCode)
     if (!stompClient && !roomCode) return;
 
     const subscription = stompClient.subscribe(`/topic/gameStart/${roomCode}`, () => {

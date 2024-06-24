@@ -27,7 +27,7 @@ const ImposterLossSplash = ({ imposterName, onLeave, onWait }) => {
                     isHost: false,
                     isImposter: false,
                     canKill: false
-                }} facing="RIGHT" isMoving={false} isAlive={true} />
+                }} facing="RIGHT" ismoving={false} isAlive={true} />
  {/* Render PlayerSprite */}
             {waitingForHost ? (
                 <p className="waiting-text">Waiting for host...</p>

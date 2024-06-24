@@ -12,7 +12,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import team5.amongus.Backend.service.GameWinningService;
 import team5.amongus.Backend.service.IGameWinningService;
-import team5.amongus.Backend.service.*;
 
 public class Room {
     private final String roomCode;
@@ -261,8 +260,10 @@ public class Room {
             String key = entry.getKey();
             Player player1 = entry.getValue();
             Player player2 = map2.get(key);
-            if (!arePlayersEqual(player1, player2)) {
-                return false;
+            if (player2 != null) {
+                if (!arePlayersEqual(player1, player2)) {
+                    return false;
+                }                
             }
         }
 
