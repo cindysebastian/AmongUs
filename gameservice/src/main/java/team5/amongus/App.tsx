@@ -148,12 +148,21 @@ const App = () => {
     }
   };
 
-  const handleInputChange = (event) => {
-    setInputName(event.target.value);
+  const validateName = (name) => /^[A-Za-z0-9]{0,12}$/.test(name);
+  const validateRoomCode = (code) => /^[A-Z0-9]{0,6}$/.test(code);
+
+  const handleNameInputChange = (event) => {
+    const { value } = event.target;
+    if (validateName(value)) {
+      setInputName(value);
+    }
   };
 
-  const handle2InputChange = (event) => {
-    setInputCode(event.target.value);
+  const handleCodeInputChange = (event) => {
+    const { value } = event.target;
+    if (validateRoomCode(value)) {
+      setInputCode(value);
+    }
   };
 
   const handlePlayerCountChange = (event) => {
@@ -296,7 +305,7 @@ const App = () => {
             <input
               type="text"
               value={inputName}
-              onChange={handleInputChange}
+              onChange={handleNameInputChange}
               placeholder="Enter your name"
               className={styles.input}
             />
@@ -315,14 +324,14 @@ const App = () => {
             <input
               type="text"
               value={inputName}
-              onChange={handleInputChange}
+              onChange={handleNameInputChange}
               placeholder="Enter your name"
               className={styles.input}
             />
             <input
               type="text"
               value={inputCode}
-              onChange={handle2InputChange}
+              onChange={handleCodeInputChange}
               placeholder="Enter your Room Code"
               className={styles.input}
             />

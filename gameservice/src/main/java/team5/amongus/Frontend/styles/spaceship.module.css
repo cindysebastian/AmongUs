@@ -65,3 +65,46 @@ body {
     height: 100px;
 }
 
+.sabotage {
+    position: fixed;
+    height: 100px;
+    width: 100px;
+    z-index: 50;
+    top: 150px;
+    right: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .lethalSabotage {
+    position: fixed;
+    height: 100px;
+    width: 100px;
+    z-index: 50;
+    top: 50px;
+    right: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .sabotageIcon {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .cooldownOverlay {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .cooldownText {
+    z-index: 10;
+    color: white;
+  }
+  
