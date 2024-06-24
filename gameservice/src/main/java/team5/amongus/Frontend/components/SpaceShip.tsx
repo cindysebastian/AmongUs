@@ -296,13 +296,27 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       ))}
 
       {isImposter && !killCooldown && <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill} />}
-      {isImposter && !sabotageCooldown && !sabotageTasks.some(task => task.sabotage.inProgress) &&
+      {isImposter && (
         <>
-          <div onClick={() => handleSabotage("EndGameSabotage")} style={{ position: 'absolute', top: '50px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>End Game Sabotage</div>
-          <div onClick={() => handleSabotage("AnnoySabotage")} style={{ position: 'absolute', top: '80px', right: '50px', backgroundColor: 'white', zIndex: 50 }}>Annoy Sabotage</div>
+          <div onClick={() => handleSabotage("EndGameSabotage")} className={styles.lethalSabotage} style={{ opacity: !sabotageCooldown ? 1 : 0.5 }}>
+            <img src="gameservice/src/main/resources/LethalSabotage.png" alt="Lethal Sabotage" className={styles.sabotageIcon} /> 
+            {isImposter && sabotageCooldown && (
+              <div className={styles.cooldownOverlay}>
+                <div className={styles.cooldownText}>{cooldownTime}</div>
+              </div>
+            )}
+          </div>
+          <div onClick={() => handleSabotage("AnnoySabotage")} className={styles.sabotage} style={{ opacity: !sabotageCooldown ? 1 : 0.5 }}>
+            <img src="gameservice/src/main/resources/Sabotage.png" alt="Sabotage" className={styles.sabotageIcon} />
+            {isImposter && sabotageCooldown && (
+              <div className={styles.cooldownOverlay}>
+                <div className={styles.cooldownText}>{cooldownTime}</div>
+              </div>
+            )}
+          </div>
         </>
-      }
-      {isImposter && sabotageCooldown && <div style={{ zIndex: 10, top: "10px", right: "10px", backgroundColor: 'white', position: "absolute" }}>Sabotage Cooldown: {cooldownTime} seconds</div>}
+      )}
+
 
     </div>
   );
