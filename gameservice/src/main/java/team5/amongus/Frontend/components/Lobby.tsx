@@ -108,7 +108,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
               <PlayerSprite
                 player={player}
                 facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-                isMoving={isMoving}
+                ismoving={isMoving}
                 isAlive={true}
               />
             </div>
@@ -122,7 +122,12 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
             <h2 style={{ color: 'white', margin: '0' }}>Chat</h2>
           </div>
           <button className={styles.button} onClick={() => setChatVisible(false)}>Exit</button>
-          <MessageInput sendMessage={sendMessage} chatVisible={chatVisible} />
+          <MessageInput
+              sendMessage={sendMessage}
+              chatVisible={chatVisible}
+              playerName={currentPlayer}
+              players={inGamePlayers}
+            />
           <ChatRoom messages={messages} />
         </div>
       )}

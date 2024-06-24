@@ -30,7 +30,7 @@ const CrewmateLossSplash = ({ imposterName, onLeave, onWait }) => {
                     isHost: false,
                     isImposter: false,
                     canKill: false
-                }} facing="RIGHT" isMoving={false} isAlive={true} />
+                }} facing="RIGHT" ismoving={false} isAlive={true} />
  {/* Render PlayerSprite */}
             
         </div>

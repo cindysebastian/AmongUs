@@ -225,7 +225,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
               <PlayerSprite
                 player={player}
                 facing={player.facing !== undefined ? player.facing : 'RIGHT'}
-                isMoving={player.isMoving !== undefined ? player.isMoving : false}
+                ismoving={player.isMoving !== undefined ? player.isMoving : false}
                 isAlive={currAlive}
               />
             </div>
