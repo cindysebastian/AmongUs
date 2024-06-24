@@ -1,4 +1,4 @@
-import React, { useEffect, useState, CSSProperties } from 'react';
+import React, { useEffect, useState, CSSProperties, useRef } from 'react';
 import Stomp from 'stompjs';
 import Task from './Task';
 import styles from '../styles/spaceship.module.css';
@@ -16,6 +16,7 @@ import SabotageGif from './Sabotage/SabotageGif';
 import Arrow from './Arrow';
 import SabotageArrow from './SabotageArrow';
 import RoleAnimation from './RoleAnimation';
+import backgroundMusic from '../../../../../resources/nazgul.mp3';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -211,9 +212,18 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     return { x, y, angle };
   };
 
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.07;
+    }
+  }, []);
+
   return (
     <div>
       <Space />
+      <audio ref={audioRef} src={backgroundMusic} autoPlay loop />
       {showAnimation && (
         <RoleAnimation isImposter={isImposter} player={players[currentPlayer]}onAnimationEnd={handleAnimationEnd} />
       )}
