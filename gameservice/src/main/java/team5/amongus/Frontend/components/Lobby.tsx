@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Player from './interfaces/Player';
 import Task from './interfaces/Interactible'
 import { useLocation } from 'react-router-dom';
@@ -7,6 +7,7 @@ import Space from './Space';
 import styles from '../styles/lobby.module.css';
 import MessageInput from './MessageInput';
 import ChatRoom from './ChatRoom';
+import backgroundMusic from '../../../../../resources/theRing.mp3';
 
 interface Props {
   inGamePlayers: Record<string, Player>;
@@ -94,6 +95,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
   return (
     <div style={{ position: 'relative' }}>
       <Space />
+      <audio src={backgroundMusic} autoPlay loop />
       <div style={cameraStyle}>
         <div className={styles.lobbyBackground}></div>
 
