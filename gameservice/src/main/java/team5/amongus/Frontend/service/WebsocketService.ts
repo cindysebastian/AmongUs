@@ -18,43 +18,43 @@ export const connectWebSocket = (setStompClient, setStompChatClient) => {
   stompChat.debug = null;
 
   stomp.connect({}, () => {
-    console.log('Connected to WebSocket on port 8080');
+    console.log('[WebsocketService.ts] Connected to WebSocket on port 8080');
     setStompClient(stomp);
   });
 
   stompChat.connect({}, () => {
-    console.log('Connected to WebSocket on port 8082');
+    console.log('[WebsocketService.ts] Connected to WebSocket on port 8082');
     setStompChatClient(stompChat);
   });
   
   return () => {
     if (stomp) {
       stomp.disconnect(() => { });
-      console.log('Disconnected from WebSocket on port 8080');
+      console.log('[WebsocketService.ts] Disconnected from WebSocket on port 8080');
     }
     if (setStompChatClient) {
       setStompChatClient.disconnect(() => { });
-      console.log('Disconnected from WebSocket on port 8082');
+      console.log('[WebsocketService.ts] Disconnected from WebSocket on port 8082');
     }
   };
 };
 
 export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGamePlayers, roomCode) => {
   if (!stompClient || !playerName || !roomCode) {
-    console.error("Missing required parameters for subscription:", { stompClient, playerName, roomCode });
+    console.error("[WebsocketService.ts] Missing required parameters for subscription:", { stompClient, playerName, roomCode });
     return;
   }
 
   stompClient.subscribe(`/topic/players/${roomCode}`, (message: { body: string }) => {
     try {
-      console.log(message.body);
+      console.log('[WebsocketService.ts] ' + message.body);
       const updatedPlayers = JSON.parse(message.body);
       const playersWithImposterFlag = addImposterFlag(updatedPlayers);
       setPlayers(playersWithImposterFlag);
       const currentPlayer = playersWithImposterFlag[playerName];
-      console.log(playersWithImposterFlag);
+      console.log('[WebsocketService.ts] ' + playersWithImposterFlag);
     } catch (error) {
-      console.error('Error processing player message:', error);
+      console.error('[WebsocketService.ts] Error processing player message:', error);
     }
   });
 
@@ -65,7 +65,7 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
       setInGamePlayers(inGamePlayersWithImposterFlag);
       const currentPlayer = inGamePlayersWithImposterFlag[playerName];
     } catch (error) {
-      console.error('Error processing in-game player message:', error);
+      console.error('[WebsocketService.ts] Error processing in-game player message:', error);
     }
   });
 };
@@ -103,7 +103,7 @@ export const subscribetoGameFinishing = (stompClient, setGameWonState, roomCode)
   if (!stompClient) return;
 
   const subscription = stompClient.subscribe(`/topic/finishGame/${roomCode}`, (message) => {
-    console.log('Received message:', message.body); // Log the message body
+    console.log('[WebsocketService.ts] Received message:', message.body); // Log the message body
     const gameWonStateMessage = message.body;
     setGameWonState(gameWonStateMessage);
   });
@@ -184,7 +184,7 @@ export const sendInteractionWithSabotageTask = (stompClient, playerName, roomCod
 
 export const sendChatMessage = (stompChatClient, playerName, messageContent, roomCode) => {
   if (!stompChatClient || !playerName) return;
-  console.log("Message arrived in Websocket");
+  console.log("[WebsocketService.ts] Message arrived in Websocket");
 
   const newMessage = {
     sender: playerName,
