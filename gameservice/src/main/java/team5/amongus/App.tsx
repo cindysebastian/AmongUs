@@ -20,6 +20,10 @@ const directionMap = {
   d: 'RIGHT',
 };
 
+const ProtectedRoute = ({ element, redirectPath = '/login', isAllowed }) => {
+  return isAllowed ? element : <Navigate to={redirectPath} />;
+};
+
 const App = () => {
   const [stompClient, setStompClient] = useState(null);
   const [stompChatClient, setStompChatClient] = useState(null);
@@ -65,7 +69,7 @@ const App = () => {
       // Perform operations that depend on roomCode here
       console.log("[App.tsx] Room Code Updated:", roomCode);
 
-      //All Game context Subscriptions here please, ensures RoomCode is valid and present!
+      // All Game context Subscriptions here please, ensures RoomCode is valid and present!
       subscribeToPlayers(stompClient, playerName, setPlayers, setInGamePlayers, roomCode);
       subscribeToMessages(stompChatClient, setMessages, roomCode);
       subscribeToGameStatus(stompClient, setRedirectToSpaceShip, roomCode);
@@ -236,9 +240,7 @@ const App = () => {
 
   useEffect(() => {
     if (redirectToSpaceShip && gameState == "Game running") {
-
       navigate('/spaceship');
-
     }
   }, [redirectToSpaceShip, gameState, navigate]);
 
@@ -338,9 +340,9 @@ const App = () => {
             <button onClick={() => handleJoinGame(playerName, roomCode)} className={styles.button}>Join Private Room</button>
           </div></div>
       </div>} />
-      <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage} />} />
-      <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} sabotageTasks={sabotageTasks} currentPlayer={playerName} roomCode={roomCode} setInteractionInProgress={setInteractionInProgress} />} />
-      <Route path="/end" element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />
+      <Route path="/game" element={<ProtectedRoute isAllowed={playerSpawned} element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage} />} />} />
+      <Route path="/spaceship" element={<ProtectedRoute isAllowed={playerSpawned} element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} sabotageTasks={sabotageTasks} currentPlayer={playerName} roomCode={roomCode} setInteractionInProgress={setInteractionInProgress} />} />} />
+      <Route path="/end" element={<ProtectedRoute isAllowed={playerSpawned} element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />} />
       <Route path="/" element={<Navigate replace to="/login" />} />
     </Routes>
   );
