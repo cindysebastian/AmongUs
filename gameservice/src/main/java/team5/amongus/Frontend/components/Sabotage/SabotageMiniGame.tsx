@@ -43,7 +43,7 @@ const SabotageMiniGame: React.FC<Props> = ({ stompClient, sabotageTask, roomCode
         audio.pause();
       }, 900);
     }).catch(error => {
-      console.log(error);
+      console.error('[SabotageMiniGame.tsx] ' + error);
     });
   };
   
@@ -52,7 +52,7 @@ const SabotageMiniGame: React.FC<Props> = ({ stompClient, sabotageTask, roomCode
     const audio = new Audio('/scan_completed.mp3'); // Path relative to the public directory
     audio.volume = 1.0; // Ensure volume is set to 100%
     audio.play().catch(error => {
-      console.error('Error playing audio:', error);
+      console.error('[SabotageMiniGame.tsx] Error playing audio:', error);
     });
   };
 

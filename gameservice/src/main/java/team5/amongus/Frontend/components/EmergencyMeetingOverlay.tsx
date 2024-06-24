@@ -37,10 +37,9 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
         setTimeRemaining(prevTime => {
           if (prevTime === 5) {
             // Send a message to trigger vote submission at 25 seconds
-            console.log("sendvotesubmission");
+            console.log("[EmergencyMeetingOverlay.tsx] sendvotesubmission");
             sendVoteTimemout(stompClient, roomCode);
           }
-          console.log(prevTime);
           return prevTime > 0 ? prevTime - 1 : 0;
         });
       }, 1000); // Update countdown every second
@@ -65,7 +64,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
 
   const handleVote = (votedPlayer: string) => {
     if (stompClient && playerName) {
-      console.log("voted for " + votedPlayer);
+      console.log("[EmergencyMeetingOverlay.tsx] voted for " + votedPlayer);
       sendVote(stompClient, playerName, votedPlayer, roomCode);
     }
     setHasVoted(true);

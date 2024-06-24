@@ -41,7 +41,7 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
 
 
     } else {
-      console.log('inGamePlayers is empty or currentPlayer does not exist in inGamePlayers');
+      console.log('[Lobby.tsx] inGamePlayers is empty or currentPlayer does not exist in inGamePlayers');
       setIsHost(false); // Optionally set isHost to false if inGamePlayers is empty
     }
 
@@ -50,10 +50,10 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
 
   function copyToClipboard(text: string, element: HTMLElement) {
     navigator.clipboard.writeText(text).then(() => {
-      console.log(`Copied to clipboard: ${text}`);
+      console.log(`[Lobby.tsx] Copied to clipboard: ${text}`);
       showTooltip(element);
     }, (err) => {
-      console.error('Could not copy text: ', err);
+      console.error('[Lobby.tsx] Could not copy text: ', err);
     });
   }
 

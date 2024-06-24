@@ -70,7 +70,7 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode }) 
         audio.loop = true; // Make the sound loop continuously
         audio.currentTime = 30; // Start 30 seconds in
         audio.play().catch(error => {
-            console.error('Error playing audio:', error);
+            console.error('[ScanMinigame.tsx] Error playing audio:', error);
         });
         setSound(audio);
     };
@@ -79,7 +79,7 @@ const ScanMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode }) 
         const audio = new Audio('/scan_completed.mp3'); // Path relative to the public directory
         audio.volume = 1.0; // Ensure volume is set to 100%
         audio.play().catch(error => {
-            console.error('Error playing audio:', error);
+            console.error('[ScanMinigame.tsx] Error playing audio:', error);
         });
     };
 

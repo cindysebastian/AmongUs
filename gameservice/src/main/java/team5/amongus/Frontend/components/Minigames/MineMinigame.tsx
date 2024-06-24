@@ -43,7 +43,7 @@ const MineMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode }) 
         audio.pause();
       }, 900);
     }).catch(error => {
-      console.log(error);
+      console.error('[MineMinigame.tsx] ' + error);
     });
   };
   
@@ -51,7 +51,7 @@ const MineMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode }) 
     const audio = new Audio('/scan_completed.mp3'); // Path relative to the public directory
     audio.volume = 1.0; // Ensure volume is set to 100%
     audio.play().catch(error => {
-      console.error('Error playing audio:', error);
+      console.error('[MineMinigame.tsx] Error playing audio:', error);
     });
   };
 
