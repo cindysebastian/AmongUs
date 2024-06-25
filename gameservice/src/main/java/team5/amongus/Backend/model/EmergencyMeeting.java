@@ -11,6 +11,7 @@ public class EmergencyMeeting extends Interactible {
     private Player ejectedPlayer = null;
     private Map<String, Integer> votes = new HashMap<>();
     private boolean isCooldownActive = false;
+    private boolean finalising; 
 
     public EmergencyMeeting() {
         setPosition(new Position(2100, 450));
@@ -26,6 +27,8 @@ public class EmergencyMeeting extends Interactible {
     public boolean getInMeeting() {
         return inMeeting;
     }
+
+    
 
     public void setIsCooldownActive(boolean ssCooldownActive) {
         this.isCooldownActive = ssCooldownActive;
@@ -49,5 +52,13 @@ public class EmergencyMeeting extends Interactible {
 
     public Map<String, Integer> getVotes() {
         return votes;
+    }
+
+    public boolean getFinalising(){
+        return finalising;
+    }
+
+    public void setFinalising(boolean finalising) {
+        this.finalising = finalising;
     }
 }

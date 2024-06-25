@@ -185,7 +185,6 @@ export const sendInteractionWithSabotageTask = (stompClient, playerName, roomCod
 
 export const sendChatMessage = (stompChatClient, playerName, messageContent, roomCode) => {
   if (!stompChatClient || !playerName) return;
-  console.log("[WebsocketService.ts] Message arrived in Websocket");
 
   const newMessage = {
     sender: playerName,

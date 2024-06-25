@@ -30,6 +30,7 @@ export const handleReceivedInteractibles = (interactiblesData, setInteractibles)
         width: data.width,
         height: data.height,
         inMeeting: data.inMeeting,
+        finalising: data.finalising,
         ejectedPlayer: data.ejectedPlayer,
         votes: data.votes,
       }

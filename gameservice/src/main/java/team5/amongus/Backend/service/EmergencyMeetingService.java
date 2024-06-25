@@ -60,6 +60,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         scheduler.schedule(() -> {
             emergencyMeeting.setInMeeting(false);
             System.out.println("[EmergencyMeetingService.java] Ejected Gif has ended");
+            room.getEmergencyMeeting().setFinalising(false);
             room.forcebroadcastInteractiblesUpdate(msg);
         }, 5, TimeUnit.SECONDS);
     }
@@ -105,7 +106,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         System.out.println("[EmergencyMeetingService.java] totalAlivePlayer: " + totalVotes);
         System.out.println("[EmergencyMeetingService.java] votes array: " + emergencyMeeting.getVotes());
         if (votesCast == totalVotes) {
-            System.out.println("[EmergencyMeetingService.java] VOTES HAVE BEEN CAST UwU");
+            System.out.println("[EmergencyMeetingService.java] Recieved votes from all players");
             submitVotes(playersMap, emergencyMeeting, room, swp);
         }
     }
@@ -122,18 +123,24 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
             }
         }
 
+        
+
         if (maxVotes > skips) {
             Player ejectedPlayer = playersMap.get(playerWithMostVotes);
             if (ejectedPlayer != null) {
                 playersMap.get(playerWithMostVotes).setAlive(false);
                 emergencyMeeting.setEjectedPlayer(ejectedPlayer);
-                room.forcebroadcastInteractiblesUpdate(smp);
+                room.getEmergencyMeeting().setFinalising(true);
+                room.broadcastInteractiblesUpdate(smp);
                 System.out.println("[EmergencyMeetingService.java] " + ejectedPlayer.getName() + " has been ejected.");
             }
         } else {
+            room.getEmergencyMeeting().setFinalising(true);
+            room.broadcastInteractiblesUpdate(smp);
             System.out.println("[EmergencyMeetingService.java] No player has been ejected.");
 
         }
+        
         startEjectGifCountdown(emergencyMeeting, room, smp);
         votes.clear();
     }

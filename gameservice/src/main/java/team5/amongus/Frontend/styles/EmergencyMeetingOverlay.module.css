@@ -89,11 +89,20 @@
 }
 
 .ejectedGifContainer {
-  position: fixed;
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1000;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ejectedGifContainer img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .deadButton {
@@ -105,7 +114,7 @@
 .disabled {
   pointer-events: none; /* Prevent click events */
   opacity: 0.5; /* Reduce opacity to indicate disabled state */
-  /* Add any other styles to visually indicate the disabled state */
+  cursor: not-allowed;
 }
 
 .voteButton {
