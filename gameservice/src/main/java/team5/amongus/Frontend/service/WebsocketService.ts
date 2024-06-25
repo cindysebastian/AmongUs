@@ -8,8 +8,8 @@ import { PlayersMap } from '../components/interfaces/Player';
 export const connectWebSocket = (setStompClient, setStompChatClient) => {
   // Disable Stomp.js logging
 
-  const socket = new SockJS('http://10.0.40.165:8080/ws');
-  const socketChat = new SockJS('http://10.0.40.165:8080/ws')
+  const socket = new SockJS('http://localhost:8080/ws');
+  const socketChat = new SockJS('http://localhost:8080/ws')
 
   const stomp = Stomp.over(socket);
   stomp.debug = null;

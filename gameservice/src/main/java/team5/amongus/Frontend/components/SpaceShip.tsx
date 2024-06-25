@@ -1,6 +1,7 @@
 import React, { useEffect, useState, CSSProperties, useRef } from 'react';
 import Stomp from 'stompjs';
-import Task from './Task';
+import TaskIcons from './TaskIcons';
+import TaskMiniGames from './TaskMiniGames';
 import styles from '../styles/spaceship.module.css';
 import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
@@ -258,8 +259,14 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
                   </div>
                 ))
               }
-            <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={players[currentPlayer]} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
-            <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
+              <TaskIcons interactibles={interactibles} currentPlayer={players[currentPlayer]} />
+              <TaskMiniGames 
+                stompClient={stompClient} 
+                interactibles={interactibles} 
+                currentPlayer={players[currentPlayer]}
+                roomCode={roomCode} 
+              />            
+              <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
 
             {interactibles
               .filter(task => task.assignedPlayer === currentPlayer).filter(task => !task.completed) // Filter tasks by assigned player
