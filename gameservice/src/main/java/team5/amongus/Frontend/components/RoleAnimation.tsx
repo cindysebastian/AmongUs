@@ -32,6 +32,11 @@ const RoleAnimation = ({ isImposter, player, onAnimationEnd }) => {
       setShowSprite(false);
     }, 8000); // Hide the sprite after 8 seconds
 
+    // Fail-safe timer to end the animation after 7 seconds
+    const failSafeTimer = setTimeout(() => {
+      onAnimationEnd();
+    }, 7000);
+
     return () => {
       sound.pause();
       sound.currentTime = 0;
@@ -41,6 +46,7 @@ const RoleAnimation = ({ isImposter, player, onAnimationEnd }) => {
       }
       clearTimeout(spriteTimer);
       clearTimeout(hideSpriteTimer);
+      clearTimeout(failSafeTimer);
     };
   }, [onAnimationEnd]);
 
