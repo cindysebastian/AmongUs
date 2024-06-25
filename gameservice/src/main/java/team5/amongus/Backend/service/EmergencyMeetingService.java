@@ -127,12 +127,14 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
             if (ejectedPlayer != null) {
                 playersMap.get(playerWithMostVotes).setAlive(false);
                 emergencyMeeting.setEjectedPlayer(ejectedPlayer);
-                startEjectGifCountdown(emergencyMeeting, room, smp);
+                room.forcebroadcastInteractiblesUpdate(smp);
                 System.out.println("[EmergencyMeetingService.java] " + ejectedPlayer.getName() + " has been ejected.");
             }
         } else {
             System.out.println("[EmergencyMeetingService.java] No player has been ejected.");
+
         }
+        startEjectGifCountdown(emergencyMeeting, room, smp);
         votes.clear();
     }
 }
