@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import team5.amongus.Backend.model.EmergencyMeeting;
 import team5.amongus.Backend.model.Player;
@@ -16,6 +18,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
     private int votesCast = 0;
     private boolean isCooldownActive = false;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private SimpMessagingTemplate messagingTemplate;
 
     public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode, String meeting) {
         if (isCooldownActive && meeting != "deadbody") {
@@ -99,6 +102,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
                 playersMap.get(playerWithMostVotes).setAlive(false);
                 emergencyMeeting.setEjectedPlayer(ejectedPlayer);
                 System.out.println("[EmergencyMeetingService.java] " + ejectedPlayer.getName() + " has been ejected.");
+                messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode, ejectedPlayer.getName());
             }
         } else {
             System.out.println("[EmergencyMeetingService.java] No player has been ejected.");

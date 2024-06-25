@@ -31,7 +31,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
         stompClient,
         roomCode,
         setEjectedPlayer,
-        setShowEjectedGif // Pass setShowEjectedGif as the fourth argument
+        setShowEjectedGif(true) // Pass setShowEjectedGif as the fourth argument
       );
       const countdownInterval = setInterval(() => {
         setTimeRemaining(prevTime => {
