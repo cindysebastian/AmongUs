@@ -154,6 +154,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
         )}
         {state.showEjectedGif && state.ejectedPlayer != null && (
           <div className={styles.ejectedGifContainer}>
+            <p className={styles.ejectedText}>{state.ejectedPlayer} has been ejected.</p>
             <img src={ejectedGif} alt="Ejected" className={styles.ejectedGif} />
           </div>
         )}

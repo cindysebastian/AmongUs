@@ -287,6 +287,9 @@ public class Room {
         if (player1.getWillContinue() != player2.getWillContinue()) {
             return false;
         }
+        if (player1.getHasVoted() != player2.getHasVoted()) {
+            return false;
+        }
 
         return true;
     }

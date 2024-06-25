@@ -100,11 +100,13 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
             skips++;
             votesCast++;
         }
+        playersMap.get(playerName).setHasVoted(true);
 
         System.out.println("[EmergencyMeetingService.java] voted player: " + votedPlayer);
         System.out.println("[EmergencyMeetingService.java] votes cast: " + votesCast);
         System.out.println("[EmergencyMeetingService.java] totalAlivePlayer: " + totalVotes);
         System.out.println("[EmergencyMeetingService.java] votes array: " + emergencyMeeting.getVotes());
+        room.broadcastPlayerUpdate(swp);
         if (votesCast == totalVotes) {
             System.out.println("[EmergencyMeetingService.java] Recieved votes from all players");
             submitVotes(playersMap, emergencyMeeting, room, swp);
@@ -142,6 +144,9 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         }
         
         startEjectGifCountdown(emergencyMeeting, room, smp);
+        for(Map.Entry<String, Player> player : playersMap.entrySet()){
+            player.getValue().setHasVoted(false);
+        }
         votes.clear();
     }
 }

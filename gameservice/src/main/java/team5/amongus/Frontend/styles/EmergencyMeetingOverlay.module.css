@@ -105,6 +105,19 @@
   height: 100vh;
   object-fit: cover;
 }
+.ejectedText {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: large;
+  color: white;
+  font-family: 'Lucida Console';
+  position: absolute; /* Position the text absolutely */
+  top: 50%; /* Center the text vertically */
+  left: 50%; /* Center the text horizontally */
+  transform: translate(-50%, -50%); /* Offset by 50% of its own size */
+  z-index: 1001; /* Ensure it's above other content, but below the gif if needed */
+}
 
 .deadButton {
   color: #666; /* Gray text */
