@@ -207,23 +207,6 @@ export const enableSabotage = (stompClient, sabotage, roomCode) => {
   stompClient.send(`/app/enableSabotage/${roomCode}`, {}, sabotage)
 }
 
-export const sendEmergencyMeeting = (stompClient, playerName, roomCode) => {
-  if (!stompClient || !playerName) return;
-  stompClient.send(`/app/emergencyMeeting/${roomCode}`, {}, playerName);
-};
-
-export const subscribeToEmergencyMeeting = (stompClient, handleEmergencyMeeting, roomCode) => {
-  if (!stompClient) return;
-
-  const subscription = stompClient.subscribe(`/topic/emergencyMeeting/${roomCode}`, () => {
-    handleEmergencyMeeting();
-  });
-
-  return () => {
-    subscription.unsubscribe();
-  };
-};
-
 export const subscribeToEjectedPlayer = (stompClient, roomCode, setEjectedPlayer, setShowEjectedGif) => {
   if (!stompClient) return;
 
@@ -243,9 +226,4 @@ export const sendVote = (stompClient, playerName, votedPlayer, roomCode) => {
   const payload = `${playerName},${votedPlayer}`;
   stompClient.send(`/app/vote/${roomCode}`, {}, payload);
 };
-
-export const sendVoteTimemout = (stompClient, roomCode) => {
-  if (!stompClient) return;
-  stompClient.send(`/app/voteTimeout/${roomCode}`);
-}
 

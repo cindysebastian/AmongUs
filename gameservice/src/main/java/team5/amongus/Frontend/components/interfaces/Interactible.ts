@@ -13,6 +13,7 @@ interface Interactible {
   inMeeting?: boolean;
   ejectedPlayer?: Player;
   votes?: { [key: string]: number }; // Add the votes map
+  isCooldownActive?: boolean;
 }
 
 enum TaskType {

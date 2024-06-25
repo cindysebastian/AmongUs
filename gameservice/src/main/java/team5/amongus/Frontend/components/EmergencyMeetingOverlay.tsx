@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styles from '../styles/EmergencyMeetingOverlay.module.css';
 import ChatRoom from '../components/ChatRoom';
 import MessageInput from '../components/MessageInput';
-import { sendChatMessage, subscribeToMessages, subscribeToEjectedPlayer, sendVote, sendVoteTimemout } from '../service/WebsocketService';
+import { sendChatMessage, subscribeToMessages, subscribeToEjectedPlayer, sendVote } from '../service/WebsocketService';
 import Stomp from 'stompjs';
 import Player from './interfaces/Player';
 import Interactible from './interfaces/Interactible';
@@ -21,7 +21,6 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [ejectedPlayer, setEjectedPlayer] = useState<string | null>(null);
   const [showEjectedGif, setShowEjectedGif] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(30); // Initial countdown time
 
   useEffect(() => {
@@ -35,11 +34,6 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
       );
       const countdownInterval = setInterval(() => {
         setTimeRemaining(prevTime => {
-          if (prevTime === 5) {
-            // Send a message to trigger vote submission at 25 seconds
-            console.log("[EmergencyMeetingOverlay.tsx] sendvotesubmission");
-            sendVoteTimemout(stompClient, roomCode);
-          }
           return prevTime > 0 ? prevTime - 1 : 0;
         });
       }, 1000); // Update countdown every second
@@ -47,7 +41,6 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
       return () => {
         unsubscribeMessages();
         unsubscribeEjectedPlayer();
-        clearInterval(countdownInterval); // Clear interval on component unmount
       };
     }
   }, [stompClient]);
@@ -67,7 +60,6 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
       console.log("[EmergencyMeetingOverlay.tsx] voted for " + votedPlayer);
       sendVote(stompClient, playerName, votedPlayer, roomCode);
     }
-    setHasVoted(true);
   };
 
   const half = Math.ceil(playerNames.length / 2);
@@ -93,7 +85,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
                         src="gameservice/src/main/resources/yesVote.png" // Update the path to point to your GIF file
                         alt="Vote"
                         onClick={() => handleVote(name)}
-                        className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+                        className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${players[playerName].hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
                       />
                     </div>
                   )}
@@ -111,7 +103,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
                         src="gameservice/src/main/resources/yesVote.png" // Update the path to point to your GIF file
                         alt="Vote"
                         onClick={() => handleVote(name)}
-                        className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+                        className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${players[playerName].hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
                       />
                     </div>
                   )}
@@ -124,7 +116,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
               src="gameservice/src/main/resources/skipVote.png" // Update the path to point to your PNG file
               alt="Skip"
               onClick={() => handleVote("")}
-              className={`${styles.skipButton} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+              className={`${styles.skipButton} ${players[playerName].hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
             />
           </div>
         </div>
@@ -152,7 +144,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
           </div>
         )}
         <div className={styles.countdown}>
-          <h2>Time Remaining: {timeRemaining - 5} seconds</h2>
+          <h2>Time Remaining: {timeRemaining} seconds</h2>
         </div>
       </div>
     </div>

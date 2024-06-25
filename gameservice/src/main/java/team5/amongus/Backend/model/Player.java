@@ -16,6 +16,7 @@ public class Player implements Serializable, Cloneable {
     private long lastActivityTime;
     private boolean isHost = false;
     private String sessionId;
+    private boolean hasVoted = false;
 
     public Player(String name, Position position, String sessionId) {
         this.name = name;
@@ -128,6 +129,14 @@ public class Player implements Serializable, Cloneable {
         this.isAlive = isAlive;
     }
 
+    public boolean getHasVoted() {
+        return hasVoted;
+    }
+
+    public void setHasVoted(boolean hasVoted) {
+        this.hasVoted = hasVoted;
+    }
+
     public void handleMovementRequest(Position.Direction direction) {
         Position newPosition = position.getNextPosition(direction, step);
 
@@ -141,7 +150,7 @@ public class Player implements Serializable, Cloneable {
     }
 
     public boolean collidesWith(Player otherPlayer) {
-        if(otherPlayer.getisAlive()){
+        if (otherPlayer.getisAlive()) {
             return this.getBounds().intersects(otherPlayer.getBounds());
         }
         return false;

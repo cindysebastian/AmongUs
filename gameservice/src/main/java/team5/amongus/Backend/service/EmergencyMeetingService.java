@@ -14,20 +14,22 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
     private int totalVotes = 0;
     private int skips = 0;
     private int votesCast = 0;
-    private boolean isCooldownActive = false;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode, String meeting) {
-        if (isCooldownActive && meeting != "deadbody") {
-            System.out.println("[EmergencyMeetingService.java] Emergency meeting cooldown is active. Cannot start a new meeting.");
+    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap,
+            EmergencyMeeting emergencyMeeting, String roomCode, String meeting) {
+        if (emergencyMeeting.getIsCooldownActive() && meeting != "deadbody") {
+            System.out.println(
+                    "[EmergencyMeetingService.java] Emergency meeting cooldown is active. Cannot start a new meeting.");
             return;
         }
 
         int x = 2000;
         int y = 550;
-        for (Map.Entry<String,Player> entry : playersMap.entrySet()) {
+        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
             Player player = entry.getValue();
             Position meetingPosition = new Position(x, y);
+            player.setHasVoted(false);
             player.setPosition(meetingPosition);
             x += 30;
             y += 30;
@@ -39,25 +41,48 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         emergencyMeeting.setEjectedPlayer(null);
         emergencyMeeting.getVotes().clear(); // Clear votes from the previous meeting
 
-        startCooldown();
+        startMeetingCountdown(playersMap, emergencyMeeting, roomCode);
+        startCooldown(emergencyMeeting);
     }
 
-    private void startCooldown() {
-        isCooldownActive = true;
+    private void startCooldown(EmergencyMeeting emergencyMeeting) {
+        emergencyMeeting.setIsCooldownActive(true);
         scheduler.schedule(() -> {
-            isCooldownActive = false;
+            emergencyMeeting.setIsCooldownActive(false);
             System.out.println("[EmergencyMeetingService.java] Emergency meeting cooldown has ended.");
-        }, 90, TimeUnit.SECONDS); // 120 seconds cooldown
+        }, 120, TimeUnit.SECONDS); // 120 seconds cooldown
     }
 
-    public void handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode) {
+    private void startEjectGifCountdown(EmergencyMeeting emergencyMeeting) {
+        scheduler.schedule(() -> {
+            emergencyMeeting.setInMeeting(false);
+            System.out.println("[EmergencyMeetingService.java] Ejected Gif has ended");
+        }, 5, TimeUnit.SECONDS);
+    }
+
+    private void startMeetingCountdown(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting,
+            String roomCode) {
+        scheduler.schedule(() -> {
+            if (emergencyMeeting.getInMeeting()) {
+                submitVotes(playersMap, emergencyMeeting, roomCode);
+            }
+            System.out.println("[EmergencyMeetingService.java] Emergency meeting countdown has ended.");
+        }, 30, TimeUnit.SECONDS);
+    }
+
+    public void handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap,
+            EmergencyMeeting emergencyMeeting, String roomCode) {
+        if (!emergencyMeeting.getInMeeting()) {
+            return;
+        }
+
         if (totalVotes == 0) {
             for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
                 Player player = entry.getValue();
                 if (player.getisAlive()) {
                     totalVotes++;
                 }
-            }            
+            }
         }
 
         System.out.println("[EmergencyMeetingService.java] " + playerName + " voted for: " + votedPlayer);
@@ -77,7 +102,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         System.out.println("[EmergencyMeetingService.java] votes array: " + emergencyMeeting.getVotes());
         if (votesCast == totalVotes) {
             System.out.println("[EmergencyMeetingService.java] VOTES HAVE BEEN CAST UwU");
-            submitVotes(playersMap, emergencyMeeting, roomCode); 
+            submitVotes(playersMap, emergencyMeeting, roomCode);
         }
     }
 
@@ -92,19 +117,18 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
                 playerWithMostVotes = entry.getKey();
             }
         }
-        
+
         if (maxVotes > skips) {
             Player ejectedPlayer = playersMap.get(playerWithMostVotes);
             if (ejectedPlayer != null) {
                 playersMap.get(playerWithMostVotes).setAlive(false);
                 emergencyMeeting.setEjectedPlayer(ejectedPlayer);
+                startEjectGifCountdown(emergencyMeeting);
                 System.out.println("[EmergencyMeetingService.java] " + ejectedPlayer.getName() + " has been ejected.");
             }
         } else {
             System.out.println("[EmergencyMeetingService.java] No player has been ejected.");
         }
-        emergencyMeeting.setInMeeting(false);
         votes.clear();
     }
-
 }

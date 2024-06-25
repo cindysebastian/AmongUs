@@ -6,7 +6,7 @@ import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import ProgressBar from './ProgressBar';
-import { enableSabotage, killPlayer, subscribeToPlayerKilled, subscribeToEmergencyMeeting, sendEmergencyMeeting } from '../service/WebsocketService';
+import { enableSabotage, killPlayer, subscribeToPlayerKilled } from '../service/WebsocketService';
 import KillButton from './KillButton';
 import EmergencyMeetingOverlay from './EmergencyMeetingOverlay';
 import Space from './Space';
@@ -38,15 +38,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const [killCooldown, setKillCooldown] = useState(false);
   const [playerPositions, setPlayerPositions] = useState(players);
   
-
-
-  useEffect(() => {
-    const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, handleEmergencyMeeting, roomCode);
-
-    return () => {
-      unsubscribeEmergencyMeeting();
-    };
-  }, [stompClient, currentPlayer, roomCode]);
   const [sabotageCooldown, setSabotageCooldown] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(120); // 2 minutes in seconds
   const [showAnimation, setShowAnimation] = useState(true);
@@ -102,17 +93,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     killPlayer(stompClient, currentPlayer, roomCode);
     setKillCooldown(true);
     setTimeout(() => setKillCooldown(false), 30000);
-  };
-
-  const handleEmergencyMeeting = () => {
-    if (emergencyCooldown) return; // Prevent starting another meeting if cooldown is active
-
-    setShowEmergencyMeeting(true);
-    setEmergencyCooldown(true); // Set the cooldown
-
-    setTimeout(() => {
-      setEmergencyCooldown(false);
-    }, 90000);
   };
 
   useEffect(() => {
