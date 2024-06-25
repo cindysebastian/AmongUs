@@ -307,56 +307,6 @@ const App = () => {
                 <span className={styles.controlText}>Move your player with W, A, S, D</span>
               </div>
             </div>
-<<<<<<< Updated upstream
-          )}
-        </div>
-      } />
-      <Route path="/host" element={<div className={styles.gifBackground}>
-        <div className={styles.loginbackground}>
-          <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
-            <input
-              type="text"
-              value={inputName}
-              onChange={handleNameInputChange}
-              placeholder="Enter your name"
-              className={styles.input}
-            />
-            <select value={selectedPlayerCount} onChange={handlePlayerCountChange} className={styles.input}>
-              {[...Array(8).keys()].map(i => (
-                <option key={i + 3} value={i + 3}>{i + 3}</option>
-              ))}
-            </select>
-
-            <button onClick={handleHostGame} className={styles.button}>Host Game</button>
-          </div></div>
-      </div>} />
-      <Route path="/private" element={<div className={styles.gifBackground}>
-        <div className={styles.loginbackground}>
-          <div style={{ display: 'flex', justifyContent: 'center', position: 'absolute', marginBottom: '13%', bottom: '0px', left: '50%', right: '50%' }}>
-            <input
-              type="text"
-              value={inputName}
-              onChange={handleNameInputChange}
-              placeholder="Enter your name"
-              className={styles.input}
-            />
-            <input
-              type="text"
-              value={inputCode}
-              onChange={handleCodeInputChange}
-              placeholder="Enter your Room Code"
-              className={styles.input}
-            />
-            <button onClick={() => handleJoinGame(playerName, roomCode)} className={styles.button}>Join Private Room</button>
-          </div></div>
-      </div>} />
-      <Route path="/game" element={<ProtectedRoute isAllowed={playerSpawned} element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage} />} />} />
-      <Route path="/spaceship" element={<ProtectedRoute isAllowed={playerSpawned} element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} sabotageTasks={sabotageTasks} currentPlayer={playerName} roomCode={roomCode} setInteractionInProgress={setInteractionInProgress} />} />} />
-      <Route path="/end" element={<ProtectedRoute isAllowed={playerSpawned} element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />} />
-      <Route path="/" element={<Navigate replace to="/login" />} />
-    </Routes>
-  );
-=======
           </div>
         )}
       </div>
@@ -367,7 +317,7 @@ const App = () => {
           <input
             type="text"
             value={inputName}
-            onChange={handleInputChange}
+            onChange={handleNameInputChange}
             placeholder="Enter your name"
             className={styles.input}
           />
@@ -386,14 +336,14 @@ const App = () => {
           <input
             type="text"
             value={inputName}
-            onChange={handleInputChange}
+            onChange={handleNameInputChange}
             placeholder="Enter your name"
             className={styles.input}
           />
           <input
             type="text"
             value={inputCode}
-            onChange={handle2InputChange}
+            onChange={handleCodeInputChange}
             placeholder="Enter your Room Code"
             className={styles.input}
           />
@@ -406,7 +356,6 @@ const App = () => {
     <Route path="/" element={<Navigate replace to="/login" />} />
   </Routes>
 );
->>>>>>> Stashed changes
 };
 
 export default App;

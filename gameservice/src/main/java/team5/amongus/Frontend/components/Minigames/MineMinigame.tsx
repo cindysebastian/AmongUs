@@ -35,7 +35,7 @@ const MineMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode }) 
     const intervals = [0.08, 1.35, 2.8, 4.3]; // Array of specific times
     const randomTime = intervals[Math.floor(Math.random() * intervals.length)]; // Pick a random time from the array
     audio.currentTime = randomTime; // Set the playback position to the random time
-    audio.volume = 0.07; // Ensure volume is set to 100%
+    audio.volume = 1.0; // Ensure volume is set to 100%
     audio.play().then(() => {
       
       // Stop the audio after 3 seconds
