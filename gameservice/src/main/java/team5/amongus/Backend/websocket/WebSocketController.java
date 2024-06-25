@@ -185,12 +185,12 @@ public class WebSocketController {
                 }
                 String meeting = "deadbody";
                 emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(),
-                        room.getEmergencyMeeting(), roomCode, meeting);
+                        room.getEmergencyMeeting(), room, meeting, messagingTemplate);
                 messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
             } else if (interactableObject instanceof EmergencyMeeting && player.getisAlive()) {
                 String meeting = "button";
                 emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(),
-                        room.getEmergencyMeeting(), roomCode, meeting);
+                        room.getEmergencyMeeting(), room, meeting, messagingTemplate);
                 messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
             }
         }
@@ -417,7 +417,7 @@ public class WebSocketController {
         Room room = activeRooms.get(roomCode);
         String meeting = "";
         emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(),
-                roomCode, meeting);
+                room, meeting, messagingTemplate);
         messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
 
         room.removeAllDeadBodies();
@@ -434,11 +434,11 @@ public class WebSocketController {
             playerName = parts[0].trim();
             String votedPlayer = parts[1].trim();
             emergencyMeetingService.handleVoting(playerName, votedPlayer, room.getPlayersMap(),
-                    room.getEmergencyMeeting(), roomCode);
+                    room.getEmergencyMeeting(), room, messagingTemplate);
         } else if (parts.length == 1) {
             playerName = parts[0].trim();
             emergencyMeetingService.handleVoting(playerName, "", room.getPlayersMap(), room.getEmergencyMeeting(),
-                    roomCode);
+                    room, messagingTemplate);
         }
         if (room.getEmergencyMeeting().getEjectedPlayer() != null) {
             messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode,

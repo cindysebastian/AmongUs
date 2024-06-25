@@ -4,10 +4,13 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import team5.amongus.Backend.model.EmergencyMeeting;
 import team5.amongus.Backend.model.Player;
 import team5.amongus.Backend.model.Position;
+import team5.amongus.Backend.model.Room;
 
 @Service
 public class EmergencyMeetingService implements IEmergencyMeetingService {
@@ -17,7 +20,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap,
-            EmergencyMeeting emergencyMeeting, String roomCode, String meeting) {
+            EmergencyMeeting emergencyMeeting, Room room, String meeting, SimpMessagingTemplate messagingTemplate) {
         if (emergencyMeeting.getIsCooldownActive() && meeting != "deadbody") {
             System.out.println(
                     "[EmergencyMeetingService.java] Emergency meeting cooldown is active. Cannot start a new meeting.");
@@ -41,7 +44,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         emergencyMeeting.setEjectedPlayer(null);
         emergencyMeeting.getVotes().clear(); // Clear votes from the previous meeting
 
-        startMeetingCountdown(playersMap, emergencyMeeting, roomCode);
+        startMeetingCountdown(playersMap, emergencyMeeting, room, messagingTemplate);
         startCooldown(emergencyMeeting);
     }
 
@@ -53,25 +56,26 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         }, 120, TimeUnit.SECONDS); // 120 seconds cooldown
     }
 
-    private void startEjectGifCountdown(EmergencyMeeting emergencyMeeting) {
+    private void startEjectGifCountdown(EmergencyMeeting emergencyMeeting, Room room, SimpMessagingTemplate msg) {
         scheduler.schedule(() -> {
             emergencyMeeting.setInMeeting(false);
             System.out.println("[EmergencyMeetingService.java] Ejected Gif has ended");
+            room.forcebroadcastInteractiblesUpdate(msg);
         }, 5, TimeUnit.SECONDS);
     }
 
     private void startMeetingCountdown(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting,
-            String roomCode) {
+            Room room, SimpMessagingTemplate msg) {
         scheduler.schedule(() -> {
             if (emergencyMeeting.getInMeeting()) {
-                submitVotes(playersMap, emergencyMeeting, roomCode);
+                submitVotes(playersMap, emergencyMeeting, room, msg);
             }
             System.out.println("[EmergencyMeetingService.java] Emergency meeting countdown has ended.");
         }, 30, TimeUnit.SECONDS);
     }
 
     public void handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap,
-            EmergencyMeeting emergencyMeeting, String roomCode) {
+            EmergencyMeeting emergencyMeeting, Room room, SimpMessagingTemplate swp) {
         if (!emergencyMeeting.getInMeeting()) {
             return;
         }
@@ -102,11 +106,11 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         System.out.println("[EmergencyMeetingService.java] votes array: " + emergencyMeeting.getVotes());
         if (votesCast == totalVotes) {
             System.out.println("[EmergencyMeetingService.java] VOTES HAVE BEEN CAST UwU");
-            submitVotes(playersMap, emergencyMeeting, roomCode);
+            submitVotes(playersMap, emergencyMeeting, room, swp);
         }
     }
 
-    public void submitVotes(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode) {
+    public void submitVotes(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, Room room, SimpMessagingTemplate smp) {
         String playerWithMostVotes = null;
         int maxVotes = 0;
         Map<String, Integer> votes = emergencyMeeting.getVotes();
@@ -123,7 +127,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
             if (ejectedPlayer != null) {
                 playersMap.get(playerWithMostVotes).setAlive(false);
                 emergencyMeeting.setEjectedPlayer(ejectedPlayer);
-                startEjectGifCountdown(emergencyMeeting);
+                startEjectGifCountdown(emergencyMeeting, room, smp);
                 System.out.println("[EmergencyMeetingService.java] " + ejectedPlayer.getName() + " has been ejected.");
             }
         } else {

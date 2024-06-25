@@ -155,6 +155,7 @@ export const subscribetoInteractions = (stompClient, setInteractibles, roomCode)
   stompClient.subscribe(`/topic/interactions/${roomCode}`, (message) => {
     const updatedInteractibles = JSON.parse(message.body);
     setInteractibles(updatedInteractibles);
+    console.log(updatedInteractibles);
     handleReceivedInteractibles(updatedInteractibles, setInteractibles);
     
   });

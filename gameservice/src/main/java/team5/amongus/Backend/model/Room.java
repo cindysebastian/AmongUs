@@ -307,6 +307,10 @@ public class Room {
         }
     }
 
+    public void forcebroadcastInteractiblesUpdate(SimpMessagingTemplate messagingTemplate) {
+        messagingTemplate.convertAndSend("/topic/interactions/" + roomCode, interactibles);
+    }
+
     public void broadCastSabotageTasksUpdate(SimpMessagingTemplate messagingTemplate){
         List<Interactible> clonedSabotageTasks = cloneInteractibles(sabotageTasks);
         if (!Objects.equals(clonedSabotageTasks, previousSabotageTasks)) {
