@@ -8,8 +8,8 @@ import { PlayersMap } from '../components/interfaces/Player';
 export const connectWebSocket = (setStompClient, setStompChatClient) => {
   // Disable Stomp.js logging
 
-  const socket = new SockJS('http://localhost:8080/ws');
-  const socketChat = new SockJS('http://localhost:8080/ws')
+  const socket = new SockJS('http://10.0.40.165:8080/ws');
+  const socketChat = new SockJS('http://10.0.40.165:8082/ws')
 
   const stomp = Stomp.over(socket);
   stomp.debug = null;
@@ -47,12 +47,10 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
 
   stompClient.subscribe(`/topic/players/${roomCode}`, (message: { body: string }) => {
     try {
-      console.log('[WebsocketService.ts] ' + message.body);
       const updatedPlayers = JSON.parse(message.body);
       const playersWithImposterFlag = addImposterFlag(updatedPlayers);
       setPlayers(playersWithImposterFlag);
       const currentPlayer = playersWithImposterFlag[playerName];
-      console.log('[WebsocketService.ts] ' + playersWithImposterFlag);
     } catch (error) {
       console.error('[WebsocketService.ts] Error processing player message:', error);
     }
@@ -155,7 +153,7 @@ export const subscribetoInteractions = (stompClient, setInteractibles, roomCode)
   stompClient.subscribe(`/topic/interactions/${roomCode}`, (message) => {
     const updatedInteractibles = JSON.parse(message.body);
     setInteractibles(updatedInteractibles);
-    console.log(updatedInteractibles);
+   
     handleReceivedInteractibles(updatedInteractibles, setInteractibles);
     
   });

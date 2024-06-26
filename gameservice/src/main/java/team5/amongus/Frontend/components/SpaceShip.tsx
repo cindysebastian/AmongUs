@@ -28,9 +28,10 @@ interface Props {
   currentPlayer: string;
   roomCode: string;
   setInteractionInProgress: React.Dispatch<React.SetStateAction<boolean>>;
+  stompChatClient: Stomp.Client | null;
 }
 
-const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabotageTasks, currentPlayer, roomCode, setInteractionInProgress }) => {
+const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabotageTasks, currentPlayer, roomCode, setInteractionInProgress, stompChatClient }) => {
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
   const [currAlive, setCurrAlive] = useState(false);
@@ -78,14 +79,12 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   useEffect(() => {
     const firstInteractible = interactibles.filter(interactible => interactible.hasOwnProperty('inMeeting'))[0];
     setBellDown(firstInteractible ? firstInteractible.isCooldownActive : false);
-    console.log(bellDown);
+
   }, [interactibles]);
   
 
   const handlePlayerKilled = (killedPlayer: Player) => {
-    console.log("[SpaceShip.tsx] Interactibles:", interactibles);
-    console.log("[SpaceShip.tsx] Killed player:", killedPlayer);
-    console.log("[SpaceShip.tsx] Current player:", currentPlayer);
+
     if (!killedPlayer || !killedPlayer.name || !currentPlayer) return;
     if (killedPlayer.name === currentPlayer) {
       setShowKillGif(true);
@@ -94,7 +93,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     console.log("[SpaceShip.tsx] Adding killed player to killedPlayers:", killedPlayer.name);
     setKilledPlayers(prevKilledPlayers => {
       const newKilledPlayers = [...prevKilledPlayers, killedPlayer.name];
-      console.log("[SpaceShip.tsx] KilledPlayersList:", newKilledPlayers);
+
       return newKilledPlayers;
     });
   };
@@ -201,7 +200,24 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
 
   const handleAnimationEnd = () => {
     setShowAnimation(false);
-    setInteractionInProgress(false);
+    if (interactibles && currentPlayer && sabotageTasks) {
+      const playerInteracting = interactibles.some(interactible =>
+        interactible.inProgress && interactible.assignedPlayer === currentPlayer
+      );
+      const inMeeting = interactibles.some(interactible =>
+        interactible.inMeeting
+      );
+      const playerInteractingWithSabotageTask = sabotageTasks.some(task =>
+        task.inProgress && task.triggeredBy === currentPlayer
+      );
+
+      if(playerInteracting || inMeeting || playerInteractingWithSabotageTask){
+        setInteractionInProgress(true);
+      } else {
+        setInteractionInProgress(false);
+      }
+    }
+
   };
 
   const calculateArrowData = (playerX: number, playerY: number, taskX: number, taskY: number) => {
@@ -226,7 +242,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     if (audioRef.current) {
       audioRef.current.volume = 0.05;
     }
-    console.log(interactibles.find(i => i.id === 60));
+
   }, []);
 
   return (
@@ -304,6 +320,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             roomCode={roomCode}
             players={players}
             interactible={interactibles.find(i => i.id === 60)}
+            stompChatClient={stompChatClient}
           />
         )}
       </div>

@@ -18,8 +18,6 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
     public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap,
             EmergencyMeeting emergencyMeeting, Room room, String meeting, SimpMessagingTemplate messagingTemplate) {
         if (emergencyMeeting.getIsCooldownActive() && meeting != "deadbody") {
-            System.out.println(
-                    "[EmergencyMeetingService.java] Emergency meeting cooldown is active. Cannot start a new meeting.");
             return;
         }
 
@@ -60,25 +58,21 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
             }
         }
 
-        System.out.println("[EmergencyMeetingService.java] " + playerName + " voted for: " + votedPlayer);
+
         if (votedPlayer != null && !votedPlayer.isEmpty() && !votedPlayer.isBlank()) {
             Map<String, Integer> votes = emergencyMeeting.getVotes();
             votes.put(votedPlayer, votes.getOrDefault(votedPlayer, 0) + 1);
             votesCast++;
         } else {
-            System.out.println("[EmergencyMeetingService.java] skip");
+
             skips++;
             votesCast++;
         }
         playersMap.get(playerName).setHasVoted(true);
 
-        System.out.println("[EmergencyMeetingService.java] voted player: " + votedPlayer);
-        System.out.println("[EmergencyMeetingService.java] votes cast: " + votesCast);
-        System.out.println("[EmergencyMeetingService.java] totalAlivePlayer: " + totalVotes);
-        System.out.println("[EmergencyMeetingService.java] votes array: " + emergencyMeeting.getVotes());
+
         room.broadcastPlayerUpdate(swp);
         if (votesCast == totalVotes) {
-            System.out.println("[EmergencyMeetingService.java] Recieved votes from all players");
             submitVotes(playersMap, emergencyMeeting, room, swp);
         }
     }
@@ -102,12 +96,12 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
                 emergencyMeeting.setEjectedPlayer(ejectedPlayer);
                 room.getEmergencyMeeting().setFinalising(true);
                 room.broadcastInteractiblesUpdate(smp);
-                System.out.println("[EmergencyMeetingService.java] " + ejectedPlayer.getName() + " has been ejected.");
+
             }
         } else {
             room.getEmergencyMeeting().setFinalising(true);
             room.broadcastInteractiblesUpdate(smp);
-            System.out.println("[EmergencyMeetingService.java] No player has been ejected.");
+
 
         }
         
