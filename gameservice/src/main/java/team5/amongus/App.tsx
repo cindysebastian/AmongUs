@@ -313,7 +313,7 @@ const App = () => {
                 <span className={styles.controlText}>Move</span>
               </div>
             </div>
-        </div>
+          </div>
         )}
       </div>
     } />
