@@ -11,8 +11,6 @@ interface Props {
     stompClient: Stomp.Client | null; // Add stompClient to props
     sabotageTasks: SabotageTasks[];
     currentPlayer: String;
-    offsetX: number;
-    offsetY: number;
     roomCode: String;
 }
 
