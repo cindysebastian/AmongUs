@@ -12,7 +12,9 @@ interface Interactible {
   assignedPlayer?: String;
   inMeeting?: boolean;
   ejectedPlayer?: Player;
-  votes?: { [key: string]: number }; // Add the votes map
+  votes?: { [key: string]: number };
+  isCooldownActive?: boolean;
+  finalising?: boolean;
 }
 
 enum TaskType {

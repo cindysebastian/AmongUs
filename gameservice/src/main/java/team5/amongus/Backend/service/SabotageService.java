@@ -5,9 +5,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Service;
 
@@ -16,13 +13,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import team5.amongus.Backend.model.Interactible;
 import team5.amongus.Backend.model.Player;
+import team5.amongus.Backend.model.Room;
 import team5.amongus.Backend.model.Sabotage;
 import team5.amongus.Backend.model.SabotageTask;
 
 @Service
 public class SabotageService implements ISabotageService {
     private final ObjectMapper objectMapper;
-    private List<Interactible> interactibles = new ArrayList<>();
 
     public SabotageService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -48,7 +45,6 @@ public class SabotageService implements ISabotageService {
         SabotageTask annoySabTask = new SabotageTask(3750, 1000, sabotages.get(1));
         annoySabTask.setId(51);
         interactibles.add(annoySabTask);
-        this.interactibles = interactibles;
 
         return interactibles;
     }
@@ -69,12 +65,11 @@ public class SabotageService implements ISabotageService {
                 }
             }
         }
-        this.interactibles = interactibles;
         return interactibles;
     }
 
     @Override
-    public ArrayList<Interactible> enableSabotageTasks(ArrayList<Interactible> interactibles, Sabotage sabotage) {
+    public ArrayList<Interactible> enableSabotageTasks(ArrayList<Interactible> interactibles, Sabotage sabotage, Room room) {
         boolean inProgress = false;
         for (Interactible interactible : interactibles) {
             if (((SabotageTask) interactible).getSabotage().getInProgress()) {
@@ -93,13 +88,7 @@ public class SabotageService implements ISabotageService {
                 }  
             }
         }
-        this.interactibles = interactibles;
-        ScheduledExecutorService executerService = Executors.newSingleThreadScheduledExecutor();
-        executerService.schedule(new Runnable(){
-            @Override
-            public void run(){
-                handleSabotageTimerExpiry(interactibles);
-            }}, 30, TimeUnit.SECONDS);
+        room.startHandleLethalSabotageTimer(interactibles, room, this);
         return interactibles;
     }
 

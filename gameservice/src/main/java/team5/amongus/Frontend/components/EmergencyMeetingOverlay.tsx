@@ -2,10 +2,15 @@ import React, { useEffect, useState } from 'react';
 import styles from '../styles/EmergencyMeetingOverlay.module.css';
 import ChatRoom from '../components/ChatRoom';
 import MessageInput from '../components/MessageInput';
-import { sendChatMessage, subscribeToMessages, subscribeToEjectedPlayer, sendVote, sendVoteTimemout } from '../service/WebsocketService';
+import { sendChatMessage, subscribeToMessages, sendVote } from '../service/WebsocketService';
 import Stomp from 'stompjs';
 import Player from './interfaces/Player';
 import Interactible from './interfaces/Interactible';
+import iVotedImg from '../../../../../resources/iVoted.png';
+import yesVoteImg from '../../../../../resources/yesVote.png';
+import skipVoteImg from '../../../../../resources/skipVote.png';
+import ejectedGif from '../../../../../resources/ejected.gif';
+import noEjectedGif from '../../../../../resources/noEjected.gif';
 
 interface EmergencyMeetingOverlayProps {
   playerNames: string[];
@@ -19,38 +24,36 @@ interface EmergencyMeetingOverlayProps {
 const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playerNames, stompClient, playerName, roomCode, players, interactible }) => {
   const [messages, setMessages] = useState([]);
   const [isChatVisible, setIsChatVisible] = useState(false);
-  const [ejectedPlayer, setEjectedPlayer] = useState<string | null>(null);
-  const [showEjectedGif, setShowEjectedGif] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
+  const [state, setState] = useState({ ejectedPlayer: null as string | null, showEjectedGif: false });
   const [timeRemaining, setTimeRemaining] = useState(30); // Initial countdown time
 
   useEffect(() => {
     if (stompClient) {
       const unsubscribeMessages = subscribeToMessages(stompClient, setMessages, roomCode);
-      const unsubscribeEjectedPlayer = subscribeToEjectedPlayer(
-        stompClient,
-        roomCode,
-        setEjectedPlayer,
-        setShowEjectedGif // Pass setShowEjectedGif as the fourth argument
-      );
       const countdownInterval = setInterval(() => {
-        setTimeRemaining(prevTime => {
-          if (prevTime === 5) {
-            // Send a message to trigger vote submission at 25 seconds
-            console.log("[EmergencyMeetingOverlay.tsx] sendvotesubmission");
-            sendVoteTimemout(stompClient, roomCode);
-          }
-          return prevTime > 0 ? prevTime - 1 : 0;
-        });
-      }, 1000); // Update countdown every second
-  
+        setTimeRemaining(prevTime => prevTime > 0 ? prevTime - 1 : 0);
+      }, 1000);
+
       return () => {
         unsubscribeMessages();
-        unsubscribeEjectedPlayer();
-        clearInterval(countdownInterval); // Clear interval on component unmount
+        clearInterval(countdownInterval);
       };
     }
-  }, [stompClient]);
+  }, [stompClient, roomCode]);
+
+  useEffect(() => {
+    console.log(interactible);
+
+    if (interactible) {
+      setState(prevState => ({
+        ...prevState,
+        ejectedPlayer: interactible.ejectedPlayer ? interactible.ejectedPlayer.name : null,
+        showEjectedGif: interactible.finalising,
+      }));
+      console.log(state.ejectedPlayer);
+      console.log(state.showEjectedGif);
+    }
+  }, [interactible]);
 
   const sendMessage = (messageContent: string) => {
     if (stompClient && players[playerName].isAlive) {
@@ -67,7 +70,6 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
       console.log("[EmergencyMeetingOverlay.tsx] voted for " + votedPlayer);
       sendVote(stompClient, playerName, votedPlayer, roomCode);
     }
-    setHasVoted(true);
   };
 
   const half = Math.ceil(playerNames.length / 2);
@@ -80,7 +82,7 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
     <div className={styles.emergencyOverlay}>
       <div className={styles.emergencydiv}>
         <div className={styles.playerList}>
-          <h2>Player Names</h2>
+          <h2>Discuss and Vote!</h2>
           <div className={styles.columns}>
             <ul className={styles.column}>
               {leftColumnNames.map(name => (
@@ -88,12 +90,14 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
                   {name} {!players[name].isAlive && <span>(DEAD)</span>}
                   {players[name].isAlive && (
                     <div>
-                      Vote: {interactible.votes[name] ?? 0}
+                      {players[name].hasVoted && (
+                        <img src={iVotedImg} alt="I Voted" />
+                      )}
                       <img
-                        src="gameservice/src/main/resources/yesVote.png" // Update the path to point to your GIF file
+                        src={yesVoteImg}
                         alt="Vote"
                         onClick={() => handleVote(name)}
-                        className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+                        className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${players[playerName].hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
                       />
                     </div>
                   )}
@@ -106,12 +110,14 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
                   {name} {!players[name].isAlive && <span>(DEAD)</span>}
                   {players[name].isAlive && (
                     <div>
-                      Votes: {interactible.votes[name] ?? 0}
+                      {players[name].hasVoted && (
+                        <img src={iVotedImg} alt="I Voted" />
+                      )}
                       <img
-                        src="gameservice/src/main/resources/yesVote.png" // Update the path to point to your GIF file
+                        src={yesVoteImg}
                         alt="Vote"
                         onClick={() => handleVote(name)}
-                        className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+                        className={`${styles.voteButton} ${!players[name].isAlive ? styles.deadButton : ''} ${players[playerName].hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
                       />
                     </div>
                   )}
@@ -121,10 +127,10 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
           </div>
           <div className={styles.skipButtonContainer}>
             <img
-              src="gameservice/src/main/resources/skipVote.png" // Update the path to point to your PNG file
+              src={skipVoteImg}
               alt="Skip"
               onClick={() => handleVote("")}
-              className={`${styles.skipButton} ${hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
+              className={`${styles.skipButton} ${players[playerName].hasVoted || !isPlayerAlive ? styles.disabled : ''}`}
             />
           </div>
         </div>
@@ -146,13 +152,20 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
             <ChatRoom messages={messages} />
           </div>
         )}
-        {showEjectedGif && (
+        {state.showEjectedGif && state.ejectedPlayer != null && (
           <div className={styles.ejectedGifContainer}>
-            <img src="gameservice/src/main/resources/ejected.gif" alt="Ejected" className={styles.ejectedGif} />
+            <p className={styles.ejectedText}>{state.ejectedPlayer} has been ejected.</p>
+            <img src={ejectedGif} alt="Ejected" className={styles.ejectedGif} />
+          </div>
+        )}
+
+        {state.showEjectedGif && state.ejectedPlayer === null && (
+          <div className={styles.ejectedGifContainer}>
+            <img src={noEjectedGif} alt="Noone Ejected" className={styles.ejectedGif} />
           </div>
         )}
         <div className={styles.countdown}>
-          <h2>Time Remaining: {timeRemaining - 5} seconds</h2>
+          <h2>Time Remaining: {timeRemaining} seconds</h2>
         </div>
       </div>
     </div>
