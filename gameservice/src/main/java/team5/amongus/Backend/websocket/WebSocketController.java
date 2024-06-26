@@ -501,7 +501,7 @@ public class WebSocketController implements ApplicationListener<SessionSubscribe
 
             if (playerToRemove != null) {
                 // Remove the player from the room
-                room.removePlayer(playerToRemove.getName());
+                room.removePlayer(playerToRemove.getName(), messagingTemplate);
 
                 // Check if the player was the host
                 if (playerToRemove.getIsHost()) {
@@ -523,5 +523,4 @@ public class WebSocketController implements ApplicationListener<SessionSubscribe
             }
         }
     }
-
 }

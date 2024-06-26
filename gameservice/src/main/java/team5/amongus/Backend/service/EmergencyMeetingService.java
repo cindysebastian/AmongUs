@@ -40,8 +40,8 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         emergencyMeeting.setEjectedPlayer(null);
         emergencyMeeting.getVotes().clear(); // Clear votes from the previous meeting
 
-        room.startMeetingCountdown(playersMap, emergencyMeeting, room, messagingTemplate, this);
-        room.startCooldown(emergencyMeeting);
+        room.startMeetingCountdown(playersMap, emergencyMeeting, messagingTemplate, this);
+        room.startCooldown(emergencyMeeting, messagingTemplate);
     }
 
 
@@ -111,7 +111,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
 
         }
         
-        room.startEjectGifCountdown(emergencyMeeting, room, smp);
+        room.startEjectGifCountdown(emergencyMeeting, smp);
         for(Map.Entry<String, Player> player : playersMap.entrySet()){
             player.getValue().setHasVoted(false);
         }

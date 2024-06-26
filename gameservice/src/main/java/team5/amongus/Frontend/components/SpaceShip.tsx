@@ -1,6 +1,7 @@
 import React, { useEffect, useState, CSSProperties, useRef } from 'react';
 import Stomp from 'stompjs';
-import Task from './Task';
+import TaskIcons from './TaskIcons';
+import TaskMiniGames from './TaskMiniGames';
 import styles from '../styles/spaceship.module.css';
 import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
@@ -17,6 +18,7 @@ import Arrow from './Arrow';
 import SabotageArrow from './SabotageArrow';
 import RoleAnimation from './RoleAnimation';
 import backgroundMusic from '../../../../../resources/nazgul.mp3';
+import SabMiniGames from './Sabotage/SabMiniGames';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -34,7 +36,11 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const [currAlive, setCurrAlive] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
   const [killCooldown, setKillCooldown] = useState(false);
+  const [killCooldownTime, setKillCooldownTime] = useState(30);
   const [playerPositions, setPlayerPositions] = useState(players);
+  const initialBellState = interactibles.filter(interactible => interactible.hasOwnProperty('inMeeting'))[0]?.isCooldownActive ?? false;
+  const [bellDown, setBellDown] = useState(initialBellState);
+  
 
   const [sabotageCooldown, setSabotageCooldown] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(120); // 2 minutes in seconds
@@ -69,6 +75,13 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     };
   }, [stompClient]);
 
+  useEffect(() => {
+    const firstInteractible = interactibles.filter(interactible => interactible.hasOwnProperty('inMeeting'))[0];
+    setBellDown(firstInteractible ? firstInteractible.isCooldownActive : false);
+    console.log(bellDown);
+  }, [interactibles]);
+  
+
   const handlePlayerKilled = (killedPlayer: Player) => {
     console.log("[SpaceShip.tsx] Interactibles:", interactibles);
     console.log("[SpaceShip.tsx] Killed player:", killedPlayer);
@@ -89,9 +102,29 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const handleKill = () => {
     if (!stompClient || !currentPlayer || !roomCode) return;
     killPlayer(stompClient, currentPlayer, roomCode);
+    setCooldownTime(30);
     setKillCooldown(true);
     setTimeout(() => setKillCooldown(false), 30000);
   };
+
+  useEffect(() => {
+    let killCountdown: NodeJS.Timeout | null = null;
+    if (killCooldown) {
+      killCountdown = setInterval(() => {
+        setKillCooldownTime(prevTime => {
+          if (prevTime === 0) {
+            clearInterval(killCountdown);
+            return killCooldownTime;
+          } else {
+            return prevTime - 1;
+          }
+        });
+      }, 1000); // Update every second
+    }
+    return () => {
+      if (killCountdown) clearInterval(killCountdown);
+    };
+  }, [killCooldown]);
 
   useEffect(() => {
     let cooldownTimer: NodeJS.Timeout;
@@ -153,10 +186,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
 
   const offsetX = Math.max(0, Math.min(playerX + playerAdjust - (window.innerWidth / zoomLevel) / 2, mapWidth - window.innerWidth / zoomLevel));
   const offsetY = Math.max(0, Math.min(playerY + playerAdjust - (window.innerHeight / zoomLevel) / 2, mapHeight - window.innerHeight / zoomLevel));
-
-  const offsetXWithoutZoom = Math.max(0, Math.min(playerX + playerAdjust - (window.innerWidth) / 2, mapWidth - window.innerWidth));
-  const offsetYWithoutZoom = Math.max(0, Math.min(playerY + playerAdjust - (window.innerHeight) / 2, mapHeight - window.innerHeight));
-
   const cameraStyle: CSSProperties = {
     transform: `scale(${zoomLevel}) translate(-${offsetX}px, -${offsetY}px)`,
     transformOrigin: 'top left',
@@ -222,13 +251,18 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
           ))}
           <div>
             {interactibles
-              .filter(interactible => interactible.hasOwnProperty('inMeeting')) // Filter interactibles with the "inMeeting" property
+              .filter(interactible => interactible.hasOwnProperty('inMeeting'))
+              .slice(0, 1) // Take only the first element
               .map(interactible => (
-                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 104, opacity: interactible.isCooldownActive ? 0.5 : 1}}>
-                  <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '80px', height: '80px', position: 'relative' }} />
+                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 104 }}>
+                  <div style={{ opacity: bellDown ? 0.3 : 1 }}>
+                    <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '80px', height: '80px', position: 'relative' }} />
+                  </div>
+                  
                 </div>
               ))
             }
+
             <div>
               {interactibles
                 .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
@@ -238,8 +272,8 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
                   </div>
                 ))
               }
-              <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={players[currentPlayer]} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
-              <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
+              <TaskIcons interactibles={interactibles} currentPlayer={players[currentPlayer]} />
+              <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} />
 
               {interactibles
                 .filter(task => task.assignedPlayer === currentPlayer).filter(task => !task.completed) // Filter tasks by assigned player
@@ -273,6 +307,18 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
           />
         )}
       </div>
+      <TaskMiniGames
+        stompClient={stompClient}
+        interactibles={interactibles}
+        currentPlayer={players[currentPlayer]}
+        roomCode={roomCode}
+      />
+      <SabMiniGames
+        stompClient={stompClient}
+        sabotageTasks={sabotageTasks}
+        currentPlayer={currentPlayer}
+        roomCode={roomCode}
+      />
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
@@ -285,7 +331,9 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
         )
       ))}
 
-      {isImposter && !killCooldown && <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill} />}
+      {isImposter && (
+        <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill} killCooldown={killCooldown} killCooldownTime={killCooldownTime} />
+      )}
       {isImposter && (
         <>
           <div onClick={() => handleSabotage("EndGameSabotage")} className={styles.lethalSabotage} style={{ opacity: !sabotageCooldown ? 1 : 0.5 }}>

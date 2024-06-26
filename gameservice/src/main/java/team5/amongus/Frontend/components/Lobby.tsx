@@ -106,9 +106,6 @@ const Lobby: React.FC<Props> = ({ inGamePlayers, onStartButtonClick, roomCode, c
       <audio ref={audioRef} src={backgroundMusic} autoPlay loop />
       <div style={cameraStyle}>
         <div className={styles.lobbyBackground}></div>
-
-
-
         {Object.values(inGamePlayers).map(player => {
           const isMoving = player.isMoving !== undefined ? player.isMoving : false;
           return (
