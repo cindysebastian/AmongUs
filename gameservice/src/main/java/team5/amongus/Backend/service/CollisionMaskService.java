@@ -46,7 +46,7 @@ public class CollisionMaskService implements ICollisionMaskService {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int alpha = (image.getRGB(x, y) >> 24) & 0xFF;
-                mask[y][x] = alpha > 5; // Store true if pixel is solid, false otherwise
+                mask[y][x] = alpha > 10; // Store true if pixel is solid, false otherwise
             }
         }
         return mask;
