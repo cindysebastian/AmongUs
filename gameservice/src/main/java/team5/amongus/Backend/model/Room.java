@@ -76,9 +76,22 @@ public class Room {
         inGamePlayersMap.remove(playerName);
     }
 
-    public void removePlayer(String playerName) {
+    public void removePlayer(String playerName, SimpMessagingTemplate msg) {
+        for (Iterator<Interactible> iterator = interactibles.iterator(); iterator.hasNext();) {
+            Interactible interactible = iterator.next();
+            if(interactible instanceof Task){
+                Task task = (Task) interactible;
+                if (task.getAssignedPlayer().equals(playerName)) {
+                    iterator.remove();
+                    System.out.println("Removing task");
+                }
+            }
+            
+            
+        }
         playersMap.remove(playerName);
         inGamePlayersMap.remove(playerName);
+        broadcastInteractiblesUpdate(msg);
     }
 
     public String getGameStarted() {
@@ -414,7 +427,7 @@ public class Room {
             System.out.println("[Room.java] Emergency meeting countdown has ended.");
         }, 30, TimeUnit.SECONDS);
     }
-
+ 
     public void startHandleLethalSabotageTimer(ArrayList<Interactible> interactibles, Room room,
             SabotageService sabService) {
         scheduler.schedule(() -> {
