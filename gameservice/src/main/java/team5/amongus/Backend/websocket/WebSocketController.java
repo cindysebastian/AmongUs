@@ -523,5 +523,4 @@ public class WebSocketController implements ApplicationListener<SessionSubscribe
             }
         }
     }
-
 }

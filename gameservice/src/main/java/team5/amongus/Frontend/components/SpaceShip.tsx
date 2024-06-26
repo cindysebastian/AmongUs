@@ -239,13 +239,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
                   </div>
                 ))
               }
-              <TaskIcons interactibles={interactibles} currentPlayer={players[currentPlayer]} />
-              <TaskMiniGames 
-                stompClient={stompClient} 
-                interactibles={interactibles} 
-                currentPlayer={players[currentPlayer]}
-                roomCode={roomCode} 
-              />            
+              <TaskIcons interactibles={interactibles} currentPlayer={players[currentPlayer]} />      
               <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
 
               {interactibles
@@ -280,6 +274,12 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
           />
         )}
       </div>
+      <TaskMiniGames 
+        stompClient={stompClient} 
+        interactibles={interactibles} 
+        currentPlayer={players[currentPlayer]}
+        roomCode={roomCode} 
+      />      
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>

@@ -420,4 +420,14 @@ public class Room {
             sabService.handleSabotageTimerExpiry(interactibles);
         }, 30, TimeUnit.SECONDS);
     }
+
+    public void removeTasksOfDisconnectedPlayer(Player player){
+        for (Interactible interactible : interactibles) {
+            if (interactible instanceof Task) {
+                if (((Task) interactible).getAssignedPlayer().equals(player.getName())) {
+                    interactibles.remove(interactible);
+                }
+            }
+        }
+    }
 }
