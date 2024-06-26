@@ -87,31 +87,24 @@ const App = () => {
   };
 
   useEffect(() => {
-    if (interactibles && playerName) {
+    if (interactibles && playerName && sabotageTasks) {
       const playerInteracting = interactibles.some(interactible =>
         interactible.inProgress && interactible.assignedPlayer === playerName
       );
-      setInteractionInProgress(playerInteracting);
-    }
-  }, [interactibles, playerName]);
-
-  useEffect(() => {
-    if (interactibles && playerName) {
       const inMeeting = interactibles.some(interactible =>
         interactible.inMeeting
       );
-      setInteractionInProgress(inMeeting);
-    }
-  }, [interactibles, playerName]);
-
-  useEffect(() => {
-    if (sabotageTasks && playerName) {
-      const playerInteracting = sabotageTasks.some(task =>
+      const playerInteractingWithSabotageTask = sabotageTasks.some(task =>
         task.inProgress && task.triggeredBy === playerName
       );
-      setInteractionInProgress(playerInteracting);
+
+      if(playerInteracting || inMeeting || playerInteractingWithSabotageTask){
+        setInteractionInProgress(true);
+      } else {
+        setInteractionInProgress(false);
+      }
     }
-  }, [sabotageTasks, playerName]);
+  }, [sabotageTasks, interactibles, playerName]);
 
   useEffect(() => {
     if (stompClient && playerSpawned) {
