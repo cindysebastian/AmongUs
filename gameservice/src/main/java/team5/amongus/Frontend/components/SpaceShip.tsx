@@ -7,7 +7,7 @@ import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import ProgressBar from './ProgressBar';
-import { enableSabotage, killPlayer, subscribeToPlayerKilled, subscribeToEmergencyMeeting, sendEmergencyMeeting } from '../service/WebsocketService';
+import { enableSabotage, killPlayer, subscribeToPlayerKilled } from '../service/WebsocketService';
 import KillButton from './KillButton';
 import EmergencyMeetingOverlay from './EmergencyMeetingOverlay';
 import Space from './Space';
@@ -34,20 +34,9 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const [isImposter, setIsImposter] = useState(false);
   const [currAlive, setCurrAlive] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
-  const [showEmergencyMeeting, setShowEmergencyMeeting] = useState(false);
-  const [emergencyCooldown, setEmergencyCooldown] = useState(false);
   const [killCooldown, setKillCooldown] = useState(false);
   const [playerPositions, setPlayerPositions] = useState(players);
-  
 
-
-  useEffect(() => {
-    const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, handleEmergencyMeeting, roomCode);
-
-    return () => {
-      unsubscribeEmergencyMeeting();
-    };
-  }, [stompClient, currentPlayer, roomCode]);
   const [sabotageCooldown, setSabotageCooldown] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(120); // 2 minutes in seconds
   const [showAnimation, setShowAnimation] = useState(true);
@@ -105,17 +94,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     setTimeout(() => setKillCooldown(false), 30000);
   };
 
-  const handleEmergencyMeeting = () => {
-    if (emergencyCooldown) return; // Prevent starting another meeting if cooldown is active
-
-    setShowEmergencyMeeting(true);
-    setEmergencyCooldown(true); // Set the cooldown
-
-    setTimeout(() => {
-      setEmergencyCooldown(false);
-    }, 90000);
-  };
-
   useEffect(() => {
     let cooldownTimer: NodeJS.Timeout;
     // Function to handle cooldown reset
@@ -156,6 +134,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
           }
         });
       }, 1000); // Update every second
+
     }
     return () => {
       if (countdown) clearInterval(countdown);
@@ -191,7 +170,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
 
   const playerNames = Object.keys(players);
   const playerNamesforMeeting = Object.values(players).map(player => player.name);
-  
+
   const handleAnimationEnd = () => {
     setShowAnimation(false);
     setInteractionInProgress(false);
@@ -219,6 +198,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     if (audioRef.current) {
       audioRef.current.volume = 0.05;
     }
+    console.log(interactibles.find(i => i.id === 60));
   }, []);
 
   return (
@@ -226,7 +206,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       <Space />
       <audio ref={audioRef} src={backgroundMusic} autoPlay loop />
       {showAnimation && (
-        <RoleAnimation isImposter={isImposter} player={players[currentPlayer]}onAnimationEnd={handleAnimationEnd} />
+        <RoleAnimation isImposter={isImposter} player={players[currentPlayer]} onAnimationEnd={handleAnimationEnd} />
       )}
       <div style={cameraStyle}>
         <div className={styles.gifBackground}></div>
@@ -242,11 +222,11 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             </div>
           ))}
           <div>
-          {!emergencyCooldown && interactibles
+            {interactibles
               .filter(interactible => interactible.hasOwnProperty('inMeeting')) // Filter interactibles with the "inMeeting" property
               .map(interactible => (
-                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 90 }}>
-                  <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '100px', height: '100px', position: 'relative' }} />
+                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 104, opacity: interactible.isCooldownActive ? 0.5 : 1}}>
+                  <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '80px', height: '80px', position: 'relative' }} />
                 </div>
               ))
             }
@@ -268,25 +248,25 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
               />            
               <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
 
-            {interactibles
-              .filter(task => task.assignedPlayer === currentPlayer).filter(task => !task.completed) // Filter tasks by assigned player
-              .map(task => {
-                const { x: taskX, y: taskY } = task.position;
-                const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
-                return <Arrow key={task.id} x={x} y={y} angle={angle} />;
+              {interactibles
+                .filter(task => task.assignedPlayer === currentPlayer).filter(task => !task.completed) // Filter tasks by assigned player
+                .map(task => {
+                  const { x: taskX, y: taskY } = task.position;
+                  const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
+                  return <Arrow key={task.id} x={x} y={y} angle={angle} />;
+                })}
+              {/* Arrows for Sabotage */}
+              {sabotageTasks.filter(task => !task.completed).map(task => {
+                if (task.sabotage.inProgress) {
+                  const { x: taskX, y: taskY } = task.position;
+                  const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
+                  return <SabotageArrow key={task.id} x={x} y={y} angle={angle} />;
+                }
+                return null;
               })}
-            {/* Arrows for Sabotage */}
-            {sabotageTasks.filter(task => !task.completed).map(task => {
-              if (task.sabotage.inProgress) {
-                const { x: taskX, y: taskY } = task.position;
-                const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
-                return <SabotageArrow key={task.id} x={x} y={y} angle={angle} />;
-              }
-              return null;
-            })}
+            </div>
           </div>
         </div>
-      </div>      
       </div>
       <div>
         {interactibles.some(interactible => interactible.inMeeting) && (
@@ -316,7 +296,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       {isImposter && (
         <>
           <div onClick={() => handleSabotage("EndGameSabotage")} className={styles.lethalSabotage} style={{ opacity: !sabotageCooldown ? 1 : 0.5 }}>
-            <img src="gameservice/src/main/resources/LethalSabotage.png" alt="Lethal Sabotage" className={styles.sabotageIcon} /> 
+            <img src="gameservice/src/main/resources/LethalSabotage.png" alt="Lethal Sabotage" className={styles.sabotageIcon} />
             {isImposter && sabotageCooldown && (
               <div className={styles.cooldownOverlay}>
                 <div className={styles.cooldownText}>{cooldownTime}</div>

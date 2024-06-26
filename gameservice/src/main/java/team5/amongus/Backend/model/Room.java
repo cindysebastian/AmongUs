@@ -7,11 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
+import team5.amongus.Backend.service.EmergencyMeetingService;
 import team5.amongus.Backend.service.GameWinningService;
 import team5.amongus.Backend.service.IGameWinningService;
+import team5.amongus.Backend.service.SabotageService;
 
 public class Room {
     private final String roomCode;
@@ -29,6 +34,7 @@ public class Room {
     private String gameState = "stopped";
     String result = "";
     private EmergencyMeeting emergencyMeeting = new EmergencyMeeting();
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public Room(int maxPlayers, String host) {
         this.roomCode = generateRoomCode();
@@ -79,56 +85,56 @@ public class Room {
         return gameState;
     }
 
-    public void setSabotages(ArrayList<Sabotage> sabotages){
+    public void setSabotages(ArrayList<Sabotage> sabotages) {
         this.sabotages = sabotages;
     }
 
-    public ArrayList<Sabotage> getSabotages(){
+    public ArrayList<Sabotage> getSabotages() {
         return sabotages;
     }
 
-    public void setSabotageTasks(ArrayList<Interactible> sabotageTasks){
+    public void setSabotageTasks(ArrayList<Interactible> sabotageTasks) {
         this.sabotageTasks = sabotageTasks;
     }
 
-    public ArrayList<Interactible> getSabotageTasks(){
+    public ArrayList<Interactible> getSabotageTasks() {
         return sabotageTasks;
     }
 
-    public void setEmergencyMeeting(EmergencyMeeting emergencyMeeting){
+    public void setEmergencyMeeting(EmergencyMeeting emergencyMeeting) {
         this.emergencyMeeting = emergencyMeeting;
     }
 
-    public EmergencyMeeting getEmergencyMeeting(){
+    public EmergencyMeeting getEmergencyMeeting() {
         return emergencyMeeting;
     }
 
     public String validateHost() {
         boolean hostConnected = false;
-        if(gameState.equals("Game waiting")){
+        if (gameState.equals("Game waiting")) {
             for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
                 String key = entry.getKey();
-    
+
                 if (key.equals(this.host)) {
                     hostConnected = true;
                     break;
                 }
             }
-        }else{
+        } else {
             for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
                 String key = entry.getKey();
-    
+
                 if (key.equals(this.host)) {
                     hostConnected = true;
                     break;
                 }
             }
         }
-       
+
         if (hostConnected) {
             return this.host;
         } else {
-            if(gameState.equals("Game waiting")){
+            if (gameState.equals("Game waiting")) {
                 for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
                     String key = entry.getKey();
                     Player player = entry.getValue();
@@ -136,7 +142,7 @@ public class Room {
                     player.setIsHost(true);
                     break;
                 }
-            }else{
+            } else {
                 for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
                     String key = entry.getKey();
                     Player player = entry.getValue();
@@ -145,7 +151,7 @@ public class Room {
                     break;
                 }
             }
-            
+
             System.out.println("[Room.java] Host changed! New host: " + this.host);
             return this.host;
         }
@@ -187,7 +193,7 @@ public class Room {
         if (!playerName.isEmpty()) {
             Player player = playersMap.get(playerName);
             Imposter imposter = new Imposter(player.getName(), player.getPosition(), player.getSessionId());
-            if(player.getIsHost()){
+            if (player.getIsHost()) {
                 imposter.setIsHost(true);
             }
             playersMap.put(imposter.getName(), imposter);
@@ -199,6 +205,13 @@ public class Room {
         }
 
         return playersMap;
+    }
+
+    public void forcebroadcastPlayerUpdate(SimpMessagingTemplate messagingTemplate) {
+        String destination = "/topic/players/" + roomCode;
+        messagingTemplate.convertAndSend(destination, playersMap);
+        destination = "/topic/inGamePlayers/" + this.roomCode;
+        messagingTemplate.convertAndSend(destination, inGamePlayersMap);
     }
 
     public void broadcastPlayerUpdate(SimpMessagingTemplate messagingTemplate) {
@@ -263,7 +276,7 @@ public class Room {
             if (player2 != null) {
                 if (!arePlayersEqual(player1, player2)) {
                     return false;
-                }                
+                }
             }
         }
 
@@ -287,6 +300,9 @@ public class Room {
         if (player1.getWillContinue() != player2.getWillContinue()) {
             return false;
         }
+        if (player1.getHasVoted() != player2.getHasVoted()) {
+            return false;
+        }
 
         return true;
     }
@@ -307,7 +323,11 @@ public class Room {
         }
     }
 
-    public void broadCastSabotageTasksUpdate(SimpMessagingTemplate messagingTemplate){
+    public void forcebroadcastInteractiblesUpdate(SimpMessagingTemplate messagingTemplate) {
+        messagingTemplate.convertAndSend("/topic/interactions/" + roomCode, interactibles);
+    }
+
+    public void broadCastSabotageTasksUpdate(SimpMessagingTemplate messagingTemplate) {
         List<Interactible> clonedSabotageTasks = cloneInteractibles(sabotageTasks);
         if (!Objects.equals(clonedSabotageTasks, previousSabotageTasks)) {
             messagingTemplate.convertAndSend("/topic/sabotages/" + roomCode, clonedSabotageTasks);
@@ -346,7 +366,7 @@ public class Room {
             // Send the message only if the result has changed
             String destination = "/topic/finishGame/" + this.roomCode;
             messagingTemplate.convertAndSend(destination, this.gameState);
-            result= this.gameState; // Update the previousResult variable
+            result = this.gameState; // Update the previousResult variable
             System.out.println("[Room.java] Game State changed to: " + gameState);
         }
 
@@ -363,8 +383,41 @@ public class Room {
         }
     }
 
-    public void addMeetingToInteractibles(){
+    public void addMeetingToInteractibles() {
         interactibles.add(emergencyMeeting);
     }
 
+    public void startCooldown(EmergencyMeeting emergencyMeeting) {
+        emergencyMeeting.setIsCooldownActive(true);
+        scheduler.schedule(() -> {
+            emergencyMeeting.setIsCooldownActive(false);
+            System.out.println("[EmergencyMeetingService.java] Emergency meeting cooldown has ended.");
+        }, 120, TimeUnit.SECONDS); // 120 seconds cooldown
+    }
+
+    public void startEjectGifCountdown(EmergencyMeeting emergencyMeeting, Room room, SimpMessagingTemplate msg) {
+        scheduler.schedule(() -> {
+            emergencyMeeting.setInMeeting(false);
+            System.out.println("[EmergencyMeetingService.java] Ejected Gif has ended");
+            room.getEmergencyMeeting().setFinalising(false);
+            room.forcebroadcastInteractiblesUpdate(msg);
+        }, 5, TimeUnit.SECONDS);
+    }
+
+    public void startMeetingCountdown(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting,
+            Room room, SimpMessagingTemplate msg, EmergencyMeetingService emService) {
+        scheduler.schedule(() -> {
+            if (emergencyMeeting.getInMeeting()) {
+                emService.submitVotes(playersMap, emergencyMeeting, room, msg);
+            }
+            System.out.println("[EmergencyMeetingService.java] Emergency meeting countdown has ended.");
+        }, 30, TimeUnit.SECONDS);
+    }
+
+    public void startHandleLethalSabotageTimer(ArrayList<Interactible> interactibles, Room room,
+            SabotageService sabService) {
+        scheduler.schedule(() -> {
+            sabService.handleSabotageTimerExpiry(interactibles);
+        }, 30, TimeUnit.SECONDS);
+    }
 }
