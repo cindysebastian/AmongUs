@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './../styles/spaceship.module.css';
 
-const KillButton = ({ onKill, canKill }) => {
+const KillButton = ({ onKill, canKill, killCooldown, killCooldownTime }) => {
   const handleKill = () => {
     // You can add confirmation logic or any other functionality here
     if (canKill) {
@@ -10,11 +10,11 @@ const KillButton = ({ onKill, canKill }) => {
   };
 
   const buttonStyle = {
-    opacity: canKill ? 1 : 0.5,
+    opacity: canKill && !killCooldown ? 1 : 0.5,
   };
 
   return (
-    <button
+    <div
       className={styles.killButton}
       onClick={handleKill}
       style={buttonStyle}
@@ -24,7 +24,12 @@ const KillButton = ({ onKill, canKill }) => {
         alt="Kill Button"
         className={styles.killButtonIcon}
       />
-    </button>
+      {killCooldown && (
+            <div className={styles.cooldownOverlay}>
+              <div className={styles.cooldownText}>{killCooldownTime}</div>
+            </div>
+          )}
+    </div>
   );
 };
 

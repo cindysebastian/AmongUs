@@ -36,6 +36,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const [currAlive, setCurrAlive] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
   const [killCooldown, setKillCooldown] = useState(false);
+  const [killCooldownTime, setKillCooldownTime] = useState(30);
   const [playerPositions, setPlayerPositions] = useState(players);
 
   const [sabotageCooldown, setSabotageCooldown] = useState(false);
@@ -91,9 +92,29 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const handleKill = () => {
     if (!stompClient || !currentPlayer || !roomCode) return;
     killPlayer(stompClient, currentPlayer, roomCode);
+    setCooldownTime(30);
     setKillCooldown(true);
     setTimeout(() => setKillCooldown(false), 30000);
   };
+
+  useEffect(() => {
+    let killCountdown: NodeJS.Timeout | null = null;
+    if (killCooldown) {
+      killCountdown = setInterval(() => {
+        setKillCooldownTime(prevTime => {
+          if (prevTime === 0) {
+            clearInterval(killCountdown);
+            return killCooldownTime;
+          } else {
+            return prevTime - 1;
+          }
+        });
+      }, 1000); // Update every second
+    }
+    return () => {
+      if (killCountdown) clearInterval(killCountdown);
+    };
+  }, [killCooldown]);
 
   useEffect(() => {
     let cooldownTimer: NodeJS.Timeout;
@@ -155,10 +176,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
 
   const offsetX = Math.max(0, Math.min(playerX + playerAdjust - (window.innerWidth / zoomLevel) / 2, mapWidth - window.innerWidth / zoomLevel));
   const offsetY = Math.max(0, Math.min(playerY + playerAdjust - (window.innerHeight / zoomLevel) / 2, mapHeight - window.innerHeight / zoomLevel));
-
-  const offsetXWithoutZoom = Math.max(0, Math.min(playerX + playerAdjust - (window.innerWidth) / 2, mapWidth - window.innerWidth));
-  const offsetYWithoutZoom = Math.max(0, Math.min(playerY + playerAdjust - (window.innerHeight) / 2, mapHeight - window.innerHeight));
-
   const cameraStyle: CSSProperties = {
     transform: `scale(${zoomLevel}) translate(-${offsetX}px, -${offsetY}px)`,
     transformOrigin: 'top left',
@@ -299,7 +316,9 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
         )
       ))}
 
-      {isImposter && !killCooldown && <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill} />}
+      {isImposter && (
+        <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill}  killCooldown={killCooldown} killCooldownTime={killCooldownTime}/>
+      )}
       {isImposter && (
         <>
           <div onClick={() => handleSabotage("EndGameSabotage")} className={styles.lethalSabotage} style={{ opacity: !sabotageCooldown ? 1 : 0.5 }}>

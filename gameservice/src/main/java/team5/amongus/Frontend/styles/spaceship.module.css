@@ -48,8 +48,8 @@ body {
     position: fixed;
     width: 100px;
     height: 100px;
-    bottom: 20px;
-    right: 20px;
+    bottom: 50px;
+    right: 50px;
     border: none;
     background: none;
     padding: 0;
@@ -59,8 +59,6 @@ body {
 
 .killButtonIcon {
     position: absolute;
-    bottom: 20px;
-    right: 20px;
     width: 100px;
     height: 100px;
 }
@@ -106,5 +104,6 @@ body {
   .cooldownText {
     z-index: 10;
     color: white;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   }
   
