@@ -38,6 +38,9 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const [killCooldown, setKillCooldown] = useState(false);
   const [killCooldownTime, setKillCooldownTime] = useState(30);
   const [playerPositions, setPlayerPositions] = useState(players);
+  const initialBellState = interactibles.filter(interactible => interactible.hasOwnProperty('inMeeting'))[0]?.isCooldownActive ?? false;
+  const [bellDown, setBellDown] = useState(initialBellState);
+  
 
   const [sabotageCooldown, setSabotageCooldown] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(120); // 2 minutes in seconds
@@ -71,6 +74,13 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       unsubscribeKilled();
     };
   }, [stompClient]);
+
+  useEffect(() => {
+    const firstInteractible = interactibles.filter(interactible => interactible.hasOwnProperty('inMeeting'))[0];
+    setBellDown(firstInteractible ? firstInteractible.isCooldownActive : false);
+    console.log(bellDown);
+  }, [interactibles]);
+  
 
   const handlePlayerKilled = (killedPlayer: Player) => {
     console.log("[SpaceShip.tsx] Interactibles:", interactibles);
@@ -244,11 +254,15 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
               .filter(interactible => interactible.hasOwnProperty('inMeeting'))
               .slice(0, 1) // Take only the first element
               .map(interactible => (
-                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 104, opacity: interactible.isCooldownActive ? 0.3 : 1 }}>
-                  <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '80px', height: '80px', position: 'relative' }} />
+                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 104 }}>
+                  <div style={{ opacity: bellDown ? 0.3 : 1 }}>
+                    <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '80px', height: '80px', position: 'relative' }} />
+                  </div>
+                  
                 </div>
               ))
             }
+
             <div>
               {interactibles
                 .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
@@ -258,7 +272,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
                   </div>
                 ))
               }
-              <TaskIcons interactibles={interactibles} currentPlayer={players[currentPlayer]} />      
+              <TaskIcons interactibles={interactibles} currentPlayer={players[currentPlayer]} />
               <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} />
 
               {interactibles
@@ -293,13 +307,13 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
           />
         )}
       </div>
-      <TaskMiniGames 
-        stompClient={stompClient} 
-        interactibles={interactibles} 
+      <TaskMiniGames
+        stompClient={stompClient}
+        interactibles={interactibles}
         currentPlayer={players[currentPlayer]}
-        roomCode={roomCode} 
-      />      
-      <SabMiniGames 
+        roomCode={roomCode}
+      />
+      <SabMiniGames
         stompClient={stompClient}
         sabotageTasks={sabotageTasks}
         currentPlayer={currentPlayer}
@@ -318,7 +332,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       ))}
 
       {isImposter && (
-        <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill}  killCooldown={killCooldown} killCooldownTime={killCooldownTime}/>
+        <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill} killCooldown={killCooldown} killCooldownTime={killCooldownTime} />
       )}
       {isImposter && (
         <>

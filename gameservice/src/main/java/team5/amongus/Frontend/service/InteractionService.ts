@@ -33,6 +33,7 @@ export const handleReceivedInteractibles = (interactiblesData, setInteractibles)
         finalising: data.finalising,
         ejectedPlayer: data.ejectedPlayer,
         votes: data.votes,
+        isCooldownActive: data.isCooldownActive,
       }
     }
 
