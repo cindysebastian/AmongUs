@@ -9,7 +9,7 @@ export const connectWebSocket = (setStompClient, setStompChatClient) => {
   // Disable Stomp.js logging
 
   const socket = new SockJS('http://localhost:8080/ws');
-  const socketChat = new SockJS('http://localhost:8080/ws')
+  const socketChat = new SockJS('http://localhost:8082/ws')
 
   const stomp = Stomp.over(socket);
   stomp.debug = null;
