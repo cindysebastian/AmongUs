@@ -292,14 +292,18 @@ const App = () => {
               <button onClick={handleHost} className={styles.button}>HOST</button>
               <button onClick={handlePrivate} className={styles.button}>PRIVATE</button>
             </div>
-            <div className={styles.controlsContainer}>
+
+            <div className={styles.topContainer}>
               <div className={styles.controlItem1}>
-                <img src="gameservice/src/main/resources/e.png" alt="Image 1" height="50px" width="50px" className={styles.controlsImage} />
-                <span className={styles.controlText1}>Interact with E</span>
+                <span className={styles.controlText1}>Interact</span>
+                <img src="gameservice/src/main/resources/e.png" alt="Image 1" height="25%" width="25%" className={styles.controlsImage1} />
               </div>
+            </div>
+
+            <div className={styles.controlsContainer}>
               <div className={styles.controlItem}>
-                <img src="gameservice/src/main/resources/wasd.png" alt="Image 2" height="200px" width="200px" className={styles.controlsImage} />
-                <span className={styles.controlText}>Move your player with W, A, S, D</span>
+                <img src="gameservice/src/main/resources/wasd.png" alt="Image 2" height="40%" width="40%" className={styles.controlsImage} />
+                <span className={styles.controlText}>Move</span>
               </div>
             </div>
           </div>
