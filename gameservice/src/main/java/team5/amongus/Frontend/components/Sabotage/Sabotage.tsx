@@ -10,23 +10,9 @@ import SabotageMiniGame from './SabotageMiniGame';
 interface Props {
     stompClient: Stomp.Client | null; // Add stompClient to props
     sabotageTasks: SabotageTasks[];
-    currentPlayer: String;
-    offsetX: number;
-    offsetY: number;
-    roomCode: String;
 }
 
-const Sabotage: React.FC<Props> = ({ stompClient, sabotageTasks, currentPlayer, offsetX, offsetY, roomCode }) => {
-    const cameraStyle: CSSProperties = {
-        transform: `translate(${offsetX}px, ${offsetY}px)`,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 10 // Ensure the popup is on top
-    };
-    
+const Sabotage: React.FC<Props> = ({ stompClient, sabotageTasks }) => {
     return (
         <div style={{ position: 'fixed' }}>
             {/* Render images at the coordinates of sabotage tasks */}
@@ -47,11 +33,6 @@ const Sabotage: React.FC<Props> = ({ stompClient, sabotageTasks, currentPlayer, 
                 />
                 
             )))}
-            {sabotageTasks.map(sabotage => {
-                if(sabotage.inProgress && sabotage.triggeredBy == currentPlayer){
-                    return <div style={cameraStyle}><SabotageMiniGame key={sabotage.id} stompClient={stompClient} sabotageTask={sabotage} roomCode={roomCode} /> </div>
-                }
-            })}
         </div>
     );
 };

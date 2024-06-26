@@ -18,6 +18,7 @@ import Arrow from './Arrow';
 import SabotageArrow from './SabotageArrow';
 import RoleAnimation from './RoleAnimation';
 import backgroundMusic from '../../../../../resources/nazgul.mp3';
+import SabMiniGames from './Sabotage/SabMiniGames';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -240,7 +241,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
                 ))
               }
               <TaskIcons interactibles={interactibles} currentPlayer={players[currentPlayer]} />      
-              <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
+              <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} />
 
               {interactibles
                 .filter(task => task.assignedPlayer === currentPlayer).filter(task => !task.completed) // Filter tasks by assigned player
@@ -280,6 +281,12 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
         currentPlayer={players[currentPlayer]}
         roomCode={roomCode} 
       />      
+      <SabMiniGames 
+        stompClient={stompClient}
+        sabotageTasks={sabotageTasks}
+        currentPlayer={currentPlayer}
+        roomCode={roomCode}
+      />
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
