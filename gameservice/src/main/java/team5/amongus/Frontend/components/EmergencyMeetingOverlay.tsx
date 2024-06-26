@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styles from '../styles/EmergencyMeetingOverlay.module.css';
 import ChatRoom from '../components/ChatRoom';
 import MessageInput from '../components/MessageInput';
-import { sendChatMessage, subscribeToMessages, subscribeToEjectedPlayer, sendVote } from '../service/WebsocketService';
+import { sendChatMessage, subscribeToMessages, sendVote } from '../service/WebsocketService';
 import Stomp from 'stompjs';
 import Player from './interfaces/Player';
 import Interactible from './interfaces/Interactible';

@@ -7,11 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
+import team5.amongus.Backend.service.EmergencyMeetingService;
 import team5.amongus.Backend.service.GameWinningService;
 import team5.amongus.Backend.service.IGameWinningService;
+import team5.amongus.Backend.service.SabotageService;
 
 public class Room {
     private final String roomCode;
@@ -29,6 +34,7 @@ public class Room {
     private String gameState = "stopped";
     String result = "";
     private EmergencyMeeting emergencyMeeting = new EmergencyMeeting();
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public Room(int maxPlayers, String host) {
         this.roomCode = generateRoomCode();
@@ -374,4 +380,36 @@ public class Room {
         interactibles.add(emergencyMeeting);
     }
 
+    public void startCooldown(EmergencyMeeting emergencyMeeting) {
+        emergencyMeeting.setIsCooldownActive(true);
+        scheduler.schedule(() -> {
+            emergencyMeeting.setIsCooldownActive(false);
+            System.out.println("[EmergencyMeetingService.java] Emergency meeting cooldown has ended.");
+        }, 120, TimeUnit.SECONDS); // 120 seconds cooldown
+    }
+
+    public void startEjectGifCountdown(EmergencyMeeting emergencyMeeting, Room room, SimpMessagingTemplate msg) {
+        scheduler.schedule(() -> {
+            emergencyMeeting.setInMeeting(false);
+            System.out.println("[EmergencyMeetingService.java] Ejected Gif has ended");
+            room.getEmergencyMeeting().setFinalising(false);
+            room.forcebroadcastInteractiblesUpdate(msg);
+        }, 5, TimeUnit.SECONDS);
+    }
+
+    public void startMeetingCountdown(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting,
+            Room room, SimpMessagingTemplate msg, EmergencyMeetingService emService) {
+        scheduler.schedule(() -> {
+            if (emergencyMeeting.getInMeeting()) {
+                emService.submitVotes(playersMap, emergencyMeeting, room, msg);
+            }
+            System.out.println("[EmergencyMeetingService.java] Emergency meeting countdown has ended.");
+        }, 30, TimeUnit.SECONDS);
+    }
+
+    public void startHandleLethalSabotageTimer(ArrayList<Interactible> interactibles, Room room, SabotageService sabService){
+        scheduler.schedule(() -> {
+            sabService.handleSabotageTimerExpiry(interactibles);
+        }, 30, TimeUnit.SECONDS);
+    }
 }

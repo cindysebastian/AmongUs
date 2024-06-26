@@ -224,6 +224,8 @@ const App = () => {
 
   const handleDisconnect = () => {
     stompClient && stompClient.disconnect();
+    setGameState('');
+    setPlayerSpawned(false);
     connectWebSocket(setStompClient, setStompChatClient);
     navigate('/login');
   };
@@ -350,9 +352,9 @@ const App = () => {
           <button onClick={() => handleJoinGame(playerName, roomCode)} className={styles.button}>Join Private Room</button>
         </div></div>
     </div>} />
-    <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage} />} />
-    <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} sabotageTasks={sabotageTasks} currentPlayer={playerName} roomCode={roomCode} setInteractionInProgress={setInteractionInProgress} />} />
-    <Route path="/end" element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />
+    <Route path="/game" element={<ProtectedRoute isAllowed={playerSpawned} element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage} />} />} />
+    <Route path="/spaceship" element={<ProtectedRoute isAllowed={playerSpawned} element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} sabotageTasks={sabotageTasks} currentPlayer={playerName} roomCode={roomCode} setInteractionInProgress={setInteractionInProgress} />} />} />
+    <Route path="/end" element={<ProtectedRoute isAllowed={playerSpawned} element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />} />
     <Route path="/" element={<Navigate replace to="/login" />} />
   </Routes>
 );

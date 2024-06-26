@@ -33,8 +33,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const [isImposter, setIsImposter] = useState(false);
   const [currAlive, setCurrAlive] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
-  const [showEmergencyMeeting, setShowEmergencyMeeting] = useState(false);
-  const [emergencyCooldown, setEmergencyCooldown] = useState(false);
   const [killCooldown, setKillCooldown] = useState(false);
   const [playerPositions, setPlayerPositions] = useState(players);
 
@@ -223,10 +221,10 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             </div>
           ))}
           <div>
-            {!emergencyCooldown && interactibles
+            {interactibles
               .filter(interactible => interactible.hasOwnProperty('inMeeting')) // Filter interactibles with the "inMeeting" property
               .map(interactible => (
-                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 90 }}>
+                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 90, opacity: interactible.isCooldownActive ? 0.5 : 1}}>
                   <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '100px', height: '100px', position: 'relative' }} />
                 </div>
               ))

@@ -303,7 +303,7 @@ public class WebSocketController {
                 if (sab.getName().equals(sabotageName)) {
                     System.out.println("[WebSocketController.java] Enabling Sabotage: " + sab.getName());
                     ArrayList<Interactible> updatedInteractibles = sabotageService
-                            .enableSabotageTasks(room.getSabotageTasks(), sab);
+                            .enableSabotageTasks(room.getSabotageTasks(), sab, room);
                     room.setSabotageTasks(updatedInteractibles);
                     sab.setInProgress(true);
                 }

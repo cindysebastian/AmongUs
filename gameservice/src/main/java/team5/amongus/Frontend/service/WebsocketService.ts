@@ -207,19 +207,6 @@ export const enableSabotage = (stompClient, sabotage, roomCode) => {
   stompClient.send(`/app/enableSabotage/${roomCode}`, {}, sabotage)
 }
 
-export const subscribeToEjectedPlayer = (stompClient, roomCode, setEjectedPlayer, setShowEjectedGif) => {
-  if (!stompClient) return;
-
-  const subscription = stompClient.subscribe(`/topic/ejectedPlayer/${roomCode}`, (message) => {
-    const ejectedPlayer = message.body;
-    setEjectedPlayer(ejectedPlayer);
-    setShowEjectedGif(true); // Set showEjectedGif to true when a player is ejected
-  });
-  return () => {
-    subscription.unsubscribe();
-  };
-};
-
 export const sendVote = (stompClient, playerName, votedPlayer, roomCode) => {
   if (!stompClient || !playerName) return;
 

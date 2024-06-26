@@ -1,9 +1,6 @@
 package team5.amongus.Backend.service;
 
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -17,7 +14,6 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
     private int totalVotes = 0;
     private int skips = 0;
     private int votesCast = 0;
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap,
             EmergencyMeeting emergencyMeeting, Room room, String meeting, SimpMessagingTemplate messagingTemplate) {
@@ -44,36 +40,10 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         emergencyMeeting.setEjectedPlayer(null);
         emergencyMeeting.getVotes().clear(); // Clear votes from the previous meeting
 
-        startMeetingCountdown(playersMap, emergencyMeeting, room, messagingTemplate);
-        startCooldown(emergencyMeeting);
+        room.startMeetingCountdown(playersMap, emergencyMeeting, room, messagingTemplate, this);
+        room.startCooldown(emergencyMeeting);
     }
 
-    private void startCooldown(EmergencyMeeting emergencyMeeting) {
-        emergencyMeeting.setIsCooldownActive(true);
-        scheduler.schedule(() -> {
-            emergencyMeeting.setIsCooldownActive(false);
-            System.out.println("[EmergencyMeetingService.java] Emergency meeting cooldown has ended.");
-        }, 120, TimeUnit.SECONDS); // 120 seconds cooldown
-    }
-
-    private void startEjectGifCountdown(EmergencyMeeting emergencyMeeting, Room room, SimpMessagingTemplate msg) {
-        scheduler.schedule(() -> {
-            emergencyMeeting.setInMeeting(false);
-            System.out.println("[EmergencyMeetingService.java] Ejected Gif has ended");
-            room.getEmergencyMeeting().setFinalising(false);
-            room.forcebroadcastInteractiblesUpdate(msg);
-        }, 5, TimeUnit.SECONDS);
-    }
-
-    private void startMeetingCountdown(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting,
-            Room room, SimpMessagingTemplate msg) {
-        scheduler.schedule(() -> {
-            if (emergencyMeeting.getInMeeting()) {
-                submitVotes(playersMap, emergencyMeeting, room, msg);
-            }
-            System.out.println("[EmergencyMeetingService.java] Emergency meeting countdown has ended.");
-        }, 30, TimeUnit.SECONDS);
-    }
 
     public void handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap,
             EmergencyMeeting emergencyMeeting, Room room, SimpMessagingTemplate swp) {
@@ -123,9 +93,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
                 maxVotes = entry.getValue();
                 playerWithMostVotes = entry.getKey();
             }
-        }
-
-        
+        }        
 
         if (maxVotes > skips) {
             Player ejectedPlayer = playersMap.get(playerWithMostVotes);
@@ -143,7 +111,7 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
 
         }
         
-        startEjectGifCountdown(emergencyMeeting, room, smp);
+        room.startEjectGifCountdown(emergencyMeeting, room, smp);
         for(Map.Entry<String, Player> player : playersMap.entrySet()){
             player.getValue().setHasVoted(false);
         }

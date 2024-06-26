@@ -28,8 +28,6 @@ public class EmergencyMeeting extends Interactible {
         return inMeeting;
     }
 
-    
-
     public void setIsCooldownActive(boolean ssCooldownActive) {
         this.isCooldownActive = ssCooldownActive;
     }
