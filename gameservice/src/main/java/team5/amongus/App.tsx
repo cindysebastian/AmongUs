@@ -107,7 +107,7 @@ const App = () => {
   useEffect(() => {
     if (sabotageTasks && playerName) {
       const playerInteracting = sabotageTasks.some(task =>
-        task.inProgress && task.triggeredBy == playerName
+        task.inProgress && task.triggeredBy === playerName
       );
       setInteractionInProgress(playerInteracting);
     }

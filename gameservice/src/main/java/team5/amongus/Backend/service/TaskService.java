@@ -207,7 +207,7 @@ public class TaskService implements ITaskService {
         positions.add(new Position(2300, 2000));
         positions.add(new Position(2600, 1350));
         positions.add(new Position(1650, 1000));
-        positions.add(new Position(1200, 820));
+        positions.add(new Position(1150, 900));
 
         // Add more positions as needed
     }
