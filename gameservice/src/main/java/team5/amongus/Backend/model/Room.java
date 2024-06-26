@@ -387,30 +387,31 @@ public class Room {
         interactibles.add(emergencyMeeting);
     }
 
-    public void startCooldown(EmergencyMeeting emergencyMeeting) {
+    public void startCooldown(EmergencyMeeting emergencyMeeting, SimpMessagingTemplate messagingTemplate) {
         emergencyMeeting.setIsCooldownActive(true);
         scheduler.schedule(() -> {
             emergencyMeeting.setIsCooldownActive(false);
-            System.out.println("[EmergencyMeetingService.java] Emergency meeting cooldown has ended.");
+            System.out.println("[Room.java] Emergency meeting cooldown has ended.");
+            forcebroadcastInteractiblesUpdate(messagingTemplate);
         }, 120, TimeUnit.SECONDS); // 120 seconds cooldown
     }
 
-    public void startEjectGifCountdown(EmergencyMeeting emergencyMeeting, Room room, SimpMessagingTemplate msg) {
+    public void startEjectGifCountdown(EmergencyMeeting emergencyMeeting, SimpMessagingTemplate msg) {
         scheduler.schedule(() -> {
             emergencyMeeting.setInMeeting(false);
-            System.out.println("[EmergencyMeetingService.java] Ejected Gif has ended");
-            room.getEmergencyMeeting().setFinalising(false);
-            room.forcebroadcastInteractiblesUpdate(msg);
+            System.out.println("[Room.java] Ejected Gif has ended");
+            getEmergencyMeeting().setFinalising(false);
+            forcebroadcastInteractiblesUpdate(msg);
         }, 5, TimeUnit.SECONDS);
     }
 
     public void startMeetingCountdown(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting,
-            Room room, SimpMessagingTemplate msg, EmergencyMeetingService emService) {
+            SimpMessagingTemplate msg, EmergencyMeetingService emService) {
         scheduler.schedule(() -> {
             if (emergencyMeeting.getInMeeting()) {
-                emService.submitVotes(playersMap, emergencyMeeting, room, msg);
+                emService.submitVotes(playersMap, emergencyMeeting, this, msg);
             }
-            System.out.println("[EmergencyMeetingService.java] Emergency meeting countdown has ended.");
+            System.out.println("[Room.java] Emergency meeting countdown has ended.");
         }, 30, TimeUnit.SECONDS);
     }
 

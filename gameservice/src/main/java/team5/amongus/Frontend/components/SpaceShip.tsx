@@ -241,9 +241,10 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
           ))}
           <div>
             {interactibles
-              .filter(interactible => interactible.hasOwnProperty('inMeeting')) // Filter interactibles with the "inMeeting" property
+              .filter(interactible => interactible.hasOwnProperty('inMeeting'))
+              .slice(0, 1) // Take only the first element
               .map(interactible => (
-                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 104, opacity: interactible.isCooldownActive ? 0.5 : 1}}>
+                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 104, opacity: interactible.isCooldownActive ? 0.3 : 1 }}>
                   <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '80px', height: '80px', position: 'relative' }} />
                 </div>
               ))
