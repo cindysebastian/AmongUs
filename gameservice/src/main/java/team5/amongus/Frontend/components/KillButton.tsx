@@ -4,13 +4,15 @@ import styles from './../styles/spaceship.module.css';
 const KillButton = ({ onKill, canKill, killCooldown, killCooldownTime }) => {
   const handleKill = () => {
     // You can add confirmation logic or any other functionality here
-    if (canKill) {
+    if (canKill&&!killCooldown) {
       onKill();
     }
   };
 
   const buttonStyle = {
     opacity: canKill && !killCooldown ? 1 : 0.5,
+    PointerEvent: canKill && !killCooldown ? 'auto' : 'none',
+    cursor: canKill && !killCooldown ? 'pointer' : 'not-allowed',
   };
 
   return (
@@ -25,10 +27,10 @@ const KillButton = ({ onKill, canKill, killCooldown, killCooldownTime }) => {
         className={styles.killButtonIcon}
       />
       {killCooldown && (
-            <div className={styles.cooldownOverlay}>
-              <div className={styles.cooldownText}>{killCooldownTime}</div>
-            </div>
-          )}
+        <div className={styles.cooldownOverlay}>
+          <div className={styles.cooldownText}>{killCooldownTime}</div>
+        </div>
+      )}
     </div>
   );
 };

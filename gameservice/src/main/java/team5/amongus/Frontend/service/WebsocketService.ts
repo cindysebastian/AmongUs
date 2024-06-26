@@ -47,12 +47,10 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
 
   stompClient.subscribe(`/topic/players/${roomCode}`, (message: { body: string }) => {
     try {
-      console.log('[WebsocketService.ts] ' + message.body);
       const updatedPlayers = JSON.parse(message.body);
       const playersWithImposterFlag = addImposterFlag(updatedPlayers);
       setPlayers(playersWithImposterFlag);
       const currentPlayer = playersWithImposterFlag[playerName];
-      console.log('[WebsocketService.ts] ' + playersWithImposterFlag);
     } catch (error) {
       console.error('[WebsocketService.ts] Error processing player message:', error);
     }
@@ -155,7 +153,7 @@ export const subscribetoInteractions = (stompClient, setInteractibles, roomCode)
   stompClient.subscribe(`/topic/interactions/${roomCode}`, (message) => {
     const updatedInteractibles = JSON.parse(message.body);
     setInteractibles(updatedInteractibles);
-    console.log(updatedInteractibles);
+   
     handleReceivedInteractibles(updatedInteractibles, setInteractibles);
     
   });

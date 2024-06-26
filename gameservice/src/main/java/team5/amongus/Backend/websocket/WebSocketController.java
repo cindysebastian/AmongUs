@@ -180,9 +180,9 @@ public class WebSocketController implements ApplicationListener<SessionSubscribe
                         }
                     }
 
-                    System.out.println("[WebSocketController.java] Triggering Emergency Meeting, dead body found");
+                    System.err.println("[WebSocketController.java] Triggering Emergency Meeting, dead body found");
                 } else {
-                    System.out.println("[WebSocketController.java] Dead Players cannot report bodies.");
+                    System.err.println("[WebSocketController.java] Dead Players cannot report bodies.");
                 }
                 String meeting = "deadbody";
                 emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(),
@@ -231,7 +231,6 @@ public class WebSocketController implements ApplicationListener<SessionSubscribe
         Room room = activeRooms.get(roomCode);
         if (room == null) {
             // Handle case where the room doesn't exist
-            System.out.println("[WebSocketController.java] Room doesn't exist " + roomCode);
             return;
         }
 
@@ -334,7 +333,6 @@ public class WebSocketController implements ApplicationListener<SessionSubscribe
     @SendTo("/topic/gameStart/{roomCode}")
     public String startGame(@DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
-        System.out.println("[WebSocketController.java] Game started!");
 
         List<Position> positions = new ArrayList<>();
         positions.add(new Position(2175, 350));
@@ -373,8 +371,6 @@ public class WebSocketController implements ApplicationListener<SessionSubscribe
     @MessageMapping("/resetLobby/{roomCode}")
     public void resetLobby(@DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
-        System.out.println("[WebSocketController.java] Resetting Lobby...");
-
         List<Position> positions = new ArrayList<>();
         positions.add(new Position(900, 500));
         positions.add(new Position(1000, 600));
@@ -471,7 +467,6 @@ public class WebSocketController implements ApplicationListener<SessionSubscribe
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = headerAccessor.getSessionId();
-        System.out.println("[WebSocketController.java] Session Disconnect, searching for player");
 
         // Iterate through active rooms to find the player and room
         for (Iterator<Map.Entry<String, Room>> roomIterator = activeRooms.entrySet().iterator(); roomIterator
@@ -485,7 +480,6 @@ public class WebSocketController implements ApplicationListener<SessionSubscribe
                 for (Player player : room.getInGamePlayersMap().values()) {
                     if (Objects.equals(player.getSessionId(), sessionId)) {
                         playerToRemove = player;
-                        System.out.println("[WebSocketController.java] Found Player");
                         break;
                     }
                 }
@@ -493,7 +487,6 @@ public class WebSocketController implements ApplicationListener<SessionSubscribe
                 for (Player player : room.getPlayersMap().values()) {
                     if (Objects.equals(player.getSessionId(), sessionId)) {
                         playerToRemove = player;
-                        System.out.println("[WebSocketController.java] Found Player");
                         break;
                     }
                 }

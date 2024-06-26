@@ -211,7 +211,7 @@ public class Room {
             }
             playersMap.put(imposter.getName(), imposter);
 
-            System.out.println("[Room.java] Imposter: " + imposter.getName());
+            
 
         } else {
             System.out.println("[Room.java] No players available to become the imposter.");
@@ -380,7 +380,6 @@ public class Room {
             String destination = "/topic/finishGame/" + this.roomCode;
             messagingTemplate.convertAndSend(destination, this.gameState);
             result = this.gameState; // Update the previousResult variable
-            System.out.println("[Room.java] Game State changed to: " + gameState);
         }
 
         return result;
@@ -404,7 +403,7 @@ public class Room {
         emergencyMeeting.setIsCooldownActive(true);
         scheduler.schedule(() -> {
             emergencyMeeting.setIsCooldownActive(false);
-            System.out.println("[Room.java] Emergency meeting cooldown has ended.");
+
             forcebroadcastInteractiblesUpdate(messagingTemplate);
         }, 120, TimeUnit.SECONDS); // 120 seconds cooldown
     }
@@ -412,7 +411,7 @@ public class Room {
     public void startEjectGifCountdown(EmergencyMeeting emergencyMeeting, SimpMessagingTemplate msg) {
         scheduler.schedule(() -> {
             emergencyMeeting.setInMeeting(false);
-            System.out.println("[Room.java] Ejected Gif has ended");
+
             getEmergencyMeeting().setFinalising(false);
             forcebroadcastInteractiblesUpdate(msg);
         }, 5, TimeUnit.SECONDS);
@@ -424,7 +423,7 @@ public class Room {
             if (emergencyMeeting.getInMeeting()) {
                 emService.submitVotes(playersMap, emergencyMeeting, this, msg);
             }
-            System.out.println("[Room.java] Emergency meeting countdown has ended.");
+
         }, 30, TimeUnit.SECONDS);
     }
  

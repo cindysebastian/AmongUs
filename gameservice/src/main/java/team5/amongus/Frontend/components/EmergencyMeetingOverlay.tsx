@@ -19,17 +19,18 @@ interface EmergencyMeetingOverlayProps {
   roomCode: string;
   players: Record<string, Player>;
   interactible: Interactible;
+  stompChatClient: Stomp.Client | null;
 }
 
-const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playerNames, stompClient, playerName, roomCode, players, interactible }) => {
+const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playerNames, stompClient, playerName, roomCode, players, interactible, stompChatClient }) => {
   const [messages, setMessages] = useState([]);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [state, setState] = useState({ ejectedPlayer: null as string | null, showEjectedGif: false });
   const [timeRemaining, setTimeRemaining] = useState(30); // Initial countdown time
 
   useEffect(() => {
-    if (stompClient) {
-      const unsubscribeMessages = subscribeToMessages(stompClient, setMessages, roomCode);
+    if (stompChatClient) {
+      const unsubscribeMessages = subscribeToMessages(stompChatClient, setMessages, roomCode);
       const countdownInterval = setInterval(() => {
         setTimeRemaining(prevTime => prevTime > 0 ? prevTime - 1 : 0);
       }, 1000);
@@ -39,10 +40,10 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
         clearInterval(countdownInterval);
       };
     }
-  }, [stompClient, roomCode]);
+  }, [stompChatClient, roomCode]);
 
   useEffect(() => {
-    console.log(interactible);
+
 
     if (interactible) {
       setState(prevState => ({
@@ -50,14 +51,13 @@ const EmergencyMeetingOverlay: React.FC<EmergencyMeetingOverlayProps> = ({ playe
         ejectedPlayer: interactible.ejectedPlayer ? interactible.ejectedPlayer.name : null,
         showEjectedGif: interactible.finalising,
       }));
-      console.log(state.ejectedPlayer);
-      console.log(state.showEjectedGif);
+
     }
   }, [interactible]);
 
   const sendMessage = (messageContent: string) => {
-    if (stompClient && players[playerName].isAlive) {
-      sendChatMessage(stompClient, playerName, messageContent, roomCode);
+    if (stompChatClient && players[playerName].isAlive) {
+      sendChatMessage(stompChatClient, playerName, messageContent, roomCode);
     }
   };
 
