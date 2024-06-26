@@ -9,7 +9,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 
 import team5.amongus.Backend.model.*;
@@ -30,7 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Controller
-public class WebSocketController {
+public class WebSocketController implements ApplicationListener<SessionSubscribeEvent> {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final Map<String, Room> activeRooms = new HashMap<>();
@@ -447,6 +448,23 @@ public class WebSocketController {
         room.broadcastPlayerUpdate(messagingTemplate);
         room.broadcastInteractiblesUpdate(messagingTemplate);
         messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
+    }
+
+    @EventListener
+    public void onApplicationEvent(SessionSubscribeEvent event) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+        String destination = headerAccessor.getDestination();
+
+        if (destination != null && destination.startsWith("/topic/inGamePlayers/")) {
+         
+            String roomCode = destination.substring("/topic/inGamePlayers/".length());
+            Room room = activeRooms.get(roomCode);
+
+            if (room != null) {
+                
+                room.forcebroadcastPlayerUpdate(messagingTemplate);
+            }
+        }
     }
 
     @EventListener

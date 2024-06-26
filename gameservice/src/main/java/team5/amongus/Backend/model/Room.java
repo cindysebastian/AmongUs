@@ -85,56 +85,56 @@ public class Room {
         return gameState;
     }
 
-    public void setSabotages(ArrayList<Sabotage> sabotages){
+    public void setSabotages(ArrayList<Sabotage> sabotages) {
         this.sabotages = sabotages;
     }
 
-    public ArrayList<Sabotage> getSabotages(){
+    public ArrayList<Sabotage> getSabotages() {
         return sabotages;
     }
 
-    public void setSabotageTasks(ArrayList<Interactible> sabotageTasks){
+    public void setSabotageTasks(ArrayList<Interactible> sabotageTasks) {
         this.sabotageTasks = sabotageTasks;
     }
 
-    public ArrayList<Interactible> getSabotageTasks(){
+    public ArrayList<Interactible> getSabotageTasks() {
         return sabotageTasks;
     }
 
-    public void setEmergencyMeeting(EmergencyMeeting emergencyMeeting){
+    public void setEmergencyMeeting(EmergencyMeeting emergencyMeeting) {
         this.emergencyMeeting = emergencyMeeting;
     }
 
-    public EmergencyMeeting getEmergencyMeeting(){
+    public EmergencyMeeting getEmergencyMeeting() {
         return emergencyMeeting;
     }
 
     public String validateHost() {
         boolean hostConnected = false;
-        if(gameState.equals("Game waiting")){
+        if (gameState.equals("Game waiting")) {
             for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
                 String key = entry.getKey();
-    
+
                 if (key.equals(this.host)) {
                     hostConnected = true;
                     break;
                 }
             }
-        }else{
+        } else {
             for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
                 String key = entry.getKey();
-    
+
                 if (key.equals(this.host)) {
                     hostConnected = true;
                     break;
                 }
             }
         }
-       
+
         if (hostConnected) {
             return this.host;
         } else {
-            if(gameState.equals("Game waiting")){
+            if (gameState.equals("Game waiting")) {
                 for (Map.Entry<String, Player> entry : inGamePlayersMap.entrySet()) {
                     String key = entry.getKey();
                     Player player = entry.getValue();
@@ -142,7 +142,7 @@ public class Room {
                     player.setIsHost(true);
                     break;
                 }
-            }else{
+            } else {
                 for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
                     String key = entry.getKey();
                     Player player = entry.getValue();
@@ -151,7 +151,7 @@ public class Room {
                     break;
                 }
             }
-            
+
             System.out.println("[Room.java] Host changed! New host: " + this.host);
             return this.host;
         }
@@ -193,7 +193,7 @@ public class Room {
         if (!playerName.isEmpty()) {
             Player player = playersMap.get(playerName);
             Imposter imposter = new Imposter(player.getName(), player.getPosition(), player.getSessionId());
-            if(player.getIsHost()){
+            if (player.getIsHost()) {
                 imposter.setIsHost(true);
             }
             playersMap.put(imposter.getName(), imposter);
@@ -205,6 +205,13 @@ public class Room {
         }
 
         return playersMap;
+    }
+
+    public void forcebroadcastPlayerUpdate(SimpMessagingTemplate messagingTemplate) {
+        String destination = "/topic/players/" + roomCode;
+        messagingTemplate.convertAndSend(destination, playersMap);
+        destination = "/topic/inGamePlayers/" + this.roomCode;
+        messagingTemplate.convertAndSend(destination, inGamePlayersMap);
     }
 
     public void broadcastPlayerUpdate(SimpMessagingTemplate messagingTemplate) {
@@ -269,7 +276,7 @@ public class Room {
             if (player2 != null) {
                 if (!arePlayersEqual(player1, player2)) {
                     return false;
-                }                
+                }
             }
         }
 
@@ -320,7 +327,7 @@ public class Room {
         messagingTemplate.convertAndSend("/topic/interactions/" + roomCode, interactibles);
     }
 
-    public void broadCastSabotageTasksUpdate(SimpMessagingTemplate messagingTemplate){
+    public void broadCastSabotageTasksUpdate(SimpMessagingTemplate messagingTemplate) {
         List<Interactible> clonedSabotageTasks = cloneInteractibles(sabotageTasks);
         if (!Objects.equals(clonedSabotageTasks, previousSabotageTasks)) {
             messagingTemplate.convertAndSend("/topic/sabotages/" + roomCode, clonedSabotageTasks);
@@ -359,7 +366,7 @@ public class Room {
             // Send the message only if the result has changed
             String destination = "/topic/finishGame/" + this.roomCode;
             messagingTemplate.convertAndSend(destination, this.gameState);
-            result= this.gameState; // Update the previousResult variable
+            result = this.gameState; // Update the previousResult variable
             System.out.println("[Room.java] Game State changed to: " + gameState);
         }
 
@@ -376,7 +383,7 @@ public class Room {
         }
     }
 
-    public void addMeetingToInteractibles(){
+    public void addMeetingToInteractibles() {
         interactibles.add(emergencyMeeting);
     }
 
@@ -407,7 +414,8 @@ public class Room {
         }, 30, TimeUnit.SECONDS);
     }
 
-    public void startHandleLethalSabotageTimer(ArrayList<Interactible> interactibles, Room room, SabotageService sabService){
+    public void startHandleLethalSabotageTimer(ArrayList<Interactible> interactibles, Room room,
+            SabotageService sabService) {
         scheduler.schedule(() -> {
             sabService.handleSabotageTimerExpiry(interactibles);
         }, 30, TimeUnit.SECONDS);
