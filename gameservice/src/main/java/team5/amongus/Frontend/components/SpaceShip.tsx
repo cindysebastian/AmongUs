@@ -1,12 +1,13 @@
 import React, { useEffect, useState, CSSProperties, useRef } from 'react';
 import Stomp from 'stompjs';
-import Task from './Task';
+import TaskIcons from './TaskIcons';
+import TaskMiniGames from './TaskMiniGames';
 import styles from '../styles/spaceship.module.css';
 import Interactible from './interfaces/Interactible';
 import Player from './interfaces/Player';
 import PlayerSprite from './PlayerSprite';
 import ProgressBar from './ProgressBar';
-import { enableSabotage, killPlayer, subscribeToPlayerKilled, subscribeToEmergencyMeeting, sendEmergencyMeeting } from '../service/WebsocketService';
+import { enableSabotage, killPlayer, subscribeToPlayerKilled } from '../service/WebsocketService';
 import KillButton from './KillButton';
 import EmergencyMeetingOverlay from './EmergencyMeetingOverlay';
 import Space from './Space';
@@ -17,6 +18,7 @@ import Arrow from './Arrow';
 import SabotageArrow from './SabotageArrow';
 import RoleAnimation from './RoleAnimation';
 import backgroundMusic from '../../../../../resources/nazgul.mp3';
+import SabMiniGames from './Sabotage/SabMiniGames';
 
 interface Props {
   stompClient: Stomp.Client | null;
@@ -26,27 +28,21 @@ interface Props {
   currentPlayer: string;
   roomCode: string;
   setInteractionInProgress: React.Dispatch<React.SetStateAction<boolean>>;
+  stompChatClient: Stomp.Client | null;
 }
 
-const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabotageTasks, currentPlayer, roomCode, setInteractionInProgress }) => {
+const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabotageTasks, currentPlayer, roomCode, setInteractionInProgress, stompChatClient }) => {
   const [showKillGif, setShowKillGif] = useState(false);
   const [isImposter, setIsImposter] = useState(false);
   const [currAlive, setCurrAlive] = useState(false);
   const [killedPlayers, setKilledPlayers] = useState<string[]>([]);
-  const [showEmergencyMeeting, setShowEmergencyMeeting] = useState(false);
-  const [emergencyCooldown, setEmergencyCooldown] = useState(false);
   const [killCooldown, setKillCooldown] = useState(false);
+  const [killCooldownTime, setKillCooldownTime] = useState(30);
   const [playerPositions, setPlayerPositions] = useState(players);
+  const initialBellState = interactibles.filter(interactible => interactible.hasOwnProperty('inMeeting'))[0]?.isCooldownActive ?? false;
+  const [bellDown, setBellDown] = useState(initialBellState);
   
 
-
-  useEffect(() => {
-    const unsubscribeEmergencyMeeting = subscribeToEmergencyMeeting(stompClient, handleEmergencyMeeting, roomCode);
-
-    return () => {
-      unsubscribeEmergencyMeeting();
-    };
-  }, [stompClient, currentPlayer, roomCode]);
   const [sabotageCooldown, setSabotageCooldown] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(120); // 2 minutes in seconds
   const [showAnimation, setShowAnimation] = useState(true);
@@ -80,10 +76,15 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     };
   }, [stompClient]);
 
+  useEffect(() => {
+    const firstInteractible = interactibles.filter(interactible => interactible.hasOwnProperty('inMeeting'))[0];
+    setBellDown(firstInteractible ? firstInteractible.isCooldownActive : false);
+
+  }, [interactibles]);
+  
+
   const handlePlayerKilled = (killedPlayer: Player) => {
-    console.log("[SpaceShip.tsx] Interactibles:", interactibles);
-    console.log("[SpaceShip.tsx] Killed player:", killedPlayer);
-    console.log("[SpaceShip.tsx] Current player:", currentPlayer);
+
     if (!killedPlayer || !killedPlayer.name || !currentPlayer) return;
     if (killedPlayer.name === currentPlayer) {
       setShowKillGif(true);
@@ -92,7 +93,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     console.log("[SpaceShip.tsx] Adding killed player to killedPlayers:", killedPlayer.name);
     setKilledPlayers(prevKilledPlayers => {
       const newKilledPlayers = [...prevKilledPlayers, killedPlayer.name];
-      console.log("[SpaceShip.tsx] KilledPlayersList:", newKilledPlayers);
+
       return newKilledPlayers;
     });
   };
@@ -100,20 +101,29 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
   const handleKill = () => {
     if (!stompClient || !currentPlayer || !roomCode) return;
     killPlayer(stompClient, currentPlayer, roomCode);
+    setCooldownTime(30);
     setKillCooldown(true);
     setTimeout(() => setKillCooldown(false), 30000);
   };
 
-  const handleEmergencyMeeting = () => {
-    if (emergencyCooldown) return; // Prevent starting another meeting if cooldown is active
-
-    setShowEmergencyMeeting(true);
-    setEmergencyCooldown(true); // Set the cooldown
-
-    setTimeout(() => {
-      setEmergencyCooldown(false);
-    }, 90000);
-  };
+  useEffect(() => {
+    let killCountdown: NodeJS.Timeout | null = null;
+    if (killCooldown) {
+      killCountdown = setInterval(() => {
+        setKillCooldownTime(prevTime => {
+          if (prevTime === 0) {
+            clearInterval(killCountdown);
+            return killCooldownTime;
+          } else {
+            return prevTime - 1;
+          }
+        });
+      }, 1000); // Update every second
+    }
+    return () => {
+      if (killCountdown) clearInterval(killCountdown);
+    };
+  }, [killCooldown]);
 
   useEffect(() => {
     let cooldownTimer: NodeJS.Timeout;
@@ -155,6 +165,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
           }
         });
       }, 1000); // Update every second
+
     }
     return () => {
       if (countdown) clearInterval(countdown);
@@ -174,10 +185,6 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
 
   const offsetX = Math.max(0, Math.min(playerX + playerAdjust - (window.innerWidth / zoomLevel) / 2, mapWidth - window.innerWidth / zoomLevel));
   const offsetY = Math.max(0, Math.min(playerY + playerAdjust - (window.innerHeight / zoomLevel) / 2, mapHeight - window.innerHeight / zoomLevel));
-
-  const offsetXWithoutZoom = Math.max(0, Math.min(playerX + playerAdjust - (window.innerWidth) / 2, mapWidth - window.innerWidth));
-  const offsetYWithoutZoom = Math.max(0, Math.min(playerY + playerAdjust - (window.innerHeight) / 2, mapHeight - window.innerHeight));
-
   const cameraStyle: CSSProperties = {
     transform: `scale(${zoomLevel}) translate(-${offsetX}px, -${offsetY}px)`,
     transformOrigin: 'top left',
@@ -190,10 +197,27 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
 
   const playerNames = Object.keys(players);
   const playerNamesforMeeting = Object.values(players).map(player => player.name);
-  
+
   const handleAnimationEnd = () => {
     setShowAnimation(false);
-    setInteractionInProgress(false);
+    if (interactibles && currentPlayer && sabotageTasks) {
+      const playerInteracting = interactibles.some(interactible =>
+        interactible.inProgress && interactible.assignedPlayer === currentPlayer
+      );
+      const inMeeting = interactibles.some(interactible =>
+        interactible.inMeeting
+      );
+      const playerInteractingWithSabotageTask = sabotageTasks.some(task =>
+        task.inProgress && task.triggeredBy === currentPlayer
+      );
+
+      if(playerInteracting || inMeeting || playerInteractingWithSabotageTask){
+        setInteractionInProgress(true);
+      } else {
+        setInteractionInProgress(false);
+      }
+    }
+
   };
 
   const calculateArrowData = (playerX: number, playerY: number, taskX: number, taskY: number) => {
@@ -218,6 +242,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
     if (audioRef.current) {
       audioRef.current.volume = 0.05;
     }
+
   }, []);
 
   return (
@@ -225,7 +250,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       <Space />
       <audio ref={audioRef} src={backgroundMusic} autoPlay loop />
       {showAnimation && (
-        <RoleAnimation isImposter={isImposter} player={players[currentPlayer]}onAnimationEnd={handleAnimationEnd} />
+        <RoleAnimation isImposter={isImposter} player={players[currentPlayer]} onAnimationEnd={handleAnimationEnd} />
       )}
       <div style={cameraStyle}>
         <div className={styles.gifBackground}></div>
@@ -241,14 +266,19 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             </div>
           ))}
           <div>
-          {!emergencyCooldown && interactibles
-              .filter(interactible => interactible.hasOwnProperty('inMeeting')) // Filter interactibles with the "inMeeting" property
+            {interactibles
+              .filter(interactible => interactible.hasOwnProperty('inMeeting'))
+              .slice(0, 1) // Take only the first element
               .map(interactible => (
-                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 90 }}>
-                  <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '100px', height: '100px', position: 'relative' }} />
+                <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 104 }}>
+                  <div style={{ opacity: bellDown ? 0.3 : 1 }}>
+                    <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '80px', height: '80px', position: 'relative' }} />
+                  </div>
+                  
                 </div>
               ))
             }
+
             <div>
               {interactibles
                 .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
@@ -258,28 +288,28 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
                   </div>
                 ))
               }
-            <Task stompClient={stompClient} interactibles={interactibles} currentPlayer={players[currentPlayer]} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
-            <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} currentPlayer={currentPlayer} offsetX={offsetXWithoutZoom} offsetY={offsetYWithoutZoom} roomCode={roomCode} />
+              <TaskIcons interactibles={interactibles} currentPlayer={players[currentPlayer]} />
+              <Sabotage stompClient={stompClient} sabotageTasks={sabotageTasks} />
 
-            {interactibles
-              .filter(task => task.assignedPlayer === currentPlayer).filter(task => !task.completed) // Filter tasks by assigned player
-              .map(task => {
-                const { x: taskX, y: taskY } = task.position;
-                const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
-                return <Arrow key={task.id} x={x} y={y} angle={angle} />;
+              {interactibles
+                .filter(task => task.assignedPlayer === currentPlayer).filter(task => !task.completed) // Filter tasks by assigned player
+                .map(task => {
+                  const { x: taskX, y: taskY } = task.position;
+                  const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
+                  return <Arrow key={task.id} x={x} y={y} angle={angle} />;
+                })}
+              {/* Arrows for Sabotage */}
+              {sabotageTasks.filter(task => !task.completed).map(task => {
+                if (task.sabotage.inProgress) {
+                  const { x: taskX, y: taskY } = task.position;
+                  const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
+                  return <SabotageArrow key={task.id} x={x} y={y} angle={angle} />;
+                }
+                return null;
               })}
-            {/* Arrows for Sabotage */}
-            {sabotageTasks.filter(task => !task.completed).map(task => {
-              if (task.sabotage.inProgress) {
-                const { x: taskX, y: taskY } = task.position;
-                const { x, y, angle } = calculateArrowData(playerX, playerY, taskX, taskY);
-                return <SabotageArrow key={task.id} x={x} y={y} angle={angle} />;
-              }
-              return null;
-            })}
+            </div>
           </div>
         </div>
-      </div>      
       </div>
       <div>
         {interactibles.some(interactible => interactible.inMeeting) && (
@@ -290,9 +320,22 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             roomCode={roomCode}
             players={players}
             interactible={interactibles.find(i => i.id === 60)}
+            stompChatClient={stompChatClient}
           />
         )}
       </div>
+      <TaskMiniGames
+        stompClient={stompClient}
+        interactibles={interactibles}
+        currentPlayer={players[currentPlayer]}
+        roomCode={roomCode}
+      />
+      <SabMiniGames
+        stompClient={stompClient}
+        sabotageTasks={sabotageTasks}
+        currentPlayer={currentPlayer}
+        roomCode={roomCode}
+      />
       <ProgressBar progress={progressPercentage} />
       {showKillGif && (
         <div className={styles.killGifContainer}></div>
@@ -305,11 +348,13 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
         )
       ))}
 
-      {isImposter && !killCooldown && <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill} />}
+      {isImposter && (
+        <KillButton onKill={handleKill} canKill={players[currentPlayer].canKill} killCooldown={killCooldown} killCooldownTime={killCooldownTime} />
+      )}
       {isImposter && (
         <>
           <div onClick={() => handleSabotage("EndGameSabotage")} className={styles.lethalSabotage} style={{ opacity: !sabotageCooldown ? 1 : 0.5 }}>
-            <img src="gameservice/src/main/resources/LethalSabotage.png" alt="Lethal Sabotage" className={styles.sabotageIcon} /> 
+            <img src="gameservice/src/main/resources/LethalSabotage.png" alt="Lethal Sabotage" className={styles.sabotageIcon} />
             {isImposter && sabotageCooldown && (
               <div className={styles.cooldownOverlay}>
                 <div className={styles.cooldownText}>{cooldownTime}</div>

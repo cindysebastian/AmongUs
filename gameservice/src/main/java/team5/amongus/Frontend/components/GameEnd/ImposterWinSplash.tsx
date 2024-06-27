@@ -27,7 +27,8 @@ const ImposterWinSplash = ({ imposterName, onLeave, onWait }) => {
                     sessionId: '',
                     isHost: false,
                     isImposter: false,
-                    canKill: false
+                    canKill: false,
+                    hasVoted: false,
                 }} facing="RIGHT" ismoving={false} isAlive={true} />
  {/* Render PlayerSprite */}
             {waitingForHost ? (

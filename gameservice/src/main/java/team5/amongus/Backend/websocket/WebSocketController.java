@@ -9,7 +9,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 
 import team5.amongus.Backend.model.*;
@@ -30,7 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Controller
-public class WebSocketController {
+public class WebSocketController implements ApplicationListener<SessionSubscribeEvent> {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final Map<String, Room> activeRooms = new HashMap<>();
@@ -44,7 +45,8 @@ public class WebSocketController {
     private final IEmergencyMeetingService emergencyMeetingService;
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate, IPlayerService playerService,
-            ITaskService taskService, ICollisionMaskService collisionMaskService, ISabotageService sabotageService, IEmergencyMeetingService emergencyMeetingService) {
+            ITaskService taskService, ICollisionMaskService collisionMaskService, ISabotageService sabotageService,
+            IEmergencyMeetingService emergencyMeetingService) {
         this.playerService = playerService;
         this.taskService = taskService;
         this.sabotageService = sabotageService;
@@ -173,21 +175,23 @@ public class WebSocketController {
                     while (iterator.hasNext()) {
                         Interactible interactible = iterator.next();
                         if (interactible instanceof DeadBody) {
-                            
+
                             iterator.remove(); // Safe removal using iterator
                         }
                     }
 
-                    System.out.println("[WebSocketController.java] Triggering Emergency Meeting, dead body found");
+                    System.err.println("[WebSocketController.java] Triggering Emergency Meeting, dead body found");
                 } else {
-                    System.out.println("[WebSocketController.java] Dead Players cannot report bodies.");
+                    System.err.println("[WebSocketController.java] Dead Players cannot report bodies.");
                 }
                 String meeting = "deadbody";
-                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode, meeting);
+                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(),
+                        room.getEmergencyMeeting(), room, meeting, messagingTemplate);
                 messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
             } else if (interactableObject instanceof EmergencyMeeting && player.getisAlive()) {
                 String meeting = "button";
-                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode, meeting);
+                emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(),
+                        room.getEmergencyMeeting(), room, meeting, messagingTemplate);
                 messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
             }
         }
@@ -227,7 +231,6 @@ public class WebSocketController {
         Room room = activeRooms.get(roomCode);
         if (room == null) {
             // Handle case where the room doesn't exist
-            System.out.println("[WebSocketController.java] Room doesn't exist " + roomCode);
             return;
         }
 
@@ -300,7 +303,7 @@ public class WebSocketController {
                 if (sab.getName().equals(sabotageName)) {
                     System.out.println("[WebSocketController.java] Enabling Sabotage: " + sab.getName());
                     ArrayList<Interactible> updatedInteractibles = sabotageService
-                            .enableSabotageTasks(room.getSabotageTasks(), sab);
+                            .enableSabotageTasks(room.getSabotageTasks(), sab, room);
                     room.setSabotageTasks(updatedInteractibles);
                     sab.setInProgress(true);
                 }
@@ -330,7 +333,6 @@ public class WebSocketController {
     @SendTo("/topic/gameStart/{roomCode}")
     public String startGame(@DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
-        System.out.println("[WebSocketController.java] Game started!");
 
         List<Position> positions = new ArrayList<>();
         positions.add(new Position(2175, 350));
@@ -369,8 +371,6 @@ public class WebSocketController {
     @MessageMapping("/resetLobby/{roomCode}")
     public void resetLobby(@DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
-        System.out.println("[WebSocketController.java] Resetting Lobby...");
-
         List<Position> positions = new ArrayList<>();
         positions.add(new Position(900, 500));
         positions.add(new Position(1000, 600));
@@ -401,6 +401,8 @@ public class WebSocketController {
         room.getInteractibles().clear();
         room.getSabotageTasks().clear();
         room.setGameState("Game waiting");
+        room.getEmergencyMeeting().setIsCooldownActive(false);
+        room.getEmergencyMeeting().setInMeeting(false);
 
         room.broadcastInteractiblesUpdate(messagingTemplate);
         room.broadCastSabotageTasksUpdate(messagingTemplate);
@@ -410,11 +412,13 @@ public class WebSocketController {
     @MessageMapping("/emergencyMeeting/{roomCode}")
     public void emergencyMeeting(String playerName, @DestinationVariable String roomCode) {
         Room room = activeRooms.get(roomCode);
+        String meeting = "";
+        emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(),
+                room, meeting, messagingTemplate);
+        messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
+
         room.removeAllDeadBodies();
         room.broadcastInteractiblesUpdate(messagingTemplate);
-        String meeting = "";
-        emergencyMeetingService.handleEmergencyMeeting(playerName, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode, meeting);
-        messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
     }
 
     @MessageMapping("/vote/{roomCode}")
@@ -422,39 +426,47 @@ public class WebSocketController {
         // Assuming payload contains playerName and votedPlayer separated by a comma
         Room room = activeRooms.get(roomCode);
         String[] parts = payload.split(",");
+        String playerName = "";
         if (parts.length == 2) {
-            String playerName = parts[0].trim();
+            playerName = parts[0].trim();
             String votedPlayer = parts[1].trim();
-            emergencyMeetingService.handleVoting(playerName, votedPlayer, room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+            emergencyMeetingService.handleVoting(playerName, votedPlayer, room.getPlayersMap(),
+                    room.getEmergencyMeeting(), room, messagingTemplate);
         } else if (parts.length == 1) {
-            String playerName = parts[0].trim();
-            emergencyMeetingService.handleVoting(playerName, "", room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);            
+            playerName = parts[0].trim();
+            emergencyMeetingService.handleVoting(playerName, "", room.getPlayersMap(), room.getEmergencyMeeting(),
+                    room, messagingTemplate);
         }
         if (room.getEmergencyMeeting().getEjectedPlayer() != null) {
-            messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode, room.getEmergencyMeeting().getEjectedPlayer());
+            messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode,
+                    room.getEmergencyMeeting().getEjectedPlayer());
         }
         room.broadcastPlayerUpdate(messagingTemplate);
         room.broadcastInteractiblesUpdate(messagingTemplate);
+        messagingTemplate.convertAndSend("/topic/emergencyMeeting/" + roomCode, playerName);
     }
 
-    @MessageMapping("/voteTimeout/{roomCode}")
-    public void handleVoteTimout(@DestinationVariable String roomCode) {
-        System.out.println("[WebSocketController.java] Votetimeout");
-        Room room = activeRooms.get(roomCode);
-        emergencyMeetingService.submitVotes(room.getPlayersMap(), room.getEmergencyMeeting(), roomCode);
+    @EventListener
+    public void onApplicationEvent(SessionSubscribeEvent event) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+        String destination = headerAccessor.getDestination();
 
-        if (room.getEmergencyMeeting().getEjectedPlayer() != null) {
-            messagingTemplate.convertAndSend("/topic/ejectedPlayer/" + roomCode, room.getEmergencyMeeting().getEjectedPlayer());
+        if (destination != null && destination.startsWith("/topic/inGamePlayers/")) {
+         
+            String roomCode = destination.substring("/topic/inGamePlayers/".length());
+            Room room = activeRooms.get(roomCode);
+
+            if (room != null) {
+                
+                room.forcebroadcastPlayerUpdate(messagingTemplate);
+            }
         }
-        room.broadcastPlayerUpdate(messagingTemplate);
-        room.broadcastInteractiblesUpdate(messagingTemplate);
     }
 
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = headerAccessor.getSessionId();
-        System.out.println("[WebSocketController.java] Session Disconnect, searching for player");
 
         // Iterate through active rooms to find the player and room
         for (Iterator<Map.Entry<String, Room>> roomIterator = activeRooms.entrySet().iterator(); roomIterator
@@ -468,7 +480,6 @@ public class WebSocketController {
                 for (Player player : room.getInGamePlayersMap().values()) {
                     if (Objects.equals(player.getSessionId(), sessionId)) {
                         playerToRemove = player;
-                        System.out.println("[WebSocketController.java] Found Player");
                         break;
                     }
                 }
@@ -476,7 +487,6 @@ public class WebSocketController {
                 for (Player player : room.getPlayersMap().values()) {
                     if (Objects.equals(player.getSessionId(), sessionId)) {
                         playerToRemove = player;
-                        System.out.println("[WebSocketController.java] Found Player");
                         break;
                     }
                 }
@@ -484,7 +494,7 @@ public class WebSocketController {
 
             if (playerToRemove != null) {
                 // Remove the player from the room
-                room.removePlayer(playerToRemove.getName());
+                room.removePlayer(playerToRemove.getName(), messagingTemplate);
 
                 // Check if the player was the host
                 if (playerToRemove.getIsHost()) {
@@ -493,10 +503,11 @@ public class WebSocketController {
                 }
 
                 // If the room is now empty, remove it from active rooms
-                if (room.getPlayersMap().isEmpty()&&room.getInGamePlayersMap().isEmpty()) {
+                if (room.getPlayersMap().isEmpty() && room.getInGamePlayersMap().isEmpty()) {
                     roomIterator.remove();
                     usedRoomCodes.remove(roomCode);
-                    System.out.println("[WebSocketController.java] Room " + roomCode + " has been removed as it is now empty.");
+                    System.out.println(
+                            "[WebSocketController.java] Room " + roomCode + " has been removed as it is now empty.");
                 }
 
                 // Broadcast the updated player list to the room
@@ -505,5 +516,4 @@ public class WebSocketController {
             }
         }
     }
-
 }

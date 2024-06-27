@@ -9,7 +9,7 @@ export const connectWebSocket = (setStompClient, setStompChatClient) => {
   // Disable Stomp.js logging
 
   const socket = new SockJS('http://10.0.40.165:8080/ws');
-  const socketChat = new SockJS('http://10.0.40.165:8080/ws')
+  const socketChat = new SockJS('http://10.0.40.165:8082/ws')
 
   const stomp = Stomp.over(socket);
   stomp.debug = null;
@@ -47,12 +47,10 @@ export const subscribeToPlayers = (stompClient, playerName, setPlayers, setInGam
 
   stompClient.subscribe(`/topic/players/${roomCode}`, (message: { body: string }) => {
     try {
-      console.log('[WebsocketService.ts] ' + message.body);
       const updatedPlayers = JSON.parse(message.body);
       const playersWithImposterFlag = addImposterFlag(updatedPlayers);
       setPlayers(playersWithImposterFlag);
       const currentPlayer = playersWithImposterFlag[playerName];
-      console.log('[WebsocketService.ts] ' + playersWithImposterFlag);
     } catch (error) {
       console.error('[WebsocketService.ts] Error processing player message:', error);
     }
@@ -155,6 +153,7 @@ export const subscribetoInteractions = (stompClient, setInteractibles, roomCode)
   stompClient.subscribe(`/topic/interactions/${roomCode}`, (message) => {
     const updatedInteractibles = JSON.parse(message.body);
     setInteractibles(updatedInteractibles);
+   
     handleReceivedInteractibles(updatedInteractibles, setInteractibles);
     
   });
@@ -184,7 +183,6 @@ export const sendInteractionWithSabotageTask = (stompClient, playerName, roomCod
 
 export const sendChatMessage = (stompChatClient, playerName, messageContent, roomCode) => {
   if (!stompChatClient || !playerName) return;
-  console.log("[WebsocketService.ts] Message arrived in Websocket");
 
   const newMessage = {
     sender: playerName,
@@ -207,45 +205,10 @@ export const enableSabotage = (stompClient, sabotage, roomCode) => {
   stompClient.send(`/app/enableSabotage/${roomCode}`, {}, sabotage)
 }
 
-export const sendEmergencyMeeting = (stompClient, playerName, roomCode) => {
-  if (!stompClient || !playerName) return;
-  stompClient.send(`/app/emergencyMeeting/${roomCode}`, {}, playerName);
-};
-
-export const subscribeToEmergencyMeeting = (stompClient, handleEmergencyMeeting, roomCode) => {
-  if (!stompClient) return;
-
-  const subscription = stompClient.subscribe(`/topic/emergencyMeeting/${roomCode}`, () => {
-    handleEmergencyMeeting();
-  });
-
-  return () => {
-    subscription.unsubscribe();
-  };
-};
-
-export const subscribeToEjectedPlayer = (stompClient, roomCode, setEjectedPlayer, setShowEjectedGif) => {
-  if (!stompClient) return;
-
-  const subscription = stompClient.subscribe(`/topic/ejectedPlayer/${roomCode}`, (message) => {
-    const ejectedPlayer = message.body;
-    setEjectedPlayer(ejectedPlayer);
-    setShowEjectedGif(true); // Set showEjectedGif to true when a player is ejected
-  });
-  return () => {
-    subscription.unsubscribe();
-  };
-};
-
 export const sendVote = (stompClient, playerName, votedPlayer, roomCode) => {
   if (!stompClient || !playerName) return;
 
   const payload = `${playerName},${votedPlayer}`;
   stompClient.send(`/app/vote/${roomCode}`, {}, payload);
 };
-
-export const sendVoteTimemout = (stompClient, roomCode) => {
-  if (!stompClient) return;
-  stompClient.send(`/app/voteTimeout/${roomCode}`);
-}
 

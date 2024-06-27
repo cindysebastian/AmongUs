@@ -1,33 +1,32 @@
 package team5.amongus.Backend.service;
 
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import team5.amongus.Backend.model.EmergencyMeeting;
 import team5.amongus.Backend.model.Player;
 import team5.amongus.Backend.model.Position;
+import team5.amongus.Backend.model.Room;
 
 @Service
 public class EmergencyMeetingService implements IEmergencyMeetingService {
     private int totalVotes = 0;
     private int skips = 0;
     private int votesCast = 0;
-    private boolean isCooldownActive = false;
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode, String meeting) {
-        if (isCooldownActive && meeting != "deadbody") {
-            System.out.println("[EmergencyMeetingService.java] Emergency meeting cooldown is active. Cannot start a new meeting.");
+    public void handleEmergencyMeeting(String playerName, Map<String, Player> playersMap,
+            EmergencyMeeting emergencyMeeting, Room room, String meeting, SimpMessagingTemplate messagingTemplate) {
+        if (emergencyMeeting.getIsCooldownActive() && meeting != "deadbody") {
             return;
         }
 
         int x = 2000;
         int y = 550;
-        for (Map.Entry<String,Player> entry : playersMap.entrySet()) {
+        for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
             Player player = entry.getValue();
             Position meetingPosition = new Position(x, y);
+            player.setHasVoted(false);
             player.setPosition(meetingPosition);
             x += 30;
             y += 30;
@@ -39,49 +38,46 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
         emergencyMeeting.setEjectedPlayer(null);
         emergencyMeeting.getVotes().clear(); // Clear votes from the previous meeting
 
-        startCooldown();
+        room.startMeetingCountdown(playersMap, emergencyMeeting, messagingTemplate, this);
+        room.startCooldown(emergencyMeeting, messagingTemplate);
     }
 
-    private void startCooldown() {
-        isCooldownActive = true;
-        scheduler.schedule(() -> {
-            isCooldownActive = false;
-            System.out.println("[EmergencyMeetingService.java] Emergency meeting cooldown has ended.");
-        }, 90, TimeUnit.SECONDS); // 120 seconds cooldown
-    }
 
-    public void handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode) {
+    public void handleVoting(String playerName, String votedPlayer, Map<String, Player> playersMap,
+            EmergencyMeeting emergencyMeeting, Room room, SimpMessagingTemplate swp) {
+        if (!emergencyMeeting.getInMeeting()) {
+            return;
+        }
+
         if (totalVotes == 0) {
             for (Map.Entry<String, Player> entry : playersMap.entrySet()) {
                 Player player = entry.getValue();
                 if (player.getisAlive()) {
                     totalVotes++;
                 }
-            }            
+            }
         }
 
-        System.out.println("[EmergencyMeetingService.java] " + playerName + " voted for: " + votedPlayer);
+
         if (votedPlayer != null && !votedPlayer.isEmpty() && !votedPlayer.isBlank()) {
             Map<String, Integer> votes = emergencyMeeting.getVotes();
             votes.put(votedPlayer, votes.getOrDefault(votedPlayer, 0) + 1);
             votesCast++;
         } else {
-            System.out.println("[EmergencyMeetingService.java] skip");
+
             skips++;
             votesCast++;
         }
+        playersMap.get(playerName).setHasVoted(true);
 
-        System.out.println("[EmergencyMeetingService.java] voted player: " + votedPlayer);
-        System.out.println("[EmergencyMeetingService.java] votes cast: " + votesCast);
-        System.out.println("[EmergencyMeetingService.java] totalAlivePlayer: " + totalVotes);
-        System.out.println("[EmergencyMeetingService.java] votes array: " + emergencyMeeting.getVotes());
+
+        room.broadcastPlayerUpdate(swp);
         if (votesCast == totalVotes) {
-            System.out.println("[EmergencyMeetingService.java] VOTES HAVE BEEN CAST UwU");
-            submitVotes(playersMap, emergencyMeeting, roomCode); 
+            submitVotes(playersMap, emergencyMeeting, room, swp);
         }
     }
 
-    public void submitVotes(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, String roomCode) {
+    public void submitVotes(Map<String, Player> playersMap, EmergencyMeeting emergencyMeeting, Room room, SimpMessagingTemplate smp) {
         String playerWithMostVotes = null;
         int maxVotes = 0;
         Map<String, Integer> votes = emergencyMeeting.getVotes();
@@ -91,20 +87,28 @@ public class EmergencyMeetingService implements IEmergencyMeetingService {
                 maxVotes = entry.getValue();
                 playerWithMostVotes = entry.getKey();
             }
-        }
-        
+        }        
+
         if (maxVotes > skips) {
             Player ejectedPlayer = playersMap.get(playerWithMostVotes);
             if (ejectedPlayer != null) {
                 playersMap.get(playerWithMostVotes).setAlive(false);
                 emergencyMeeting.setEjectedPlayer(ejectedPlayer);
-                System.out.println("[EmergencyMeetingService.java] " + ejectedPlayer.getName() + " has been ejected.");
+                room.getEmergencyMeeting().setFinalising(true);
+                room.broadcastInteractiblesUpdate(smp);
+
             }
         } else {
-            System.out.println("[EmergencyMeetingService.java] No player has been ejected.");
+            room.getEmergencyMeeting().setFinalising(true);
+            room.broadcastInteractiblesUpdate(smp);
+
+
         }
-        emergencyMeeting.setInMeeting(false);
+        
+        room.startEjectGifCountdown(emergencyMeeting, smp);
+        for(Map.Entry<String, Player> player : playersMap.entrySet()){
+            player.getValue().setHasVoted(false);
+        }
         votes.clear();
     }
-
 }

@@ -76,7 +76,7 @@ const App = () => {
       subscribetoInteractions(stompClient, setInteractibles, roomCode);
       subscribetoGameFinishing(stompClient, setGameState, roomCode);
       subscribeToInteractionWithSabotage(stompClient, setSabotageTasks, roomCode);
-      console.log('[App.tsx] ' + interactibles);
+
     }
   }, [roomCode, playerName]);
 
@@ -87,31 +87,24 @@ const App = () => {
   };
 
   useEffect(() => {
-    if (interactibles && playerName) {
+    if (interactibles && playerName && sabotageTasks) {
       const playerInteracting = interactibles.some(interactible =>
         interactible.inProgress && interactible.assignedPlayer === playerName
       );
-      setInteractionInProgress(playerInteracting);
-    }
-  }, [interactibles, playerName]);
-
-  useEffect(() => {
-    if (interactibles && playerName) {
       const inMeeting = interactibles.some(interactible =>
         interactible.inMeeting
       );
-      setInteractionInProgress(inMeeting);
-    }
-  }, [interactibles, playerName]);
-
-  useEffect(() => {
-    if (sabotageTasks && playerName) {
-      const playerInteracting = sabotageTasks.some(task =>
-        task.inProgress && task.triggeredBy == playerName
+      const playerInteractingWithSabotageTask = sabotageTasks.some(task =>
+        task.inProgress && task.triggeredBy === playerName
       );
-      setInteractionInProgress(playerInteracting);
+
+      if(playerInteracting || inMeeting || playerInteractingWithSabotageTask){
+        setInteractionInProgress(true);
+      } else {
+        setInteractionInProgress(false);
+      }
     }
-  }, [sabotageTasks, playerName]);
+  }, [sabotageTasks, interactibles, playerName]);
 
   useEffect(() => {
     if (stompClient && playerSpawned) {
@@ -224,12 +217,13 @@ const App = () => {
 
   const handleDisconnect = () => {
     stompClient && stompClient.disconnect();
+    setGameState('');
+    setPlayerSpawned(false);
     connectWebSocket(setStompClient, setStompChatClient);
     navigate('/login');
   };
 
   useEffect(() => {
-    console.log('[App.tsx] ' + gameState);
     if (gameState == "Imposter wins" || gameState == "Crewmates win") {
       navigate('/end');
     } else if (gameState == "Game waiting") {
@@ -297,14 +291,18 @@ const App = () => {
               <button onClick={handleHost} className={styles.button}>HOST</button>
               <button onClick={handlePrivate} className={styles.button}>PRIVATE</button>
             </div>
-            <div className={styles.controlsContainer}>
+
+            <div className={styles.topContainer}>
               <div className={styles.controlItem1}>
-                <img src="gameservice/src/main/resources/e.png" alt="Image 1" height="50px" width="50px" className={styles.controlsImage} />
-                <span className={styles.controlText1}>Interact with E</span>
+                <span className={styles.controlText1}>Interact</span>
+                <img src="gameservice/src/main/resources/e.png" alt="Image 1" height="auto" width="25%" className={styles.controlsImage1} />
               </div>
+            </div>
+
+            <div className={styles.controlsContainer}>
               <div className={styles.controlItem}>
-                <img src="gameservice/src/main/resources/wasd.png" alt="Image 2" height="200px" width="200px" className={styles.controlsImage} />
-                <span className={styles.controlText}>Move your player with W, A, S, D</span>
+                <img src="gameservice/src/main/resources/wasd.png" alt="Image 2" height="auto" width="40%" className={styles.controlsImage} />
+                <span className={styles.controlText}>Move</span>
               </div>
             </div>
           </div>
@@ -350,9 +348,9 @@ const App = () => {
           <button onClick={() => handleJoinGame(playerName, roomCode)} className={styles.button}>Join Private Room</button>
         </div></div>
     </div>} />
-    <Route path="/game" element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage} />} />
-    <Route path="/spaceship" element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} sabotageTasks={sabotageTasks} currentPlayer={playerName} roomCode={roomCode} setInteractionInProgress={setInteractionInProgress} />} />
-    <Route path="/end" element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />
+    <Route path="/game" element={<ProtectedRoute isAllowed={playerSpawned} element={<Lobby inGamePlayers={inGamePlayers} onStartButtonClick={handleStartButtonClick} roomCode={roomCode} currentPlayer={playerName} messages={messages} sendMessage={sendMessage} />} />} />
+    <Route path="/spaceship" element={<ProtectedRoute isAllowed={playerSpawned} element={<SpaceShip stompClient={stompClient} players={players} interactibles={interactibles} sabotageTasks={sabotageTasks} currentPlayer={playerName} roomCode={roomCode} setInteractionInProgress={setInteractionInProgress} stompChatClient={stompChatClient}/>} />} />
+    <Route path="/end" element={<ProtectedRoute isAllowed={playerSpawned} element={<GameEndHandler stompClient={stompClient} players={players} currentPlayer={playerName} setInteractionInProgress={setInteractionInProgress} gameStatus={gameState} handleDisconnect={handleDisconnect} handleResetLobby={handleResetLobby} roomCode={roomCode} />} />} />
     <Route path="/" element={<Navigate replace to="/login" />} />
   </Routes>
 );
