@@ -272,7 +272,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
               .map(interactible => (
                 <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 80, left: interactible.position.x + 104 }}>
                   <div style={{ opacity: bellDown ? 0.3 : 1 }}>
-                    <img src="gameservice/src/main/resources/bell.png" alt="Emergency bell" style={{ width: '80px', height: '80px', position: 'relative' }} />
+                    <img src="/bell.png" alt="Emergency bell" style={{ width: '80px', height: '80px', position: 'relative' }} />
                   </div>
                   
                 </div>
@@ -284,7 +284,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
                 .filter(interactible => interactible.hasOwnProperty('found')) // Filter interactibles with the "found" property
                 .map(interactible => (
                   <div key={interactible.id} style={{ position: 'absolute', top: interactible.position.y + 30, left: interactible.position.x + 30 }}>
-                    <img src="gameservice/src/main/resources/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
+                    <img src="/deadbodycrewmate.png" alt="Dead Player" style={{ width: '50px', height: '60px', position: 'relative' }} />
                   </div>
                 ))
               }
@@ -354,7 +354,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
       {isImposter && (
         <>
           <div onClick={() => handleSabotage("EndGameSabotage")} className={styles.lethalSabotage} style={{ opacity: !sabotageCooldown ? 1 : 0.5 }}>
-            <img src="gameservice/src/main/resources/LethalSabotage.png" alt="Lethal Sabotage" className={styles.sabotageIcon} />
+            <img src="/LethalSabotage.png" alt="Lethal Sabotage" className={styles.sabotageIcon} />
             {isImposter && sabotageCooldown && (
               <div className={styles.cooldownOverlay}>
                 <div className={styles.cooldownText}>{cooldownTime}</div>
@@ -362,7 +362,7 @@ const SpaceShip: React.FC<Props> = ({ stompClient, players, interactibles, sabot
             )}
           </div>
           <div onClick={() => handleSabotage("AnnoySabotage")} className={styles.sabotage} style={{ opacity: !sabotageCooldown ? 1 : 0.5 }}>
-            <img src="gameservice/src/main/resources/Sabotage.png" alt="Sabotage" className={styles.sabotageIcon} />
+            <img src="/Sabotage.png" alt="Sabotage" className={styles.sabotageIcon} />
             {isImposter && sabotageCooldown && (
               <div className={styles.cooldownOverlay}>
                 <div className={styles.cooldownText}>{cooldownTime}</div>

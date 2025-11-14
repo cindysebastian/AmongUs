@@ -20,7 +20,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url("../../../../../resources/space.gif");
+    background-image: url("/space.gif");
     background-size: cover;
     background-color: black;
     z-index: 1;

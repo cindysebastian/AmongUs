@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './../styles/spaceship.module.css';
+import aaa from '../../../../../resources/door.png'
 
 const KillButton = ({ onKill, canKill, killCooldown, killCooldownTime }) => {
   const handleKill = () => {
@@ -22,8 +23,7 @@ const KillButton = ({ onKill, canKill, killCooldown, killCooldownTime }) => {
       style={buttonStyle}
     >
       <img
-        src="gameservice/src/main/resources/killButtonIcon.png"
-        alt="Kill Button"
+        src="/killButtonIcon.png"
         className={styles.killButtonIcon}
       />
       {killCooldown && (

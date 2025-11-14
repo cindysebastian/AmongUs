@@ -295,13 +295,13 @@ const App = () => {
             <div className={styles.topContainer}>
               <div className={styles.controlItem1}>
                 <span className={styles.controlText1}>Interact</span>
-                <img src="gameservice/src/main/resources/e.png" alt="Image 1" height="auto" width="25%" className={styles.controlsImage1} />
+                <img src="/e.png" alt="Image 1" height="auto" width="25%" className={styles.controlsImage1} />
               </div>
             </div>
 
             <div className={styles.controlsContainer}>
               <div className={styles.controlItem}>
-                <img src="gameservice/src/main/resources/wasd.png" alt="Image 2" height="auto" width="40%" className={styles.controlsImage} />
+                <img src="/wasd.png" alt="Image 2" height="auto" width="40%" className={styles.controlsImage} />
                 <span className={styles.controlText}>Move</span>
               </div>
             </div>

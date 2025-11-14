@@ -61,7 +61,7 @@ const MineMinigame: React.FC<Props> = ({ stompClient, interactible, roomCode }) 
         <div className={styles.popupContent}>
           <div className={styles.imageWrapper}>
             <img
-              src="gameservice/src/main/resources/mine.png"
+              src="/mine.png"
               alt="TaskMine"
               onClick={handleClick}
               className={`${styles.mineInteract} ${isShaking ? styles.shake : ''}`}

@@ -13,7 +13,7 @@ const TaskIcons: React.FC<Props> = ({ interactibles, currentPlayer }) => {
             {interactibles.filter(interactible => interactible.assignedPlayer === currentPlayer.name).map(interactible => (
                 <img
                     key={interactible.id}
-                    src={`gameservice/src/main/resources/${interactible.type.toLowerCase()}${currentPlayer.canInteract ? 'red' : ''}.png`}
+                    src={`/${interactible.type.toLowerCase()}${currentPlayer.canInteract ? 'red' : ''}.png`}
                     alt={interactible.type}
                     style={{
                         position: 'absolute',

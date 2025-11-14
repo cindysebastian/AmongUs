@@ -5,6 +5,6 @@ import prettyCssModules from 'vite-plugin-pretty-css-modules';
 export default defineConfig({
   plugins: [react(), prettyCssModules()],
   server: {
-    port: 3000
+    port: 4173
   }
 });

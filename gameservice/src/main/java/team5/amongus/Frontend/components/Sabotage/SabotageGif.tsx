@@ -27,17 +27,17 @@ const SabotageGif: React.FC<Props> = ({ stompClient, sabotage, roomCode }) => {
     <div className={styles.sabotage}>
       {sabotage.name === "EndGameSabotage" ? (
         <video ref={videoRef} className={styles.balrogBackgroundVideo} autoPlay loop>
-          <source src="gameservice/src/main/resources/sabotage/EndGameSabotage.mp4" type='video/mp4' />
+          <source src="/sabotage/EndGameSabotage.mp4" type='video/mp4' />
         </video>
       ) : (
         <>
           <img
-            src={`gameservice/src/main/resources/sabotage/${sabotage.name}.gif`}
+            src={`/sabotage/${sabotage.name}.gif`}
             alt={`${sabotage.name} gif`}
             style={{ height: "100%", width: "100%", position: "fixed", zIndex: 6, pointerEvents: 'none' }}
           />
           <audio ref={audioRef} controls autoPlay loop>
-            <source src="gameservice/src/main/resources/sabotage/CreepyDragonRoar.wav" type="audio/wav" />
+            <source src="/sabotage/CreepyDragonRoar.wav" type="audio/wav" />
           </audio>
         </>
       )}

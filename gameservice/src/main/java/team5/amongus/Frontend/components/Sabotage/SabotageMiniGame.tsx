@@ -60,7 +60,7 @@ const SabotageMiniGame: React.FC<Props> = ({ stompClient, sabotageTask, roomCode
     <div className={styles.overlay}>
           <div className={styles.imageWrapper}>
             <img
-              src={`gameservice/src/main/resources/sabotage/${sabotageTask.sabotage.name}Task.png`}
+              src={`/sabotage/${sabotageTask.sabotage.name}Task.png`}
               alt="TaskSabotage"
               onClick={handleClick}
               className={`${styles.mineInteract} ${isShaking ? styles.shake : ''}`}
